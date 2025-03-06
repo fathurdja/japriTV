@@ -49,7 +49,7 @@ fun DynamicActionButton(text: String, onClick: () -> Unit) {
             Text(
                 text = text,
                 color = Color.White,
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.width(8.dp))

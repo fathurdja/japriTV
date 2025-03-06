@@ -21,13 +21,9 @@ import com.example.japritv.ui.theme.JapriTvTheme
 import kotlinx.coroutines.delay
 
 @Composable
-fun LoadingUpload(modifier: Modifier = Modifier) {
-    // Defining state for progress and upload status
-    var progress by remember { mutableStateOf(0f) } // To track progress
-    var isUploading by remember { mutableStateOf(true) } // To control the upload state
-
+fun LoadingUpload(progress: Float) {
     Box(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .background(color = Color.White)
             .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
@@ -60,21 +56,12 @@ fun LoadingUpload(modifier: Modifier = Modifier) {
             )
         }
     }
-
-    // Simulate upload progress
-    LaunchedEffect(Unit) {
-        while (progress < 1f) {
-            delay(1000) // Simulate each second of upload
-            progress += 0.05f // Increase progress by 5% every second
-        }
-        isUploading = false // Once upload is complete
-    }
 }
 
-@Preview
-@Composable
-private fun LoadingUploadPreview() {
-    JapriTvTheme {
-        LoadingUpload()
-    }
-}
+//@Preview
+//@Composable
+//private fun LoadingUploadPreview() {
+//    JapriTvTheme {
+//        LoadingUpload()
+//    }
+//}

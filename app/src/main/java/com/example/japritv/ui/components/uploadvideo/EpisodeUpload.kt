@@ -59,13 +59,15 @@ import kotlinx.coroutines.delay
 
 
 @Composable
-fun EpisodeUploadComponent() {
-    var episodeTitle by remember { mutableStateOf("") }
-    var fileName by remember { mutableStateOf("Klik untuk mengupload") }
-    var fileSize by remember { mutableStateOf("Maks. ukuran file: 75MB | Jenis file: MP4, MPG") }
-    var progress by remember { mutableStateOf(0f) } // To track progress
-    var isUploading by remember { mutableStateOf(true) } // To control the upload state
-
+fun EpisodeUploadComponent(
+    MovieTitle: String,
+    episodeTitle: String,
+    fileName: String,
+    fileSize: String,
+    isUploading: Boolean,
+    onFileUploadClick: () -> Unit,
+    progress: Float
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -84,15 +86,17 @@ fun EpisodeUploadComponent() {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                // Change icon color to green when upload is complete
+                val iconTint = if (isUploading && progress < 1f) Color.Gray else Color.Green
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = "Completed Icon",
-                    tint = Color.Gray,
+                    tint = iconTint,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Episode 1",
+                    text = episodeTitle,
                     color = Color.Black,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -123,7 +127,7 @@ fun EpisodeUploadComponent() {
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Text(
-                        text = "Judul Video*",
+                        text = MovieTitle,
                         color = Color.Gray,
                         fontSize = 16.sp
                     )
@@ -131,70 +135,86 @@ fun EpisodeUploadComponent() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // File upload box with dashed border
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .drawBehind {
-                            drawRect(
-                                color = Color(0xFFE0E0E0),
-                                style = Stroke(
-                                    width = 10f,
-                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                if (isUploading && progress < 1f){
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .drawBehind {
+                                drawRect(
+                                    color = Color(0xFFE0E0E0),
+                                    style = Stroke(
+                                        width = 10f,
+                                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                                    )
                                 )
+                            }
+                            .clickable {
+                                onFileUploadClick()
+                            }
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.avatar),  // Replace with your add icon
+                                contentDescription = "Add File",
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = fileName,
+                                color = Color.Black,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = fileSize,
+                                color = Color.Gray,
+                                fontSize = 12.sp
                             )
                         }
-                        .clickable {
-                            // Simulate file upload starting
-                            isUploading = true
-                            progress = 0f
-                        }
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.avatar),  // Replace with your add icon
-                            contentDescription = "Add File",
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Klik untuk mengupload",
-                            color = Color.Black,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Maks. ukuran file: 75MB | Jenis file: MP4, MPG",
-                            color = Color.Gray,
-                            fontSize = 12.sp
-                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Show the upload progress when uploading
+                    if (progress > 0f) {
+                        LoadingUpload(progress = progress)
                     }
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-                if(isUploading){
-                    LoadingUpload()
+                // File upload box with dashed border
+                // Once upload is complete (isUploading = false and progress = 100), replace the box
+                else {
+                    VideoItemUploaded(
+                        fileName = "assets.zip",
+                        fileSize = "5.3MB",
+                        fileIcon = R.drawable.video_vector_icon_1, // Example icon resource
+                        onRemoveClick = { /* Handle file removal logic */ }
+                    )
                 }
-
-
             }
-
-
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
 private fun EpisodeUploadComponentPreview() {
     JapriTvTheme {
-        EpisodeUploadComponent()
+        EpisodeUploadComponent(
+            MovieTitle = "Squid Game",
+            episodeTitle = "Episode 1",
+            fileName = "Klik untuk mengupload",
+            fileSize = "Maks. ukuran file: 75MB | Jenis file: MP4, MPG",
+            isUploading = false,
+            onFileUploadClick = { },
+            progress = 1f
+        )
     }
 }
 
