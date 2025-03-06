@@ -44,9 +44,7 @@ import com.example.japritv.ui.theme.JapriTvTheme
 
 
 @Composable
-fun UploadVideoScreen() {
-        var isLoggedIn by remember { mutableStateOf(true) }
-
+fun UploadVideoScreen(isLoggedIn:Boolean=false) {
         if (isLoggedIn){
 
             Column(
