@@ -1,4 +1,4 @@
-package com.example.japritv.ui.components
+package com.example.japritv.ui.components.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box

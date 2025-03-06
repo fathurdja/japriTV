@@ -1,4 +1,4 @@
-package com.example.japritv.ui.components
+package com.example.japritv.ui.components.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,12 +22,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.japritv.R
 import com.example.japritv.model.Show
-import com.example.japritv.ui.theme.JapriTvTheme
 
 @Composable
 fun CardRating(

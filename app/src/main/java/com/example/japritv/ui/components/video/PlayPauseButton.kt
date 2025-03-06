@@ -1,4 +1,4 @@
-package com.example.japritv.ui.components
+package com.example.japritv.ui.components.video
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

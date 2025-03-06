@@ -1,32 +1,25 @@
 package com.example.japritv.ui.screen
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.japritv.R
 import com.example.japritv.model.Show
-import com.example.japritv.model.Video
 import com.example.japritv.ui.components.*
-import com.example.japritv.ui.theme.JapriTvTheme
+import com.example.japritv.ui.components.home.CardRating
+import com.example.japritv.ui.components.home.Category
+import com.example.japritv.ui.components.home.CustomSearchBox
 import com.example.japritv.viewmodel.VideoViewModel
 
 

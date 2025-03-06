@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,7 +19,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -44,14 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.japritv.R
 import com.example.japritv.model.Show
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
-import com.example.japritv.ui.components.BottomNavigationBar
-import com.example.japritv.ui.components.Category
-import com.example.japritv.ui.components.CustomSearchBox
-import com.example.japritv.ui.components.MovieItem
-
-import com.example.japritv.ui.theme.JapriTvTheme
+import com.example.japritv.ui.components.home.MovieItem
 
 
 @Composable

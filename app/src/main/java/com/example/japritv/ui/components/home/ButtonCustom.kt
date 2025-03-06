@@ -1,4 +1,4 @@
-package com.example.japritv.ui.components
+package com.example.japritv.ui.components.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.japritv.R
 import com.example.japritv.ui.theme.JapriTvTheme
 
 @Composable
@@ -57,6 +58,6 @@ fun ButtonCustom(onClick: () -> Unit, modifier: Modifier = Modifier,icon: Int,te
 @Composable
 private fun ButtonCustomPreview() {
     JapriTvTheme {
-        ButtonCustom(onClick = {}, icon = com.example.japritv.R.drawable.bell, text = "Ingatkan Saya")
+        ButtonCustom(onClick = {}, icon = R.drawable.bell, text = "Ingatkan Saya")
     }
 }
