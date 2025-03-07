@@ -108,11 +108,10 @@ fun EpisodeUploadComponent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 60.dp)
+                .padding(top = 60.dp) // Adjust to avoid overlap
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color.White)
                 .padding(16.dp)
-                .zIndex(1f)
         ) {
             Column {
                 // Title input field
@@ -135,7 +134,8 @@ fun EpisodeUploadComponent(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                if (isUploading && progress < 1f){
+                // Upload section (dashed box)
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -179,27 +179,17 @@ fun EpisodeUploadComponent(
                             )
                         }
                     }
+
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Show the upload progress when uploading
-                    if (progress > 0f) {
-                        LoadingUpload(progress = progress)
-                    }
-                }
-                // File upload box with dashed border
-                // Once upload is complete (isUploading = false and progress = 100), replace the box
-                else {
-                    VideoItemUploaded(
-                        fileName = "assets.zip",
-                        fileSize = "5.3MB",
-                        fileIcon = R.drawable.video_vector_icon_1, // Example icon resource
-                        onRemoveClick = { /* Handle file removal logic */ }
-                    )
-                }
+
             }
         }
     }
 }
+
+
+
 
 
 @Preview(showBackground = true)
@@ -213,7 +203,7 @@ private fun EpisodeUploadComponentPreview() {
             fileSize = "Maks. ukuran file: 75MB | Jenis file: MP4, MPG",
             isUploading = false,
             onFileUploadClick = { },
-            progress = 1f
+            progress =4f
         )
     }
 }

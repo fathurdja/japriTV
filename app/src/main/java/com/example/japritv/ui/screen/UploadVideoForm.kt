@@ -14,32 +14,38 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.japritv.ui.components.DynamicActionButton
 import com.example.japritv.ui.components.uploadvideo.AddEpisodeButton
 import com.example.japritv.ui.components.uploadvideo.EpisodeUploadComponent
 import com.example.japritv.ui.components.uploadvideo.WarningUpload
 import com.example.japritv.ui.theme.JapriTvTheme
+import com.example.japritv.viewmodel.UploadEpisodeViewModel
 
 @Composable
 fun UploadVideoForm(modifier: Modifier = Modifier) {
+    val uploadVideoViewModel: UploadEpisodeViewModel = viewModel()
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color(0xFFFFFFFF)) // Background color (light yellow)
-            .padding(16.dp)
+            .padding(vertical = 70.dp)
     ) {
 
         Column {
             WarningUpload()
-            EpisodeUploadComponent(
-                MovieTitle = "Squid Game",
-                episodeTitle = "Episode 1",
-                fileName = "Klik untuk mengupload",
-                fileSize = "Maks. ukuran file: 75MB | Jenis file: MP4, MPG",
-                isUploading = false,
-                onFileUploadClick = { },
-                progress = 1f
-            )
+            uploadVideoViewModel.episodes.forEachIndexed { index, episode ->
+                EpisodeUploadComponent(
+                    MovieTitle = episode.movieTitle,
+                    episodeTitle = episode.episodeTitle,
+                    fileName = episode.fileName,
+                    fileSize = episode.fileSize,
+                    isUploading = episode.isUploading,
+                    onFileUploadClick = { },
+                    progress = episode.progress
+                )
+            }
             AddEpisodeButton(onClick = {})
 
             Spacer(modifier = Modifier.height(12.dp))

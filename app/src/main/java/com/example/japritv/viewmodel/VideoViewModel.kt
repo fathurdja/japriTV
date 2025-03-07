@@ -34,4 +34,5 @@ class VideoViewModel : ViewModel() {
             _currentVideo.value = _currentVideo.value?.copy(isPlaying = false)
         }
     }
+
 }

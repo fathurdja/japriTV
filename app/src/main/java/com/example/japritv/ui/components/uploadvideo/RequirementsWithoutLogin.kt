@@ -34,17 +34,16 @@ fun RequirementsWithoutLogin() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(vertical = 16.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(Color(0xFF2D2D2D)) // Dark background
-
-            .padding(16.dp)
+            .padding(vertical = 13.dp, horizontal = 20.dp)
     ) {
         Column () {
             Text(
                 text = "Syaratnya bergabung:",
                 color = Color.White,
-                fontSize = 18.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
 
@@ -53,7 +52,7 @@ fun RequirementsWithoutLogin() {
             // Syarat 1: Aktivasi akun kreator
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.check_circle_icon__1__1),
@@ -65,7 +64,7 @@ fun RequirementsWithoutLogin() {
                 Text(
                     text = "Aktivasi akun kreator: Rp 200.000",
                     color = Color.White,
-                    fontSize = 14.sp
+                    fontSize = 12.sp
                 )
             }
 
@@ -74,7 +73,7 @@ fun RequirementsWithoutLogin() {
             // Syarat 2: Setiap video butuh jaminan
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.money_integral_icon_1),
@@ -86,7 +85,7 @@ fun RequirementsWithoutLogin() {
                 Text(
                     text = "Setiap video butuh jaminan: Rp 150.000 per judul",
                     color = Color.White,
-                    fontSize = 14.sp
+                    fontSize = 12.sp
                 )
             }
         }
