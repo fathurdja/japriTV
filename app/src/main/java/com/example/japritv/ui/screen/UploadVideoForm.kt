@@ -1,13 +1,17 @@
 package com.example.japritv.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,33 +33,33 @@ fun UploadVideoForm(modifier: Modifier = Modifier) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFFFFFFF)) // Background color (light yellow)
-            .padding(vertical = 70.dp)
+            .background(Color(0xFFFFFFFF))
+            .padding(vertical = 30.dp)
     ) {
-
-        Column {
+        Column( modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()), // Aktifkan scroll
+            verticalArrangement = Arrangement.spacedBy(12.dp)) {
             WarningUpload()
             uploadVideoViewModel.episodes.forEachIndexed { index, episode ->
                 EpisodeUploadComponent(
-                    MovieTitle = episode.movieTitle,
-                    episodeTitle = episode.episodeTitle,
-                    fileName = episode.fileName,
-                    fileSize = episode.fileSize,
-                    isUploading = episode.isUploading,
-                    onFileUploadClick = { },
-                    progress = episode.progress
+                    episodeIndex = index,
+                    uploadVideoViewModel = uploadVideoViewModel,
+                    episode = episode
                 )
             }
-            AddEpisodeButton(onClick = {})
+           Box(modifier = Modifier.padding(horizontal = 10.dp)){
+               AddEpisodeButton(onClick = {
+                   // Tambahkan episode baru ke daftar
+                   uploadVideoViewModel.addEpisode()
+               })
+           }
 
             Spacer(modifier = Modifier.height(12.dp))
-
-//            DynamicActionButton(
-//                text = "Lanjut"
-//            ) { }
         }
     }
 }
+
 
 @Preview
 @Composable

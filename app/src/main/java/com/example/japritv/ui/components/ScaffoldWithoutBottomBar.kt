@@ -15,11 +15,11 @@ import com.example.japritv.ui.components.home.ButtonCustom
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ScaffoldWithoutBottomBar(navController: NavController,navigationRoute:String ,content: @Composable () -> Unit,title: String,titleButton:String) {
+fun ScaffoldWithoutBottomBar(navController: NavController,navigationRoute:String ,content: @Composable () -> Unit,title: String,titleButton:String,contentTop: @Composable () -> Unit) {
     Scaffold(
         containerColor = Color.White,
         topBar = {
-            Header(title, Color.White, Color.Black)
+           contentTop()
         },
         bottomBar = { Box(){
             CustomBoxButton(onClick = {  navController.navigate(navigationRoute)}, title = titleButton)
@@ -28,7 +28,7 @@ fun ScaffoldWithoutBottomBar(navController: NavController,navigationRoute:String
 
          }
     ) {
-       Box(modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp)){
+       Box(modifier = Modifier.fillMaxWidth().padding(vertical = 30.dp)){
            content()
        }
     }

@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
@@ -55,66 +56,65 @@ import androidx.compose.ui.zIndex
 import com.example.japritv.R
 import com.example.japritv.ui.theme.JapriTvTheme
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.text.TextStyle
+import com.example.japritv.model.Episode
+import com.example.japritv.viewmodel.UploadEpisodeViewModel
 import kotlinx.coroutines.delay
 
 
 @Composable
 fun EpisodeUploadComponent(
-    MovieTitle: String,
-    episodeTitle: String,
-    fileName: String,
-    fileSize: String,
-    isUploading: Boolean,
-    onFileUploadClick: () -> Unit,
-    progress: Float
+    episodeIndex: Int,
+    uploadVideoViewModel: UploadEpisodeViewModel,
+    episode: Episode
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(vertical = 12.dp, horizontal = 16.dp )
             .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
-    ) {
-        // Header box with gray background
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFFF2F2F2))
-                .padding(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Change icon color to green when upload is complete
-                val iconTint = if (isUploading && progress < 1f) Color.Gray else Color.Green
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = "Completed Icon",
-                    tint = iconTint,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = episodeTitle,
-                    color = Color.Black,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
 
-        // Content box with form fields
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 60.dp) // Adjust to avoid overlap
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color.White)
-                .padding(16.dp)
-        ) {
-            Column {
-                // Title input field
+
+    ) {
+
+        Column {
+            // Header box dengan status upload
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFF2F2F2))
+                    .padding(16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val iconTint = when {
+                        episode.isUploading && episode.progress < 1f -> Color.Gray  // Masih dalam proses upload
+                        episode.progress >= 1f -> Color.Green  // Upload selesai
+                        else -> Color.Gray  // Default
+                    }
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Completed Icon",
+                        tint = iconTint,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = episode.episodeTitle,
+                        color = Color.Black,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Input untuk judul video
+            Column(modifier = Modifier.padding(16.dp)) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -125,17 +125,27 @@ fun EpisodeUploadComponent(
                         .padding(horizontal = 16.dp),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    Text(
-                        text = MovieTitle,
-                        color = Color.Gray,
-                        fontSize = 16.sp
+                    if (episode.movieTitle.isEmpty()) {
+                        Text(
+                            text = "Masukkan Judul Video",
+                            color = Color.Gray,
+                            fontSize = 16.sp
+                        )
+                    }
+                    BasicTextField(
+                        value = episode.movieTitle,
+                        onValueChange = { newValue ->
+                            uploadVideoViewModel.updateMovieTitle(episodeIndex, newValue)
+                        },
+                        textStyle = TextStyle(color = Color.Black, fontSize = 16.sp),
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Upload section (dashed box)
-
+                // Kondisi untuk mengganti box upload dengan VideoItemUploaded jika upload selesai
+                if (episode.isUploading) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -151,8 +161,9 @@ fun EpisodeUploadComponent(
                                 )
                             }
                             .clickable {
-                                onFileUploadClick()
-                            }
+                                uploadVideoViewModel.uploadFile(episodeIndex, "example_video.mp4", "5 MB")
+                            },
+                        contentAlignment = Alignment.Center
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -160,29 +171,68 @@ fun EpisodeUploadComponent(
                             modifier = Modifier.fillMaxSize()
                         ) {
                             Image(
-                                painter = painterResource(id = R.drawable.avatar),  // Replace with your add icon
-                                contentDescription = "Add File",
+                                painter = painterResource(id = R.drawable.avatar),
+                                contentDescription = "Upload Icon",
+
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = fileName,
-                                color = Color.Black,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = fileSize,
-                                color = Color.Gray,
-                                fontSize = 12.sp
-                            )
+                            Text(text = "Klik untuk mengupload", color = Color.Black, fontSize = 14.sp)
+                            Text(text = "Maks. ukuran file: 75 MB | Jenis file: MP4, MPG", color = Color.Gray, fontSize = 12.sp)
                         }
                     }
+                    // Tampilkan LoadingUpload saat sedang mengunggah
+                    Spacer(modifier = Modifier.height(16.dp))
+                    LoadingUpload(progress = episode.progress)
+                } else if (episode.fileName.isNotEmpty()) {
+                    // Jika file sudah selesai diupload, tampilkan VideoItemUploaded
+                        VideoItemUploaded(
+                            fileName = episode.fileName,
+                            fileSize = episode.fileSize,
+                            fileIcon = R.drawable.video_vector_icon_1, // Sesuaikan dengan resource yang kamu punya
+                            onRemoveClick = {
+//                        uploadVideoViewModel.removeFile(episodeIndex)
+                            }
+                        )
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                } else {
+                    // Jika tidak ada upload, tampilkan box upload dengan garis putus-putus
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .drawBehind {
+                                drawRect(
+                                    color = Color(0xFFE0E0E0),
+                                    style = Stroke(
+                                        width = 10f,
+                                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                                    )
+                                )
+                            }
+                            .clickable {
+                                uploadVideoViewModel.uploadFile(episodeIndex, "example_video.mp4", "5 MB")
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.avatar),
+                                contentDescription = "Upload Icon",
 
-
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(text = "Klik untuk mengupload", color = Color.Black, fontSize = 14.sp)
+                            Text(text = "Maks. ukuran file: 75 MB | Jenis file: MP4, MPG", color = Color.Gray, fontSize = 12.sp)
+                        }
+                    }
+                }
             }
         }
     }
@@ -192,21 +242,11 @@ fun EpisodeUploadComponent(
 
 
 
-@Preview(showBackground = true)
-@Composable
-private fun EpisodeUploadComponentPreview() {
-    JapriTvTheme {
-        EpisodeUploadComponent(
-            MovieTitle = "Squid Game",
-            episodeTitle = "Episode 1",
-            fileName = "Klik untuk mengupload",
-            fileSize = "Maks. ukuran file: 75MB | Jenis file: MP4, MPG",
-            isUploading = false,
-            onFileUploadClick = { },
-            progress =4f
-        )
-    }
-}
+
+
+
+
+
 
 
 

@@ -27,7 +27,7 @@ fun AddEpisodeButton(onClick: () -> Unit) {
             .fillMaxWidth()
             .padding(8.dp),
         shape = RoundedCornerShape(10.dp),
-        border = BorderStroke(1.dp, androidx.compose.ui.graphics.Color.Gray)
+        border = BorderStroke(1.dp, Color(0xFFE0E0E0))
     ) {
         Icon(painter = painterResource(R.drawable.plus), contentDescription = "Tambah")
         Spacer(modifier = Modifier.width(8.dp))

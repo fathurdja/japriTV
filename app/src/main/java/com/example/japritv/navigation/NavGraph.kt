@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph
@@ -12,6 +13,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
+import com.example.japritv.R
+import com.example.japritv.ui.components.Header
+import com.example.japritv.ui.components.HeaderRightWithIcon
 import com.example.japritv.ui.components.ScaffoldWithoutBottomBar
 import com.example.japritv.ui.screen.HomeScreen
 import com.example.japritv.ui.screen.RatingScreen
@@ -64,6 +68,8 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues) {
                     navigationRoute = "Pembayaran",
                     titleButton = "Lanjutkan",
                     content = { UploadVideoForm() },
+                    contentTop = { HeaderRightWithIcon("Upload Video", Color.White, Color.Black, R.drawable.vector__8_) }
+
                 )
             }
         }

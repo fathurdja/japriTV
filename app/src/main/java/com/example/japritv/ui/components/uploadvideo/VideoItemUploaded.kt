@@ -1,14 +1,17 @@
 package com.example.japritv.ui.components.uploadvideo
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -32,31 +35,28 @@ import com.example.japritv.ui.theme.JapriTvTheme
 fun VideoItemUploaded(
     fileName: String,
     fileSize: String,
-    fileIcon: Int, // Resource ID for the file type icon
-    onRemoveClick: () -> Unit // Handle file removal click
+    fileIcon: Int,
+    onRemoveClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
+            .fillMaxWidth() // Pastikan selebar parent
             .clip(RoundedCornerShape(8.dp))
             .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
+            .background(Color.White) // Tambahkan background putih biar seragam
+            .padding(16.dp) // Konsisten dengan padding di atas
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
-            // File Icon
             Image(
-                painter = painterResource(id = fileIcon), // Custom file icon
+                painter = painterResource(id = fileIcon),
                 contentDescription = "File Icon",
                 modifier = Modifier.size(40.dp)
             )
-
-            // File name and size
+            Spacer(modifier = Modifier.width(8.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = fileName,
@@ -71,7 +71,6 @@ fun VideoItemUploaded(
                 )
             }
 
-            // Remove button (icon for removing the file)
             IconButton(
                 onClick = { onRemoveClick() },
                 modifier = Modifier.size(24.dp)
@@ -85,6 +84,7 @@ fun VideoItemUploaded(
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
