@@ -1,6 +1,7 @@
 package com.example.japritv.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,7 +25,7 @@ import com.example.japritv.R
 import com.example.japritv.ui.theme.JapriTvTheme
 
 @Composable
-fun HeaderRightWithIcon(title: String, color: Color, textColor: Color,resId:Int) {
+fun HeaderRightWithIcon(title: String, color: Color, textColor: Color,resId:Int,onBackClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -39,7 +40,8 @@ fun HeaderRightWithIcon(title: String, color: Color, textColor: Color,resId:Int)
                 painter = painterResource(id =resId),
                 contentDescription = "close",
                 tint = textColor, // Set icon color to textColor
-                modifier = Modifier.padding(end = 8.dp).size(15.dp) // Space between icon and text
+                modifier = Modifier.padding(end = 8.dp).clickable { onBackClick() }.size(15.dp)
+            // Space between icon and text
             )
             Spacer(modifier = Modifier.width(10.dp))
             Text(

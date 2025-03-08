@@ -19,6 +19,7 @@ import com.example.japritv.ui.components.HeaderRightWithIcon
 import com.example.japritv.ui.components.ScaffoldWithoutBottomBar
 import com.example.japritv.ui.screen.HomeScreen
 import com.example.japritv.ui.screen.RatingScreen
+import com.example.japritv.ui.screen.SplashScreen
 import com.example.japritv.ui.screen.UpComingScreen
 import com.example.japritv.ui.screen.UploadVideoForm
 import com.example.japritv.ui.screen.UploadVideoScreen
@@ -34,10 +35,13 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues) {
     // Handle routing and navigation
     NavHost(
         navController = navController as NavHostController,
-        startDestination = "home",
+        startDestination = "Splash",
         modifier = Modifier.padding(paddingValues)
     ) {
         // Home Screen and Categories
+        composable("Splash") {
+            SplashScreen(navController = navController)
+        }
         composable("home") {
             HomeScreen(navController = navController)
         }
@@ -68,7 +72,7 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues) {
                     navigationRoute = "Pembayaran",
                     titleButton = "Lanjutkan",
                     content = { UploadVideoForm() },
-                    contentTop = { HeaderRightWithIcon("Upload Video", Color.White, Color.Black, R.drawable.vector__8_) }
+                    contentTop = { HeaderRightWithIcon("Upload Video", Color.White, Color.Black, R.drawable.vector__8_, onBackClick = {navController.popBackStack()}) }
 
                 )
             }
