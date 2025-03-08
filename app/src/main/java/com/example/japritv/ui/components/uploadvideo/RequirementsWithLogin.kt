@@ -31,16 +31,17 @@ fun RequirementsWithLogin() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp) // Padding adjusted to 12px
+            .padding(vertical = 16.dp) // Padding adjusted to 12px
             .clip(RoundedCornerShape(12.dp)) // Radius adjusted to 12px
-            .background(Color(0xFF2D2D2D)) // Dark background
-            .padding(12.dp) // Padding adjusted to 12px inside the Box
+            .background(Color(0xFF2D2D2D))
+            .padding(horizontal = 12.dp, vertical = 10.dp)// Dark background
+           // Padding adjusted to 12px inside the Box
     ) {
         Column() {
             Text(
                 text = "Sebelum Upload, Pastikan:",
                 color = Color.White,
-                fontSize = 18.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
 
@@ -55,17 +56,17 @@ fun RequirementsWithLogin() {
                     painter = painterResource(id = R.drawable.money_integral_icon_1),
                     contentDescription = "Money Icon",
                     tint = Color(0xFFF8B600), // Yellow color for money icon
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 )
-                Spacer(modifier = Modifier.width(12.dp)) // Gap adjusted to 12px
+                Spacer(modifier = Modifier.width(10.dp)) // Gap adjusted to 12px
                 Text(
                     text = "Jaminan Rp 150.000 per judul",
                     color = Color.White,
-                    fontSize = 14.sp
+                    fontSize = 12.sp
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp)) // Gap adjusted to 12px
+            Spacer(modifier = Modifier.height(10.dp)) // Gap adjusted to 12px
 
             // Syarat 2: Upload akan diarahkan ke halaman khusus
             Row(
@@ -76,17 +77,17 @@ fun RequirementsWithLogin() {
                     painter = painterResource(id = R.drawable.vector__2_),
                     contentDescription = "Arrow Icon",
                     tint = Color(0xFFF8B600),
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 )
-                Spacer(modifier = Modifier.width(12.dp)) // Gap adjusted to 12px
+                Spacer(modifier = Modifier.width(10.dp)) // Gap adjusted to 12px
                 Text(
                     text = "Upload akan diarahkan ke halaman khusus",
                     color = Color.White,
-                    fontSize = 14.sp
+                    fontSize = 12.sp
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp)) // Gap adjusted to 12px
+            Spacer(modifier = Modifier.height(10.dp)) // Gap adjusted to 12px
 
             // Syarat 3: Maksimal 120 episode per judul video
             Row(
@@ -97,17 +98,17 @@ fun RequirementsWithLogin() {
                     painter = painterResource(id = R.drawable.vector__4_),
                     contentDescription = "List Icon",
                     tint = Color(0xFFF8B600),
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp)) // Gap adjusted to 12px
                 Text(
                     text = "Maksimal 120 episode per judul video",
                     color = Color.White,
-                    fontSize = 14.sp
+                    fontSize = 12.sp
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp)) // Gap adjusted to 12px
+            Spacer(modifier = Modifier.height(10.dp)) // Gap adjusted to 12px
 
             // Syarat 4: File lebih dari 75 MB wajib konversi
             Row(
@@ -118,13 +119,13 @@ fun RequirementsWithLogin() {
                     painter = painterResource(id = R.drawable.vector__3_),
                     contentDescription = "Sync Icon",
                     tint = Color(0xFFF8B600),
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 )
-                Spacer(modifier = Modifier.width(12.dp)) // Gap adjusted to 12px
+                Spacer(modifier = Modifier.width(10.dp)) // Gap adjusted to 12px
                 Text(
                     text = "File lebih dari 75 MB wajib konversi (Rp 5.000/video)",
                     color = Color.White,
-                    fontSize = 14.sp
+                    fontSize = 12.sp
                 )
             }
         }

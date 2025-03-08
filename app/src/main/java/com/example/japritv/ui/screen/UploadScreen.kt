@@ -1,5 +1,6 @@
 package com.example.japritv.ui.screen
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,113 +37,144 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.japritv.R
 import com.example.japritv.ui.components.DynamicActionButton
+import com.example.japritv.ui.components.Header
 import com.example.japritv.ui.components.uploadvideo.RequirementsWithLogin
 import com.example.japritv.ui.components.uploadvideo.RequirementsWithoutLogin
 import com.example.japritv.ui.theme.JapriTvTheme
 
 
-
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun UploadVideoScreen() {
-        var isLoggedIn by remember { mutableStateOf(true) }
-
-        if (isLoggedIn){
-
-            Column(
-                modifier = Modifier
-                    .padding(18.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Header - Title
-                Text(
-                    text = "Saatnya Upload Karyamu! ",
-                    fontSize = 18.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                // Description text
-                Text(
-                    text = "Kamu udah jadi kreator, sekarang waktunya upload video pertama! Yuk, cek dulu syaratnya biar lancar.",
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.8f),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                // Main illustration
-                Image(
-                    painter = painterResource(id = R.drawable.untitled_design_2048x2048__3__1),
-                    contentDescription = "Creator working",
-                    modifier = Modifier
-                        .size(220.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                // Dynamic Action Button
-                RequirementsWithLogin()
-
-                Spacer(modifier = Modifier.height(10.dp))
-                // Dynamic Action Button
-                DynamicActionButton(text = "Mulai upload karya") {
-                    // Handle button click
-                }
+fun UploadVideoScreen(isLoggedIn: Boolean = true,navController: NavController) {
+    Scaffold(
+        topBar = {
+            Box(modifier = Modifier.padding(vertical = 30.dp)) {
+                Header("Upload Video",Color.Black,Color.White)
             }
-        }else{
-            Column(
-                modifier = Modifier
-                    .padding(18.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Header - Title
-                Text(
-                    text = "Jadi Kreator & Mulai Upload Video!",
-                    fontSize = 18.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                // Description text
-                Text(
-                    text = "Pengen jadi bagian dari kreator eksklusif kami? Yuk, aktifkan akun kreatormu dan mulai upload video!",
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.8f),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                // Main illustration
-                Image(
-                    painter = painterResource(id = R.drawable.untitled_design_2048x2048__1__1),
-                    contentDescription = "Creator working",
-                    modifier = Modifier
-                        .size(220.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                // Dynamic Action Button
-                RequirementsWithoutLogin()
+        },
+        containerColor = Color.Black, // Set the background color of the entire screen
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black) // Set the background color here
+                .padding(top = 30.dp) // Adjust the padding for the content
+        ) {
+            if (isLoggedIn) {
+                Column(
+                    modifier = Modifier.align(Alignment.TopCenter), // Align content at the top
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Title Text
+                    Box(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Saatnya Upload Karyamu!",
+                            fontSize = 16.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(10.dp))
-                // Dynamic Action Button
-                DynamicActionButton(text = "Aktifkan akun kreatormu sekarang!") {
-                    // Handle button click
+                    // Description Text
+                    Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        Text(
+                            text = "Kamu udah jadi kreator, sekarang waktunya upload video pertama! Yuk, cek dulu syaratnya biar lancar.",
+                            fontSize = 14.sp,
+                            color = Color.White.copy(alpha = 0.8f),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    // Image
+                    Box(modifier = Modifier.padding(top = 8.dp)) {
+                        Image(
+                            painter = painterResource(id = R.drawable.untitled_design_2048x2048__3__1),
+                            contentDescription = "Creator working",
+                            modifier = Modifier.size(150.dp)
+                        )
+                    }
+
+                    // Requirements with login
+                    Box(modifier = Modifier.padding(horizontal = 11.dp)) {
+                        RequirementsWithLogin()
+                    }
+
+                    // Dynamic Action Button
+                    Box(modifier = Modifier.padding(horizontal = 15.dp)) {
+                        DynamicActionButton(
+                            text = "Mulai upload karya",
+                            onClick = {navController.navigate("uploadEpisode")}
+                        )
+                    }
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(18.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Title Text
+                    Box(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Jadi Kreator & Mulai Upload Video!",
+                            fontSize = 18.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    // Description Text
+                    Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        Text(
+                            text = "Pengen jadi bagian dari kreator eksklusif kami? Yuk, aktifkan akun kreatormu dan mulai upload video!",
+                            fontSize = 14.sp,
+                            color = Color.White.copy(alpha = 0.8f),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    // Image
+                    Box(modifier = Modifier.padding(top = 8.dp)) {
+                        Image(
+                            painter = painterResource(id = R.drawable.untitled_design_2048x2048__1__1),
+                            contentDescription = "Creator working",
+                            modifier = Modifier.size(220.dp)
+                        )
+                    }
+
+                    // Requirements without login
+                    Box(modifier = Modifier.padding(vertical = 5.dp)) {
+                        RequirementsWithoutLogin()
+                    }
+
+                    // Dynamic Action Button
+                    Box(modifier = Modifier.padding(top = 16.dp)) {
+                        DynamicActionButton(
+                            text = "Mulai upload karya",
+                            onClick = {}
+                        )
+                    }
                 }
             }
         }
-
-
     }
+}
 
 
-@Preview()
+@Preview(showBackground = true)
 @Composable
 private fun UploadVideoPagePreview() {
     JapriTvTheme {
-        UploadVideoScreen()
+
     }
 }

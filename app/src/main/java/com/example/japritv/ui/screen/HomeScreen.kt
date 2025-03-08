@@ -40,14 +40,23 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.japritv.R
 import com.example.japritv.model.Show
 import androidx.navigation.NavController
+import com.example.japritv.ui.components.home.FeaturedGridSection
 import com.example.japritv.ui.components.home.MovieItem
+import com.example.japritv.ui.components.home.ShowsGridSection
+
+import com.example.japritv.viewmodel.ShowItemViewModel
 
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(
+    navController: NavController,
+    homeViewModel: ShowItemViewModel = viewModel()
+) {
+    val shows by remember { mutableStateOf(homeViewModel.shows) }
     Scaffold { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -57,7 +66,7 @@ fun HomeScreen(navController: NavController) {
         ) {
             // Featured Show ikut scroll ke atas
             item {
-                FeaturedShowSection(navController, "Featured Shows", R.drawable.image_7)
+                FeaturedGridSection(navController, "Featured Shows", R.drawable.image_7)
             }
             // ShowsGridSection dibatasi tingginya agar tidak infinite
             item {
@@ -66,236 +75,14 @@ fun HomeScreen(navController: NavController) {
                         .fillMaxWidth()
                         .height(600.dp) // Sesuaikan tinggi sesuai kebutuhan
                 ) {
-                    ShowsGridSection()
+                    ShowsGridSection(shows)
                 }
             }
         }
     }
+
 }
 
-
-
-
-@Composable
-fun FeaturedShowSection(navController: NavController, text: String, picture: Int) {
-    val shows = listOf(
-        Show(
-            title = "Breaking Bad",
-            imageResId = R.drawable.title_card,
-            badge = "TOP 10",
-            rating = "4.9",
-            genres = listOf("Drama", "Crime"),
-            duration = "50m",
-            popularity = "20K",
-            rank = 2,
-            videoResId = R.drawable.image_7,
-            description = "Bercerita tentang permainan bertahan hidup yang mematikan."
-        ),
-        Show(
-            title = "Squid Game",
-            imageResId = R.drawable.title_card,
-            badge = "TOP 10",
-            rating = "4.8",
-            genres = listOf("Thriller", "Survival"),
-            duration = "60m",
-            popularity = "50K",
-            rank = 1,
-            videoResId = R.drawable.image_7,
-            description = "Serial ini mengisahkan tentang 456 orang yang berpartisipasi dalam permainan untuk memenangkan hadiah uang tunai."
-        )
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Black)
-    ) {
-        val listState = rememberLazyListState()
-        var selectedIndex by remember { mutableStateOf(0) }
-
-        // Perbarui selectedIndex berdasarkan scroll posisi
-        LaunchedEffect(listState.firstVisibleItemIndex) {
-            selectedIndex = listState.firstVisibleItemIndex
-        }
-
-        // Featured Show Carousel
-        Box(modifier = Modifier.fillMaxWidth()) {
-            LazyRow(
-                state = listState, // Gunakan LazyListState
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                contentPadding = PaddingValues(0.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                itemsIndexed(shows) { index, show ->
-                    Box(
-                        modifier = Modifier
-                            .width(350.dp)
-                            .height(180.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                    ) {
-                        Image(
-                            painter = painterResource(id = show.videoResId),
-                            contentDescription = "Featured Show",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
-            }
-        }
-
-        // Show Title dan Indicator
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = shows[selectedIndex].title, // Menampilkan judul yang sesuai dengan item aktif
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            // Page Indicator
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                repeat(shows.size) { index ->
-                    Box(
-                        modifier = Modifier
-                            .size(if (index == selectedIndex) 8.dp else 6.dp)
-                            .background(
-                                color = if (index == selectedIndex) Color.White else Color.Gray,
-                                shape = CircleShape
-                            )
-                    )
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun ShowsGridSection() {
-    val shows = listOf(
-        Show(
-            title = "Breaking Bad",
-            imageResId = R.drawable.title_card,  // Ganti dengan resource yang sesuai
-            badge = "TOP 10",
-            rating = "4.9",
-            genres = listOf("Drama", "Crime"),
-            duration = "50m",
-            popularity = "20K",
-            rank = 2,
-            videoResId = R.drawable.image_7,
-            description = "Bercerita tentang permainan bertahan hidup yang mematikan. Serial ini mengisahkan tentang 456 orang yang berpartisipasi dalam permainan untuk memenangkan hadiah uang tunai."
-
-        ),
-        Show(
-            title = "Breaking Bad",
-            imageResId = R.drawable.title_card,  // Ganti dengan resource yang sesuai
-            badge = "TOP 10",
-            rating = "4.9",
-            genres = listOf("Drama", "Crime"),
-            duration = "50m",
-            popularity = "20K",
-            rank = 2,
-            videoResId = R.drawable.image_7,
-            description = "Bercerita tentang permainan bertahan hidup yang mematikan. Serial ini mengisahkan tentang 456 orang yang berpartisipasi dalam permainan untuk memenangkan hadiah uang tunai."
-
-        ),
-        Show(
-            title = "Breaking Bad",
-            imageResId = R.drawable.title_card,  // Ganti dengan resource yang sesuai
-            badge = "TOP 10",
-            rating = "4.9",
-            genres = listOf("Drama", "Crime"),
-            duration = "50m",
-            popularity = "20K",
-            rank = 2,
-            videoResId = R.drawable.image_7,
-            description = "Bercerita tentang permainan bertahan hidup yang mematikan. Serial ini mengisahkan tentang 456 orang yang berpartisipasi dalam permainan untuk memenangkan hadiah uang tunai."
-
-        ),
-        Show(
-            title = "Breaking Bad",
-            imageResId = R.drawable.title_card,  // Ganti dengan resource yang sesuai
-            badge = "TOP 10",
-            rating = "4.9",
-            genres = listOf("Drama", "Crime"),
-            duration = "50m",
-            popularity = "20K",
-            rank = 2,
-            videoResId = R.drawable.image_7,
-            description = "Bercerita tentang permainan bertahan hidup yang mematikan. Serial ini mengisahkan tentang 456 orang yang berpartisipasi dalam permainan untuk memenangkan hadiah uang tunai."
-
-        ),
-        Show(
-            title = "Breaking Bad",
-            imageResId = R.drawable.title_card,  // Ganti dengan resource yang sesuai
-            badge = "TOP 10",
-            rating = "4.9",
-            genres = listOf("Drama", "Crime"),
-            duration = "50m",
-            popularity = "20K",
-            rank = 2,
-            videoResId = R.drawable.image_7,
-            description = "Bercerita tentang permainan bertahan hidup yang mematikan. Serial ini mengisahkan tentang 456 orang yang berpartisipasi dalam permainan untuk memenangkan hadiah uang tunai."
-
-        ), Show(
-            title = "Breaking Bad",
-            imageResId = R.drawable.title_card,  // Ganti dengan resource yang sesuai
-            badge = "TOP 10",
-            rating = "4.9",
-            genres = listOf("Drama", "Crime"),
-            duration = "50m",
-            popularity = "20K",
-            rank = 2,
-            videoResId = R.drawable.image_7,
-            description = "Bercerita tentang permainan bertahan hidup yang mematikan. Serial ini mengisahkan tentang 456 orang yang berpartisipasi dalam permainan untuk memenangkan hadiah uang tunai."
-
-        ), Show(
-            title = "Breaking Bad",
-            imageResId = R.drawable.title_card,  // Ganti dengan resource yang sesuai
-            badge = "TOP 10",
-            rating = "4.9",
-            genres = listOf("Drama", "Crime"),
-            duration = "50m",
-            popularity = "20K",
-            rank = 2,
-            videoResId = R.drawable.image_7,
-            description = "Bercerita tentang permainan bertahan hidup yang mematikan. Serial ini mengisahkan tentang 456 orang yang berpartisipasi dalam permainan untuk memenangkan hadiah uang tunai."
-
-        ),
-        Show(
-            title = "Breaking Bad",
-            imageResId = R.drawable.title_card,  // Ganti dengan resource yang sesuai
-            badge = "TOP 10",
-            rating = "4.9",
-            genres = listOf("Drama", "Crime"),
-            duration = "50m",
-            popularity = "20K",
-            rank = 2,
-            videoResId = R.drawable.image_7,
-            description = "Bercerita tentang permainan bertahan hidup yang mematikan. Serial ini mengisahkan tentang 456 orang yang berpartisipasi dalam permainan untuk memenangkan hadiah uang tunai."
-
-        )
-    )
-
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
-
-        contentPadding = PaddingValues(8.dp)
-    ) {
-        items(shows) { show ->
-            MovieItem(show, show.title)
-        }
-    }
-}
 
 //@Preview(showBackground = true)
 //@Composable

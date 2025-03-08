@@ -12,7 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import com.example.japritv.navigation.NavGraph
 import com.example.japritv.ui.screen.MainScreen
+import com.example.japritv.ui.screen.SplashScreen
 import com.example.japritv.ui.theme.JapriTvTheme
 import com.example.japritv.viewmodel.VideoViewModel
 
@@ -20,12 +23,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val videoViewModel: VideoViewModel = viewModel()
             JapriTvTheme {
-                MainScreen(videoViewModel)
+                MainScreen()
                 }
             }
         }
     }
-
-
