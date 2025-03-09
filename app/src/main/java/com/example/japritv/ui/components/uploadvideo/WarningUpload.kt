@@ -2,6 +2,7 @@ package com.example.japritv.ui.components.uploadvideo
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,17 +28,18 @@ import com.example.japritv.R
 import com.example.japritv.ui.theme.JapriTvTheme
 
 @Composable
-fun WarningUpload() {
+fun WarningUpload(text:String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 3.dp, vertical = 15.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(Color(0xFFFFF4E6)) // Light yellow background
             .border(1.dp, Color(0xFFFFA500), RoundedCornerShape(8.dp)) // Orange border
             .padding(5.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(modifier = Modifier.padding(horizontal = 7.dp).fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Start) {
             // Icon exclamation mark (warning icon)
             Icon(
                 painter = painterResource(R.drawable.vector),
@@ -48,9 +50,9 @@ fun WarningUpload() {
             Spacer(modifier = Modifier.width(8.dp)) // Space between icon and text
             // Text for warning message
             Text(
-                text = "Maksimal unggah hingga 15 video dengan total ukuran file 12,94 GB",
+                text = text,
                 color = Color.Black,
-                fontSize = 14.sp
+                fontSize = 12.sp
             )
         }
     }
@@ -60,6 +62,6 @@ fun WarningUpload() {
 @Composable
 private fun WarningUploadPreview() {
     JapriTvTheme {
-        WarningUpload()
+        WarningUpload("Pastikan sudah sesuai sebelum melanjutkan")
     }
 }

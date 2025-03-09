@@ -10,26 +10,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.japritv.R
-import com.example.japritv.ui.components.home.ButtonCustom
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ScaffoldWithoutBottomBar(navController: NavController,navigationRoute:String ,content: @Composable () -> Unit,title: String,titleButton:String,contentTop: @Composable () -> Unit) {
+fun ScaffoldWithoutButton(navController: NavController, navigationRoute:String, content: @Composable () -> Unit,  contentTop: @Composable () -> Unit) {
     Scaffold(
         containerColor = Color.White,
         topBar = {
-           contentTop()
+            contentTop()
         },
-        bottomBar = { Box(){
-            CustomBoxButton(onClick = {  navController.navigate(navigationRoute)}, title = titleButton)
-        }
-
-
-         }
     ) {
-       Box(modifier = Modifier.fillMaxWidth().padding(vertical = 30.dp)){
-           content()
-       }
+        Box(modifier = Modifier.fillMaxWidth().padding(vertical = 30.dp)){
+            content()
+        }
     }
 }

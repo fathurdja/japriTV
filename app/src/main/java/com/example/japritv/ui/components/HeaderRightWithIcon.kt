@@ -1,5 +1,6 @@
 package com.example.japritv.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -38,8 +39,7 @@ fun HeaderRightWithIcon(title: String, color: Color, textColor: Color,resId:Int,
         ) {
             Icon(
                 painter = painterResource(id =resId),
-                contentDescription = "close",
-                tint = textColor, // Set icon color to textColor
+                contentDescription = "close", // Set icon color to textColor
                 modifier = Modifier.padding(end = 8.dp).clickable { onBackClick() }.size(15.dp)
             // Space between icon and text
             )

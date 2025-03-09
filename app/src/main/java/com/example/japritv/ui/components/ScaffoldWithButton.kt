@@ -1,0 +1,34 @@
+package com.example.japritv.ui.components
+
+import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun ScaffoldWithButton(navController: NavController,navigationRoute:String ,content: @Composable () -> Unit,titleButton:String,contentTop: @Composable () -> Unit) {
+    Scaffold(
+        containerColor = Color.White,
+        topBar = {
+            contentTop()
+        },
+        bottomBar = { Box(){
+            CustomBoxButton(onClick = {  navController.navigate(navigationRoute)}, title = titleButton)
+        }
+
+
+        }
+    ) {
+        Box(modifier = Modifier.fillMaxWidth().padding(vertical = 30.dp)){
+            content()
+        }
+    }
+}
+

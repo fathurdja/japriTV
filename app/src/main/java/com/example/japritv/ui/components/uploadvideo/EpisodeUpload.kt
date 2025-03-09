@@ -71,7 +71,7 @@ fun EpisodeUploadComponent(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp, horizontal = 16.dp )
+            .padding(vertical = 12.dp, horizontal = 4.dp)
             .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
 
 
@@ -156,12 +156,21 @@ fun EpisodeUploadComponent(
                                     color = Color(0xFFE0E0E0),
                                     style = Stroke(
                                         width = 10f,
-                                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                                        pathEffect = PathEffect.dashPathEffect(
+                                            floatArrayOf(
+                                                10f,
+                                                10f
+                                            ), 0f
+                                        )
                                     )
                                 )
                             }
                             .clickable {
-                                uploadVideoViewModel.uploadFile(episodeIndex, "example_video.mp4", "5 MB")
+                                uploadVideoViewModel.uploadFile(
+                                    episodeIndex,
+                                    "example_video.mp4",
+                                    "5 MB"
+                                )
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -207,12 +216,21 @@ fun EpisodeUploadComponent(
                                     color = Color(0xFFE0E0E0),
                                     style = Stroke(
                                         width = 10f,
-                                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                                        pathEffect = PathEffect.dashPathEffect(
+                                            floatArrayOf(
+                                                10f,
+                                                10f
+                                            ), 0f
+                                        )
                                     )
                                 )
                             }
                             .clickable {
-                                uploadVideoViewModel.uploadFile(episodeIndex, "example_video.mp4", "5 MB")
+                                uploadVideoViewModel.uploadFile(
+                                    episodeIndex,
+                                    "example_video.mp4",
+                                    "5 MB"
+                                )
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -239,7 +257,21 @@ fun EpisodeUploadComponent(
 }
 
 
+@Preview
+@Composable
+private fun EpisodeUploadComponentPreview() {
 
+    val video = UploadEpisodeViewModel()
+    JapriTvTheme {
+        video.episodes.forEachIndexed { index, episode ->
+            EpisodeUploadComponent(
+                episodeIndex = index,
+                uploadVideoViewModel =video,
+                episode = episode
+            )
+        }
+    }
+}
 
 
 

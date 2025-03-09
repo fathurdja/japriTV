@@ -16,14 +16,19 @@ import androidx.navigation.navigation
 import com.example.japritv.R
 import com.example.japritv.ui.components.Header
 import com.example.japritv.ui.components.HeaderRightWithIcon
-import com.example.japritv.ui.components.ScaffoldWithoutBottomBar
+import com.example.japritv.ui.components.ScaffoldWithButton
+import com.example.japritv.ui.components.ScaffoldWithoutButton
+
 import com.example.japritv.ui.screen.HomeScreen
+import com.example.japritv.ui.screen.MetodeBayarScreen
+import com.example.japritv.ui.screen.PaymentScreen
 import com.example.japritv.ui.screen.RatingScreen
 import com.example.japritv.ui.screen.SplashScreen
 import com.example.japritv.ui.screen.UpComingScreen
 import com.example.japritv.ui.screen.UploadVideoForm
 import com.example.japritv.ui.screen.UploadVideoScreen
 import com.example.japritv.ui.screen.VideoScreen
+import com.example.japritv.viewmodel.PaymentViewModel
 import com.example.japritv.viewmodel.ShowItemViewModel
 import com.example.japritv.viewmodel.VideoViewModel
 
@@ -66,15 +71,64 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues) {
         composable("upload") { UploadVideoScreen(navController = navController) }
         navigation(startDestination = "uploadEpisode", route = "uploadNavigation") {
             composable("uploadEpisode") {
-                ScaffoldWithoutBottomBar(
+                ScaffoldWithButton(
                     navController = navController,
-                    title = "Upload Video",
+
                     navigationRoute = "Pembayaran",
                     titleButton = "Lanjutkan",
                     content = { UploadVideoForm() },
-                    contentTop = { HeaderRightWithIcon("Upload Video", Color.White, Color.Black, R.drawable.vector__8_, onBackClick = {navController.popBackStack()}) }
+                    contentTop = {
+                        HeaderRightWithIcon(
+                            "Upload Video",
+                            Color.White,
+                            Color.Black,
+                            R.drawable.vector__8_,
+                            onBackClick = { navController.popBackStack() })
+                    }
 
                 )
+            }
+            composable("Pembayaran") {
+                ScaffoldWithButton(
+                    navController = navController,
+
+                    navigationRoute = "MetodeBayar",
+                    titleButton = "Lanjut Pilih Metode Pembayaran",
+                    contentTop = {
+                        HeaderRightWithIcon(
+                            "Konfirmasi Pembayaran",
+                            Color.White,
+                            Color.Black,
+                            R.drawable.vector__9_,
+                            onBackClick = { navController.popBackStack() })
+                    },
+                    content = { PaymentScreen() }
+                )
+
+
+            }
+            composable("MetodeBayar") {
+                val viewModel = viewModel<PaymentViewModel>()
+                ScaffoldWithoutButton(
+                    navController = navController,
+                    navigationRoute = "",
+                    contentTop = {
+                        HeaderRightWithIcon(
+                            "Konfirmasi Pembayaran",
+                            Color.White,
+                            Color.Black,
+                            R.drawable.vector__9_,
+                            onBackClick = { navController.popBackStack() })
+                    },
+                    content = {
+                        MetodeBayarScreen(
+                            viewModel,
+                            navigateTo = { navController.navigate("") })
+                    },
+
+                )
+
+
             }
         }
     }

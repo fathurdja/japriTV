@@ -34,13 +34,14 @@ fun UploadVideoForm(modifier: Modifier = Modifier) {
         modifier = Modifier
             .fillMaxWidth()
             .background(Color(0xFFFFFFFF))
-            .padding(vertical = 30.dp)
+            .padding(vertical = 30.dp, horizontal = 5.dp)
     ) {
         Column( modifier = Modifier
-            .fillMaxSize()
+            .padding(horizontal = 12.dp)
+            .fillMaxWidth()
             .verticalScroll(rememberScrollState()), // Aktifkan scroll
             verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            WarningUpload()
+            WarningUpload(text = "Maksimal unggah hingga 15 video dengan total ukuran file 12,94 GB")
             uploadVideoViewModel.episodes.forEachIndexed { index, episode ->
                 EpisodeUploadComponent(
                     episodeIndex = index,
@@ -48,7 +49,7 @@ fun UploadVideoForm(modifier: Modifier = Modifier) {
                     episode = episode
                 )
             }
-           Box(modifier = Modifier.padding(horizontal = 10.dp)){
+           Box(modifier = Modifier.padding(horizontal = 3.dp)){
                AddEpisodeButton(onClick = {
                    // Tambahkan episode baru ke daftar
                    uploadVideoViewModel.addEpisode()

@@ -24,8 +24,7 @@ fun AddEpisodeButton(onClick: () -> Unit) {
     OutlinedButton(
         onClick = onClick,
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
         border = BorderStroke(1.dp, Color(0xFFE0E0E0))
     ) {
