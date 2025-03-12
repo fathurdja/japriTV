@@ -20,6 +20,7 @@ import com.example.japritv.ui.components.ScaffoldWithButton
 import com.example.japritv.ui.components.ScaffoldWithoutButton
 
 import com.example.japritv.ui.screen.HomeScreen
+import com.example.japritv.ui.screen.InstruksiBayarScreen
 import com.example.japritv.ui.screen.MetodeBayarScreen
 import com.example.japritv.ui.screen.PaymentScreen
 import com.example.japritv.ui.screen.RatingScreen
@@ -84,8 +85,10 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues) {
                             Color.Black,
                             R.drawable.vector__8_,
                             onBackClick = { navController.popBackStack() })
-                    }
-
+                    },
+                    colorButton = Color(0xFFD32F2F),
+                    colorTextButton = Color.White,
+                    modifier = Modifier
                 )
             }
             composable("Pembayaran") {
@@ -102,7 +105,10 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues) {
                             R.drawable.vector__9_,
                             onBackClick = { navController.popBackStack() })
                     },
-                    content = { PaymentScreen() }
+                    content = { PaymentScreen() },
+                    colorButton = Color(0xFFD32F2F),
+                    colorTextButton = Color.White,
+                    modifier = Modifier
                 )
 
 
@@ -110,8 +116,6 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues) {
             composable("MetodeBayar") {
                 val viewModel = viewModel<PaymentViewModel>()
                 ScaffoldWithoutButton(
-                    navController = navController,
-                    navigationRoute = "",
                     contentTop = {
                         HeaderRightWithIcon(
                             "Konfirmasi Pembayaran",
@@ -123,7 +127,26 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues) {
                     content = {
                         MetodeBayarScreen(
                             viewModel,
-                            navigateTo = { navController.navigate("") })
+                            navigateTo = { navController.navigate("InstruksiBayar") })
+                    },
+
+                )
+
+
+            }
+            composable("InstruksiBayar") {
+                val viewModel = viewModel<PaymentViewModel>()
+                ScaffoldWithoutButton(
+                    contentTop = {
+                        HeaderRightWithIcon(
+                            "Konfirmasi Pembayaran",
+                            Color.White,
+                            Color.Black,
+                            R.drawable.vector__9_,
+                            onBackClick = { navController.popBackStack() })
+                    },
+                    content = {
+                        InstruksiBayarScreen(onClick = {navController.navigate("home")}, onClickBack = {navController.popBackStack()})
                     },
 
                 )

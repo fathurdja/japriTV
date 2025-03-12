@@ -61,5 +61,8 @@ private fun PaymentScreenPreview() {
                 onBackClick = { navController.popBackStack() })
         },
         content = { PaymentScreen() }
+                ,colorButton = Color(0xFFD32F2F),
+        colorTextButton = Color.White,
+        modifier = Modifier
     )
 }

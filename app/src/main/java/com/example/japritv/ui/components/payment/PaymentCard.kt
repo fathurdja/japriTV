@@ -1,8 +1,10 @@
 package com.example.japritv.ui.components.payment
 
-import android.text.Layout.Alignment
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,12 +16,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -30,14 +35,14 @@ import com.example.japritv.R
 fun PaymentCard() {
     Column(
         modifier = Modifier
-            .padding(16.dp)
+            .border(1.dp, Color.Gray, shape = RoundedCornerShape(12.dp))
             .background(Color.White, shape = RoundedCornerShape(12.dp))
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFFD32F2F), shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 10.dp),
             //contentAlignment = Alignment.ALIGN_CENTER
         ) {
                 Row(
@@ -47,7 +52,7 @@ fun PaymentCard() {
                     Image(
                         painter = painterResource(R.drawable.group),
                         contentDescription = "Time Icon",
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp).clickable {  }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
@@ -72,6 +77,8 @@ fun PaymentCard() {
 
 @Composable
 fun PaymentInfoRow(label: String, value: String) {
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(text = label, fontSize = 12.sp, color = Color.Gray)
         Row(
@@ -82,16 +89,18 @@ fun PaymentInfoRow(label: String, value: String) {
             Box(modifier = Modifier
                 .background(Color.Gray, RoundedCornerShape(10.dp))
                 .padding(horizontal = 15.dp, vertical = 5.dp)
-                .clickable { onCopyClick() }) {
+                .clickable { onCopyClick(value, clipboardManager, context)  }) {
                 Text(text = "Salin", color = Color.White)
             }
         }
     }
 }
 
-fun onCopyClick() {
-    TODO("Not yet implemented")
+fun onCopyClick(value: String, clipboardManager: ClipboardManager, context: Context) {
+    clipboardManager.setText(annotatedString = AnnotatedString(value))
+    Toast.makeText(context, "Teks disalin ke clipboard", Toast.LENGTH_SHORT).show()
 }
+
 
 @Preview
 @Composable

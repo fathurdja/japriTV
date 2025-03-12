@@ -1,6 +1,7 @@
 package com.example.japritv.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,22 +21,26 @@ import com.example.japritv.ui.theme.JapriTvTheme
 
 @Composable
 fun CustomBoxButton(
+    colorBackground: Color,
+    colorText: Color,
     title: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
-            .height(50.dp) // Set the height of the button
-            .background(Color(0XFFD22F26), RoundedCornerShape(8.dp)) // Red background with rounded corners
+            .height(50.dp)
+            .background(colorBackground, RoundedCornerShape(8.dp))
+            .border(2.dp,colorText, RoundedCornerShape(8.dp))// Set the height of the button
+             // Red background with rounded corners
             .clickable(onClick = onClick) // Handle click
             .padding(horizontal = 16.dp), // Padding inside the button
         contentAlignment = Alignment.Center // Center the text inside the box
     ) {
         Text(
             text = title,
-            color = Color.White, // White text
+            color = colorText, // White text
             fontWeight = FontWeight.Bold, // Bold text
             fontSize = 16.sp
         )
@@ -46,7 +51,15 @@ fun CustomBoxButton(
 @Composable
 private fun CustomBoxButtonPreview() {
     JapriTvTheme {
-        CustomBoxButton(title = "Click Me", onClick = {})
+        CustomBoxButton(title = "Click Me", onClick = {}, colorBackground = Color(0XFFD22F26), colorText = Color.White, modifier = Modifier)
+
+    }
+}
+@Preview
+@Composable
+private fun CustomBoxButtonPreview2() {
+    JapriTvTheme {
+        CustomBoxButton(title = "Click Me", onClick = {},colorBackground = Color.White, colorText = Color(0XFFD22F26), modifier = Modifier)
 
     }
 }
