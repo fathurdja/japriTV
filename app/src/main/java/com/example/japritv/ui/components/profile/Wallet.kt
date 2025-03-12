@@ -1,5 +1,6 @@
 package com.example.japritv.ui.components.profile
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,29 +19,44 @@ import androidx.compose.ui.unit.sp
 import com.example.japritv.R
 
 
-
-
 @Composable
 fun Group214(onIsiUlangClick: () -> Unit) {
-    val borderColor = Color(0xFF565656) // Warna border dan garis pemisah
-
+    val DoradoApprox100 = Color(0xFF565656) // Warna border dan garis pemisah
+    val MineShaftApprox100 = Color(0xFF343434)
     // Container utama dengan border
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, borderColor, RoundedCornerShape(8.dp)) // Border dengan warna #565656
-            .background(Color(0xFF333333), RoundedCornerShape(8.dp))
+            .border(
+                1.dp,
+                Color(0xFF565656),
+                RoundedCornerShape(8.dp)
+            ) // Border dengan warna #565656
+            .background(Color(0xFF343434), RoundedCornerShape(10.dp))
 
     ) {
         Column {
             // Judul Dompet
-            Box(modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp)) {
-                Text(
-                text = "Dompet",
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            ) }
+            Box(modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Dompet",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.vector__11_),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -49,56 +65,56 @@ fun Group214(onIsiUlangClick: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(borderColor) // Warna garis pemisah #565656
+                    .background(Color(0xFF565656)) // Warna garis pemisah #565656
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // Bagian isi (Saldo + Tombol Isi Ulang)
-           Box(modifier = Modifier.padding(vertical = 3.dp, horizontal = 8.dp)) {
-               Row(
-                   modifier = Modifier.fillMaxWidth(),
-                   verticalAlignment = Alignment.CenterVertically,
-                   horizontalArrangement = Arrangement.SpaceBetween
-               ) {
-                   // Saldo
-                   Row(verticalAlignment = Alignment.CenterVertically) {
-                       Box(
-                           modifier = Modifier
-                               .size(20.dp)
-                               .background(Color.Transparent)
-                       ) {
-                           Icon(
-                               painter = painterResource(id = R.drawable.point_solid_1),
-                               contentDescription = null,
-                               tint = Color(0xFFFFD700),
-                               modifier = Modifier.fillMaxSize()
-                           )
-                       }
-                       Spacer(modifier = Modifier.width(4.dp))
-                       Text(
-                           text = "0",
-                           color = Color.White,
-                           fontSize = 16.sp
-                       )
-                   }
+            Box(modifier = Modifier.padding(vertical = 3.dp, horizontal = 8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Saldo
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(20.dp)
+                                .background(Color.Transparent)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.point_solid_1),
+                                contentDescription = null,
+                                tint = Color(0xFFFFD700),
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "0",
+                            color = Color.White,
+                            fontSize = 16.sp
+                        )
+                    }
 
-                   // Tombol Isi Ulang dengan Box
-                   Box(
-                       modifier = Modifier
-                           .background(Color(0xFFD32F2F), RoundedCornerShape(25.dp))
-                           .clickable { onIsiUlangClick() }
-                           .padding(horizontal = 16.dp, vertical = 8.dp)
-                   ) {
-                       Text(
-                           text = "Isi Ulang",
-                           color = Color.White,
-                           fontSize = 14.sp,
-                           fontWeight = FontWeight.Bold
-                       )
-                   }
-               }
-           }
+                    // Tombol Isi Ulang dengan Box
+                    Box(
+                        modifier = Modifier
+                            .background(Color(0xFFD32F2F), RoundedCornerShape(25.dp))
+                            .clickable { onIsiUlangClick() }
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = "Isi Ulang",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
         }
     }
 }

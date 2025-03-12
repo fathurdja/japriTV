@@ -23,6 +23,7 @@ import com.example.japritv.ui.screen.HomeScreen
 import com.example.japritv.ui.screen.InstruksiBayarScreen
 import com.example.japritv.ui.screen.MetodeBayarScreen
 import com.example.japritv.ui.screen.PaymentScreen
+import com.example.japritv.ui.screen.ProfileScreen
 import com.example.japritv.ui.screen.RatingScreen
 import com.example.japritv.ui.screen.SplashScreen
 import com.example.japritv.ui.screen.UpComingScreen
@@ -151,6 +152,14 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues) {
 
                 )
 
+
+            }
+
+
+        }
+        composable("profile"){ ProfileScreen(navController) }
+        navigation(startDestination ="riwayatPembelian", route = "profileScreen" ){
+            composable("riwayatPembelian"){
 
             }
         }

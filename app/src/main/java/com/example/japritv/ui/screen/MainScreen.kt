@@ -58,7 +58,7 @@ fun MainScreen() {
 
         },
         bottomBar = {
-            if (currentRoute in listOf("home", "terlaris", "rating", "segera_tayang", "video", "upload")) {
+            if (currentRoute in listOf("home", "terlaris", "rating", "segera_tayang", "video", "upload","profile")) {
                 BottomNavigationBar(
                     selectedItem = selectedItem,
                     onItemSelected = { index ->
@@ -67,6 +67,7 @@ fun MainScreen() {
                             0 -> navController.navigate("home")
                             1 -> navController.navigate("video")
                             2 -> navController.navigate("upload")
+                            3 -> navController.navigate("profile")
                         }
                     },
                     navController = navController
