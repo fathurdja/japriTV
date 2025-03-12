@@ -52,7 +52,7 @@ fun CoinGrid() {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2), // Dua kolom dalam satu baris
         modifier = Modifier
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 10.dp)
             .fillMaxWidth()
     ) {
         items(coinData) { coin ->
