@@ -57,7 +57,7 @@ fun SplashScreen(navController: NavController) {
             ) {
                 Column {
                     Image(
-                        painter = painterResource(id = R.drawable.frame_2__1_), // Sesuaikan dengan logo JapriTV
+                        painter = painterResource(id = R.drawable.japripay), // Sesuaikan dengan logo JapriTV
                         contentDescription = "Japri TV Logo",
                         modifier = Modifier.size(100.dp)
                     )
@@ -78,7 +78,7 @@ fun SplashScreen(navController: NavController) {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun SplashScreenPreview() {
     JapriTvTheme {
