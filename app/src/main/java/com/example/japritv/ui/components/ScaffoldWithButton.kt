@@ -13,9 +13,9 @@ import androidx.navigation.NavController
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ScaffoldWithButton(navController: NavController,navigationRoute:String ,content: @Composable () -> Unit,titleButton:String,contentTop: @Composable () -> Unit,colorButton:Color,colorTextButton:Color,modifier: Modifier) {
+fun ScaffoldWithButton(navController: NavController,navigationRoute:String ,content: @Composable () -> Unit,titleButton:String,contentTop: @Composable () -> Unit,colorButton:Color,colorTextButton:Color,modifier: Modifier,containerColor:Color) {
     Scaffold(
-        containerColor = Color.White,
+        containerColor = containerColor,
         topBar = {
             contentTop()
         },

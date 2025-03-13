@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun Footer() {
-    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) {
+    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 30.dp)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -23,14 +23,14 @@ fun Footer() {
         ) {
             Text(
                 text = "Dengan login akun, Anda telah membaca dan menyetujui",
-                fontSize = 14.sp,
+                fontSize = 11.sp,
                 color = Color.White,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
             Text(
                 text = "Perjanjian Layanan & Kebijakan Privasi kami.",
-                fontSize = 14.sp,
+                fontSize = 11.sp,
                 color = Color.White,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()

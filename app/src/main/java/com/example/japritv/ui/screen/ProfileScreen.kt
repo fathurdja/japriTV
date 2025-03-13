@@ -34,7 +34,7 @@ fun ProfileScreen(navController: NavController) {
            Column(modifier = Modifier.fillMaxWidth()) {
                // Komponen UserInfo
                UserInfo(
-                   onLoginClick = { /* Handle Login Click */ },
+                   onLoginClick = { navController.navigate("login")},
                    onCopyClick = { /* Handle Copy ID */ }
                )
 
@@ -42,7 +42,7 @@ fun ProfileScreen(navController: NavController) {
 
                // Komponen Dompet
                Group214(
-                   onIsiUlangClick = { /* Handle Isi Ulang */ }
+                   onIsiUlangClick = { navController.navigate("TokoJapri")}
                )
 
                Spacer(modifier = Modifier.height(16.dp))

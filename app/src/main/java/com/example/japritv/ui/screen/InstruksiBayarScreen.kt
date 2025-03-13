@@ -36,19 +36,19 @@ fun InstruksiBayarScreen(modifier: Modifier = Modifier,onClick :()->Unit,onClick
     }
 }
 
-@Preview
-@Composable
-private fun InstruksiBayarScreenPreview() {
-    JapriTvTheme {
-       ScaffoldWithoutButton(
-           contentTop = { HeaderRightWithIcon(
-               title = "Instruksi Pembayaran",
-               color = Color.White,
-               textColor = Color.Black,
-               resId = R.drawable.vector__9_,
-               onBackClick = {},
-           ) },
-           content = {InstruksiBayarScreen(onClick = {}, onClickBack = {})}
-       )
-    }
-}
+//@Preview
+//@Composable
+//private fun InstruksiBayarScreenPreview() {
+//    JapriTvTheme {
+//       ScaffoldWithoutButton(
+//           contentTop = { HeaderRightWithIcon(
+//               title = "Instruksi Pembayaran",
+//               color = Color.White,
+//               textColor = Color.Black,
+//               resId = R.drawable.vector__9_,
+//               onBackClick = {},
+//           ) },
+//           content = {InstruksiBayarScreen(onClick = {}, onClickBack = {})}
+//       )
+//    }
+//}

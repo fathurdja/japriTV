@@ -1,5 +1,6 @@
 package com.example.japritv.ui.components.Login
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -40,10 +41,9 @@ fun ButtonLogin(onClick: () -> Unit,text: String,icon:Int,color: Color) {
 
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(
+            Image(
                 painter = painterResource(id = icon), // Replace with actual Google logo resource
                 contentDescription = "Google Logo",
-                tint = Color.White,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(60.dp))

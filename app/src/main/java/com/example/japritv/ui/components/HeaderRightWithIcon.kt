@@ -37,7 +37,7 @@ fun HeaderRightWithIcon(title: String, color: Color, textColor: Color,resId:Int,
             verticalAlignment = Alignment.CenterVertically, // Align items vertically in the center
             modifier = Modifier.align(Alignment.CenterStart) // Align Row to the start of the Box
         ) {
-            Icon(
+            Image(
                 painter = painterResource(id =resId),
                 contentDescription = "close", // Set icon color to textColor
                 modifier = Modifier.padding(end = 8.dp).clickable { onBackClick() }.size(15.dp)

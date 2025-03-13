@@ -43,26 +43,26 @@ fun PaymentScreen(modifier: Modifier = Modifier) {
 
 
 //
-@Preview
-@Composable
-private fun PaymentScreenPreview() {
-    val navController = rememberNavController()
-
-    ScaffoldWithButton(
-        navController = navController,
-        navigationRoute = "",
-        titleButton = "Lanjut Pilih Metode Pembayaran",
-        contentTop = {
-            HeaderRightWithIcon(
-                "Konfirmasi Pembayaran",
-                Color.White,
-                Color.Black,
-                R.drawable.vector__9_,
-                onBackClick = { navController.popBackStack() })
-        },
-        content = { PaymentScreen() }
-                ,colorButton = Color(0xFFD32F2F),
-        colorTextButton = Color.White,
-        modifier = Modifier
-    )
-}
+//@Preview
+//@Composable
+//private fun PaymentScreenPreview() {
+//    val navController = rememberNavController()
+//
+//    ScaffoldWithButton(
+//        navController = navController,
+//        navigationRoute = "",
+//        titleButton = "Lanjut Pilih Metode Pembayaran",
+//        contentTop = {
+//            HeaderRightWithIcon(
+//                "Konfirmasi Pembayaran",
+//                Color.White,
+//                Color.Black,
+//                R.drawable.vector__9_,
+//                onBackClick = { navController.popBackStack() })
+//        },
+//        content = { PaymentScreen() }
+//                ,colorButton = Color(0xFFD32F2F),
+//        colorTextButton = Color.White,
+//        modifier = Modifier
+//    )
+//}

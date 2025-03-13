@@ -21,11 +21,13 @@ import com.example.japritv.ui.components.ScaffoldWithoutButton
 
 import com.example.japritv.ui.screen.HomeScreen
 import com.example.japritv.ui.screen.InstruksiBayarScreen
+import com.example.japritv.ui.screen.LoginScreen
 import com.example.japritv.ui.screen.MetodeBayarScreen
 import com.example.japritv.ui.screen.PaymentScreen
 import com.example.japritv.ui.screen.ProfileScreen
 import com.example.japritv.ui.screen.RatingScreen
 import com.example.japritv.ui.screen.SplashScreen
+import com.example.japritv.ui.screen.TokoJapriTV
 import com.example.japritv.ui.screen.UpComingScreen
 import com.example.japritv.ui.screen.UploadVideoForm
 import com.example.japritv.ui.screen.UploadVideoScreen
@@ -75,7 +77,7 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues) {
             composable("uploadEpisode") {
                 ScaffoldWithButton(
                     navController = navController,
-
+                    containerColor = Color.White,
                     navigationRoute = "Pembayaran",
                     titleButton = "Lanjutkan",
                     content = { UploadVideoForm() },
@@ -95,7 +97,7 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues) {
             composable("Pembayaran") {
                 ScaffoldWithButton(
                     navController = navController,
-
+                    containerColor = Color.White,
                     navigationRoute = "MetodeBayar",
                     titleButton = "Lanjut Pilih Metode Pembayaran",
                     contentTop = {
@@ -117,6 +119,7 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues) {
             composable("MetodeBayar") {
                 val viewModel = viewModel<PaymentViewModel>()
                 ScaffoldWithoutButton(
+                    containerColor = Color.White,
                     contentTop = {
                         HeaderRightWithIcon(
                             "Konfirmasi Pembayaran",
@@ -131,36 +134,59 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues) {
                             navigateTo = { navController.navigate("InstruksiBayar") })
                     },
 
-                )
+                    )
 
 
             }
             composable("InstruksiBayar") {
                 val viewModel = viewModel<PaymentViewModel>()
                 ScaffoldWithoutButton(
+                    containerColor = Color.White,
                     contentTop = {
                         HeaderRightWithIcon(
-                            "Konfirmasi Pembayaran",
+                            "Instruksi Pembayaran",
                             Color.White,
                             Color.Black,
                             R.drawable.vector__9_,
                             onBackClick = { navController.popBackStack() })
                     },
                     content = {
-                        InstruksiBayarScreen(onClick = {navController.navigate("home")}, onClickBack = {navController.popBackStack()})
+                        InstruksiBayarScreen(
+                            onClick = { navController.navigate("home") },
+                            onClickBack = { navController.popBackStack() })
                     },
 
-                )
+                    )
 
 
             }
 
 
         }
-        composable("profile"){ ProfileScreen(navController) }
-        navigation(startDestination ="riwayatPembelian", route = "profileScreen" ){
-            composable("riwayatPembelian"){
+        composable("profile") { ProfileScreen(navController) }
+        navigation(startDestination = "riwayatPembelian", route = "profileScreen") {
+            composable("login") {
+                LoginScreen(onClick = { navController.navigate("home") })
+            }
+            composable("TokoJapri"){
+                ScaffoldWithButton(
+                    navController = navController ,
+                    containerColor = Color.Black,
+                    navigationRoute = "",
+                    content = {TokoJapriTV()},
+                    titleButton = "Lanjut Ke Pembayaran",
+                    contentTop = {HeaderRightWithIcon(
+                        title = "Toko Japri Tv",
+                        color = Color.Black,
+                        textColor = Color.White,
+                        resId = R.drawable.arrowwhite,
+                        onBackClick = {navController.popBackStack()}
+                    )},
+                    colorButton = Color.Red,
+                    colorTextButton = Color.White,
+                    modifier = Modifier
 
+                )
             }
         }
     }

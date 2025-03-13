@@ -25,67 +25,67 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.rememberNavController
 import com.example.japritv.R
 import com.example.japritv.ui.components.Login.ButtonLogin
 import com.example.japritv.ui.components.Login.Footer
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun LoginScreen() {
+fun LoginScreen(onClick:()->Unit) {
     Scaffold(
         containerColor = Color.Black,
         bottomBar = {
-               Footer()
+            Footer()
         }
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black)
-                .padding(vertical = 190.dp)    ,
+                .padding(vertical = 190.dp),
 
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally,) {
-                        Image(
-                            painter = painterResource(id = R.drawable.japripay), // Sesuaikan dengan logo JapriTV
-                            contentDescription = "Japri TV Logo",
-                            modifier = Modifier.size(80.dp)
+            ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Image(
+                    painter = painterResource(id = R.drawable.japripay), // Sesuaikan dengan logo JapriTV
+                    contentDescription = "Japri TV Logo",
+                    modifier = Modifier.size(80.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Japri TV",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(48.dp))
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 19.dp)) {
+                    Column {
+                        ButtonLogin(
+                            onClick = {onClick()},
+                            text = "Login dengan Japri Pay",
+                            icon = R.drawable.japripay,
+                            color = Color(0xFF0033CC)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Japri TV",
-                            color = Color.White,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
+                        ButtonLogin(
+                            onClick = {onClick()},
+                            text = "Login dengan Facebook",
+                            icon = R.drawable.path14,
+                            color = Color(0xFF3E67B5)
                         )
-                Spacer(modifier = Modifier.height(48.dp))
-              Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 19.dp)){
-                  Column {
-                      ButtonLogin(
-                          onClick = {},
-                          text = "Continue with Google",
-                          icon = R.drawable.japripay,
-                          color =  Color(0xFF0033CC)
-                      )
-                      Spacer(modifier = Modifier.height(16.dp))
-                      ButtonLogin(
-                          onClick = {},
-                          text = "Continue with Google",
-                          icon = R.drawable.japripay,
-                          color =  Color(0xFF0033CC)
-                      )
-                      Spacer(modifier = Modifier.height(16.dp))
-                      ButtonLogin(
-                          onClick = {},
-                          text = "Continue with Google",
-                          icon = R.drawable.japripay,
-                          color =  Color(0xFF0033CC)
-                      )
-                  }
-              }
-
-
-
+                        Spacer(modifier = Modifier.height(16.dp))
+                        ButtonLogin(
+                            onClick = {onClick()},
+                            text = "Login dengan Google",
+                            icon = R.drawable.logo_googleg_48dp,
+                            color = Color(0xFF313131)
+                        )
+                    }
+                }
 
 
             }
@@ -96,5 +96,6 @@ fun LoginScreen() {
 @Preview
 @Composable
 private fun LoginScreenPreview() {
-    LoginScreen()
+
+    LoginScreen(onClick = {})
 }
