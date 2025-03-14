@@ -17,14 +17,21 @@ import com.example.japritv.navigation.NavGraph
 import com.example.japritv.ui.screen.MainScreen
 import com.example.japritv.ui.screen.SplashScreen
 import com.example.japritv.ui.theme.JapriTvTheme
+import com.example.japritv.viewmodel.ShowItemViewModel
 import com.example.japritv.viewmodel.VideoViewModel
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             JapriTvTheme {
-                MainScreen()
+                val videoViewModel: VideoViewModel = viewModel()
+                val data: ShowItemViewModel = viewModel()
+                MainScreen(
+                    data = data,
+                    videoViewModel = videoViewModel
+                )
                 }
             }
         }

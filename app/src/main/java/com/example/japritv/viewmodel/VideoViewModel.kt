@@ -2,36 +2,22 @@ package com.example.japritv.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.japritv.Repository.VideoRepository
+import com.example.japritv.model.ResponseVideo
 import com.example.japritv.model.Video
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class VideoViewModel : ViewModel() {
-    private val _currentVideo = MutableStateFlow<Video?>(null)
-    val currentVideo: StateFlow<Video?> = _currentVideo
+class VideoViewModel(private val dataRepository: VideoRepository) : ViewModel() {
 
-    init {
-        // Inisialisasi video pertama kali agar `VideoScreen` langsung bisa memutar sesuatu
-        _currentVideo.value = Video(
-            id = "1",
-            title = "Money Heist",
-            videoUrl = "https://samplelib.com/lib/preview/mp4/sample-30s.mp4",
-            thumbnailUrl = "https://thumbnail.jpg",
-            duration = "50m",
-            isPlaying = true
-        )
-    }
+    private val _videoList = MutableStateFlow<List<Video>>(emptyList())
+    val videoList: StateFlow<List<Video>> = _videoList
 
-    fun playVideo(video: Video) {
+    fun fetchData(onResult: (ResponseVideo?) -> Unit) {
         viewModelScope.launch {
-            _currentVideo.value = video.copy(isPlaying = true)
-        }
-    }
-
-    fun stopVideo() {
-        viewModelScope.launch {
-            _currentVideo.value = _currentVideo.value?.copy(isPlaying = false)
+            val response = dataRepository.fetchData()
+            onResult(response)
         }
     }
 

@@ -34,10 +34,10 @@ import com.example.japritv.viewmodel.VideoViewModel
 
 
 @Composable
-fun MainScreen() {
+fun MainScreen(videoViewModel: VideoViewModel, data: ShowItemViewModel) {
     val navController = rememberNavController()
     var searchText by remember { mutableStateOf("") }
-    val data: ShowItemViewModel = viewModel()
+
     val shows by remember { mutableStateOf(data.shows) }
     var selectedItem by remember { mutableStateOf(0) }
     val categoryViewModel: CategoryViewModel = viewModel()
@@ -75,7 +75,7 @@ fun MainScreen() {
             }
         }
     ) { paddingValues ->
-        NavGraph(navController = navController, paddingValues = paddingValues)
+        NavGraph(navController = navController, paddingValues = paddingValues,video = videoViewModel,data = data)
     }
 }
 

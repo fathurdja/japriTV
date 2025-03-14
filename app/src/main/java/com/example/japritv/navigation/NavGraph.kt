@@ -37,9 +37,8 @@ import com.example.japritv.viewmodel.ShowItemViewModel
 import com.example.japritv.viewmodel.VideoViewModel
 
 @Composable
-fun NavGraph(navController: NavController, paddingValues: PaddingValues) {
-    val data: ShowItemViewModel = viewModel()
-    val video: VideoViewModel = viewModel()
+fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: VideoViewModel,data:ShowItemViewModel) {
+
 
     // Handle routing and navigation
     NavHost(

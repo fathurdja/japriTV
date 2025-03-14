@@ -1,10 +1,12 @@
 package com.example.japritv.model
 
-data class Video(
+data class Video (
     val id: String,
     val title: String,
-    val videoUrl: String,
-    val thumbnailUrl: String,
-    val duration: String,
-    val isPlaying: Boolean = false
+    val category: String,
+    val episode: Long,
+    val price: Long,
+    val urlPath: String,
+    val videoSize: Long,
+    val userID: String
 )
