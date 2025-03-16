@@ -1,5 +1,8 @@
 package com.example.japritv.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -47,39 +50,65 @@ import androidx.navigation.NavController
 import com.example.japritv.ui.components.home.FeaturedGridSection
 import com.example.japritv.ui.components.home.MovieItem
 import com.example.japritv.ui.components.home.ShowsGridSection
+import com.example.japritv.ui.components.home.WidgetPlayer
 
 import com.example.japritv.viewmodel.ShowItemViewModel
+import com.example.japritv.viewmodel.VideoViewModel
 
 
 @Composable
 fun HomeScreen(
     navController: NavController,
-    homeViewModel: ShowItemViewModel = viewModel()
+    homeViewModel: ShowItemViewModel = viewModel(),
+    videoViewModel: VideoViewModel = viewModel()
 ) {
     val shows by remember { mutableStateOf(homeViewModel.shows) }
+    val movies by remember { mutableStateOf(videoViewModel.dataList) }
+    val showPlayerWidget = remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        videoViewModel.fetchVideos()
+    }
+
     Scaffold { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .background(Color.Black)
-        ) {
-            // Featured Show ikut scroll ke atas
-            item {
-                FeaturedGridSection(navController, "Featured Shows", R.drawable.image_7)
-            }
-            // ShowsGridSection dibatasi tingginya agar tidak infinite
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(600.dp) // Sesuaikan tinggi sesuai kebutuhan
-                ) {
-                    ShowsGridSection(shows)
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)) {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+                    .background(Color.Black)
+            ) {
+                // Featured Show ikut scroll ke atas
+                item {
+                    FeaturedGridSection(navController, "Featured Shows", R.drawable.image_7)
                 }
+                // ShowsGridSection dibatasi tingginya agar tidak infinite
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(600.dp) // Sesuaikan tinggi sesuai kebutuhan
+                    ) {
+                        ShowsGridSection(movies)
+                    }
+                }
+            }
+
+            AnimatedVisibility(
+                visible = showPlayerWidget.value,
+                enter = slideInVertically(initialOffsetY = { it }),
+                exit = slideOutVertically(targetOffsetY = { it }),
+                modifier = Modifier.align(Alignment.BottomCenter)
+            ) {
+                WidgetPlayer(
+                    text = "Money Heist: Korea. Joint Econ..."
+                )
             }
         }
     }
+
 
 }
 

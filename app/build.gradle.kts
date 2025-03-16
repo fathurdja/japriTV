@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    kotlin("plugin.serialization")
+
 }
 
 android {
@@ -64,5 +66,17 @@ dependencies {
     implementation ("androidx.media3:media3-ui:1.1.1")
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("io.ktor:ktor-client-core:2.2.0")
+    implementation("io.ktor:ktor-client-android:2.2.0")
+    implementation("io.ktor:ktor-client-json:2.2.0")
+    implementation("io.ktor:ktor-client-serialization:2.2.0")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.0")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0") // or the latest version
+    implementation("androidx.compose.ui:ui:1.4.0")
+    implementation("androidx.compose.material:material:1.4.0")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.4.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
+
 
 }

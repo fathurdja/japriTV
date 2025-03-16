@@ -6,10 +6,11 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
+import com.example.japritv.model.DataItem
 import com.example.japritv.model.Show
 
 @Composable
-fun ShowsGridSection(shows:List<Show>) {
+fun ShowsGridSection(shows:List<DataItem>) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
 

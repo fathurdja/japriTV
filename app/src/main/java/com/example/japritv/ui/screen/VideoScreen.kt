@@ -25,6 +25,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.SimpleExoPlayer
 import androidx.media3.ui.PlayerView
 import com.example.japritv.R
+import com.example.japritv.model.ResponseVideo
 import com.example.japritv.viewmodel.VideoViewModel
 import kotlinx.coroutines.delay
 
@@ -32,18 +33,19 @@ import kotlinx.coroutines.delay
 @Composable
 fun VideoScreen(viewModel: VideoViewModel) {
     val context = LocalContext.current
-    val video by viewModel.currentVideo.collectAsState()
-
+    val video by remember { mutableStateOf(viewModel.dataList) }
+    val firstVideo = video.firstOrNull()
     var isBuffering by remember { mutableStateOf(true) } // ✅ Mulai dengan true karena video masih loading
     var isPlaying by remember { mutableStateOf(true) }
     var showPauseIcon by remember { mutableStateOf(false) }
 
-    video?.let { videoData ->
+    firstVideo.let { video ->
+
         val exoPlayer = remember {
             SimpleExoPlayer.Builder(context).build().apply {
-                setMediaItem(MediaItem.fromUri(Uri.parse(videoData.videoUrl)))
+                setMediaItem(MediaItem.fromUri(Uri.parse(video?.url)))
                 prepare()
-                playWhenReady = videoData.isPlaying
+//                playWhenReady = videoData.isPlaying
                 volume = 1f
                 addListener(object : Player.Listener {
                     override fun onPlaybackStateChanged(state: Int) {

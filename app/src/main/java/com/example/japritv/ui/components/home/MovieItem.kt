@@ -22,10 +22,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.japritv.R
+import com.example.japritv.model.DataItem
 import com.example.japritv.model.Show
 
 @Composable
-fun MovieItem(show: Show, text: String) {
+fun MovieItem(show: DataItem, text: String) {
     Column(
         modifier = Modifier.padding(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -36,26 +38,13 @@ fun MovieItem(show: Show, text: String) {
                 .clip(RoundedCornerShape(8.dp))
         ) {
             Image(
-                painter = painterResource(id = show.imageResId),
+                painter = painterResource(id = R.drawable.title_card),
                 contentDescription = show.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
 
-            show.badge?.let { badge ->
-                Text(
-                    text = badge,
-                    color = Color.White,
-                    style = TextStyle(
-                        background = Color.Red
-                    ),
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+
         }
 
         Spacer(modifier = Modifier.height(4.dp)) // Tambahkan jarak antara gambar dan teks
