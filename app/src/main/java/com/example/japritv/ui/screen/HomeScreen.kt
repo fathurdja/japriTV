@@ -30,6 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,7 +64,8 @@ fun HomeScreen(
     videoViewModel: VideoViewModel = viewModel()
 ) {
     val shows by remember { mutableStateOf(homeViewModel.shows) }
-    val movies by remember { mutableStateOf(videoViewModel.dataList) }
+    val movies by videoViewModel.allVideos.collectAsState()
+
     val showPlayerWidget = remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
@@ -82,7 +84,7 @@ fun HomeScreen(
             ) {
                 // Featured Show ikut scroll ke atas
                 item {
-                    FeaturedGridSection(navController, "Featured Shows", R.drawable.image_7)
+                    FeaturedGridSection(navController, videoViewModel,)
                 }
                 // ShowsGridSection dibatasi tingginya agar tidak infinite
                 item {
@@ -91,7 +93,7 @@ fun HomeScreen(
                             .fillMaxWidth()
                             .height(600.dp) // Sesuaikan tinggi sesuai kebutuhan
                     ) {
-                        ShowsGridSection(movies)
+                        ShowsGridSection(movies,onClick = { })
                     }
                 }
             }

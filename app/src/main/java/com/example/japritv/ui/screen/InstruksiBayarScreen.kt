@@ -15,22 +15,23 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.japritv.R
 import com.example.japritv.ui.components.CustomBoxButton
+import com.example.japritv.ui.components.CustomBoxButtonBorder
 import com.example.japritv.ui.components.HeaderRightWithIcon
 import com.example.japritv.ui.components.ScaffoldWithoutButton
 import com.example.japritv.ui.components.payment.PaymentCard
 import com.example.japritv.ui.theme.JapriTvTheme
 
 @Composable
-fun InstruksiBayarScreen(modifier: Modifier = Modifier,onClick :()->Unit,onClickBack:()->Unit) {
+fun InstruksiBayarScreen(modifier: Modifier = Modifier,onClick :()->Unit,onClickBack:()->Unit, colortext:Color,colorButton:Color) {
     Box(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
         Column(modifier=Modifier.padding(vertical = 20.dp)) {
             PaymentCard()
-            Spacer(modifier = Modifier.padding(vertical = 20.dp))
-            DetailPembayaranInteractive()
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.padding(vertical = 15.dp))
+            DetailPembayaranInteractive(color = Color.White)
+            Spacer(modifier = Modifier.height(25.dp))
             CustomBoxButton(title = "Kembali Ke JapriTV", onClick = {onClick()},colorBackground = Color(0XFFD22F26), colorText = Color.White, modifier = modifier)
             Spacer(modifier = Modifier.height(20.dp))
-            CustomBoxButton(title = "Batalkan Pembayaran", onClick = {onClickBack()},colorBackground = Color.White, colorText = Color(0XFFD22F26), modifier = modifier)
+            CustomBoxButtonBorder(title = "Batalkan Pembayaran", onClick = {onClickBack()},colorBackground = colorButton, colorText = colortext, modifier = modifier)
         }
 
     }

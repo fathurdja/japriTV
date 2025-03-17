@@ -1,12 +1,12 @@
 package com.example.japritv.model
 
-data class Video (
-    val id: String,
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Video(
     val title: String,
-    val category: String,
-    val episode: Long,
-    val price: Long,
-    val urlPath: String,
-    val videoSize: Long,
-    val userID: String
+    val episode: Int,
+    val url: String,
+    val size: Long,
+    val _id: String
 )

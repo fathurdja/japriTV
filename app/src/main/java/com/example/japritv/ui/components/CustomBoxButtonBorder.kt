@@ -14,13 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.japritv.ui.theme.JapriTvTheme
 
 @Composable
-fun CustomBoxButton(
+fun CustomBoxButtonBorder(
     colorBackground: Color,
     colorText: Color,
     title: String,
@@ -31,8 +29,9 @@ fun CustomBoxButton(
         modifier = Modifier
             .fillMaxWidth()
             .height(50.dp)
-            .background(colorBackground, RoundedCornerShape(8.dp)) // Set the height of the button
-             // Red background with rounded corners
+            .background(colorBackground, RoundedCornerShape(8.dp))
+            .border(2.dp,colorText, RoundedCornerShape(8.dp))// Set the height of the button
+            // Red background with rounded corners
             .clickable(onClick = onClick) // Handle click
             .padding(horizontal = 16.dp), // Padding inside the button
         contentAlignment = Alignment.Center // Center the text inside the box
@@ -43,14 +42,5 @@ fun CustomBoxButton(
             fontWeight = FontWeight.Bold, // Bold text
             fontSize = 16.sp
         )
-    }
-}
-
-@Preview
-@Composable
-private fun CustomBoxButtonPreview() {
-    JapriTvTheme {
-        CustomBoxButton(title = "Click Me", onClick = {}, colorBackground = Color(0XFFD22F26), colorText = Color.White, modifier = Modifier)
-
     }
 }

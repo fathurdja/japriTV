@@ -4,21 +4,13 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ResponseVideo(
-    val error: Boolean,
     val message: String,
-    val data: List<DataItem>
+    val data: List<Data>
 )
 
 @Serializable
-data class DataItem(
+data class Data(
     val _id: String,
-    val title: String,
-    val episode: Int,
-    val url: String,
-    val size: Int,
-    val createdAt: String,
-    val updatedAt: String,
-    val __v: Int,
-    val uuid: String?, // Making uuid nullable
-    val format: String? // Making format nullable
+    val videos: List<Video>
 )
+

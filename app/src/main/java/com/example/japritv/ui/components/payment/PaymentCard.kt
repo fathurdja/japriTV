@@ -35,7 +35,7 @@ import com.example.japritv.R
 fun PaymentCard() {
     Column(
         modifier = Modifier
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(12.dp))
+            .border(1.dp,  Color(0xFFE6E6E8), shape = RoundedCornerShape(12.dp))
             .background(Color.White, shape = RoundedCornerShape(12.dp))
     ) {
         Box(

@@ -47,7 +47,7 @@ fun ExpandableList(category: PaymentCategory, isInitiallyExpanded: Boolean = fal
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .background(Color.White, shape = RoundedCornerShape(8.dp))
-            .border(1.dp, Color.LightGray, shape = RoundedCornerShape(8.dp))
+            .border(1.dp,  Color(0xFFE6E6E8), shape = RoundedCornerShape(8.dp))
     ) {
         // Header (judul dengan tombol expand/collapse)
         Row(

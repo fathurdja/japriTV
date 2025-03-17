@@ -1,6 +1,7 @@
 package com.example.japritv.ui.components.home
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,11 +24,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.japritv.R
-import com.example.japritv.model.DataItem
+import com.example.japritv.model.Data
+
 import com.example.japritv.model.Show
+import com.example.japritv.model.Video
 
 @Composable
-fun MovieItem(show: DataItem, text: String) {
+fun MovieItem(show:Video, text: String,onClick: () -> Unit) {
     Column(
         modifier = Modifier.padding(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -36,6 +39,7 @@ fun MovieItem(show: DataItem, text: String) {
             modifier = Modifier
                 .aspectRatio(2f / 3f)
                 .clip(RoundedCornerShape(8.dp))
+                .clickable { onClick() }
         ) {
             Image(
                 painter = painterResource(id = R.drawable.title_card),

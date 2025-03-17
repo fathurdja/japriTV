@@ -27,16 +27,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.japritv.R
+import com.example.japritv.ui.components.CustomBoxButton
 import com.example.japritv.ui.components.profile.CoinGrid
 import com.example.japritv.ui.components.profile.Keanggotaan
 
 @Composable
-fun ModalityContainer() {
+fun ModalityContainer(onClick: ()-> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .padding(16.dp)
+
     ) {
         // Header
        Box(modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth()) {
@@ -112,6 +113,11 @@ fun ModalityContainer() {
             onClick = {},
             benefits = "Semua episode gratis"
         )
+        Spacer(modifier = Modifier.height(30.dp))
+        Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)){
+            CustomBoxButton(colorText = Color.White, colorBackground = Color(0XFFD22F26)
+                , title = "Lanjutkan", onClick = {onClick()}, modifier = Modifier)
+        }
     }
 }
 
@@ -119,5 +125,5 @@ fun ModalityContainer() {
 @Preview(showBackground = true)
 @Composable
 fun ModalityContainerPreview() {
-    ModalityContainer()
+    ModalityContainer(onClick = {})
 }

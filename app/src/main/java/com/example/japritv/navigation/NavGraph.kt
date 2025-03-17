@@ -26,6 +26,7 @@ import com.example.japritv.ui.screen.MetodeBayarScreen
 import com.example.japritv.ui.screen.PaymentScreen
 import com.example.japritv.ui.screen.ProfileScreen
 import com.example.japritv.ui.screen.RatingScreen
+import com.example.japritv.ui.screen.RiwayatScreen
 import com.example.japritv.ui.screen.SplashScreen
 import com.example.japritv.ui.screen.TokoJapriTV
 import com.example.japritv.ui.screen.UpComingScreen
@@ -151,6 +152,8 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: V
                     },
                     content = {
                         InstruksiBayarScreen(
+                            colortext = Color(0XFFD22F26),
+                            colorButton = Color.White,
                             onClick = { navController.navigate("home") },
                             onClickBack = { navController.popBackStack() })
                     },
@@ -162,6 +165,57 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: V
 
 
         }
+        composable("history"){RiwayatScreen(videoViewModel = video, onClick = {navController.navigate("MetodeBayarBlack") })}
+        navigation(startDestination = "MetodeBayar", route = "riwayatRoute"){
+            composable("MetodeBayarBlack") {
+                val viewModel = viewModel<PaymentViewModel>()
+                ScaffoldWithoutButton(
+                    containerColor = Color.Black,
+                    contentTop = {
+                        HeaderRightWithIcon(
+                            "Konfirmasi Pembayaran",
+                            Color.Black,
+                            Color.White,
+                            R.drawable.arrowwhite,
+                            onBackClick = { navController.popBackStack() })
+                    },
+                    content = {
+                        MetodeBayarScreen(
+                            viewModel,
+                            navigateTo = { navController.navigate("InstruksiBayarBlack") })
+                    },
+
+                    )
+
+
+            }
+            composable("InstruksiBayarBlack") {
+                val viewModel = viewModel<PaymentViewModel>()
+                ScaffoldWithoutButton(
+                    containerColor = Color.Black,
+                    contentTop = {
+                        HeaderRightWithIcon(
+                            "Instruksi Pembayaran",
+                            Color.Black,
+                            Color.White,
+                            R.drawable.arrowwhite,
+                            onBackClick = { navController.popBackStack() })
+                    },
+                    content = {
+                        InstruksiBayarScreen(
+                            colortext = Color.White,
+                            colorButton = Color.Black,
+                            onClick = { navController.navigate("home") },
+                            onClickBack = { navController.popBackStack() })
+                    },
+
+                    )
+
+
+            }
+
+        }
+
         composable("profile") { ProfileScreen(navController) }
         navigation(startDestination = "riwayatPembelian", route = "profileScreen") {
             composable("login") {
@@ -171,7 +225,7 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: V
                 ScaffoldWithButton(
                     navController = navController ,
                     containerColor = Color.Black,
-                    navigationRoute = "",
+                    navigationRoute = "MetodeBayar",
                     content = {TokoJapriTV()},
                     titleButton = "Lanjut Ke Pembayaran",
                     contentTop = {HeaderRightWithIcon(
@@ -181,7 +235,7 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: V
                         resId = R.drawable.arrowwhite,
                         onBackClick = {navController.popBackStack()}
                     )},
-                    colorButton = Color.Red,
+                    colorButton = Color(0XFFD22F26),
                     colorTextButton = Color.White,
                     modifier = Modifier
 

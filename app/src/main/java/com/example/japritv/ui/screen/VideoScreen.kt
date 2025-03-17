@@ -33,92 +33,103 @@ import kotlinx.coroutines.delay
 @Composable
 fun VideoScreen(viewModel: VideoViewModel) {
     val context = LocalContext.current
-    val video by remember { mutableStateOf(viewModel.dataList) }
-    val firstVideo = video.firstOrNull()
+    val videoList by viewModel.dataList.collectAsState() // ✅ Observasi data dari ViewModel
+    val isLoading by viewModel.isLoading.collectAsState() // ✅ Observasi status loading
+    val firstVideo = videoList.firstOrNull()
     var isBuffering by remember { mutableStateOf(true) } // ✅ Mulai dengan true karena video masih loading
     var isPlaying by remember { mutableStateOf(true) }
     var showPauseIcon by remember { mutableStateOf(false) }
 
-    firstVideo.let { video ->
 
-        val exoPlayer = remember {
-            SimpleExoPlayer.Builder(context).build().apply {
-                setMediaItem(MediaItem.fromUri(Uri.parse(video?.url)))
-                prepare()
-//                playWhenReady = videoData.isPlaying
-                volume = 1f
-                addListener(object : Player.Listener {
-                    override fun onPlaybackStateChanged(state: Int) {
-                        isBuffering = state == Player.STATE_BUFFERING || state == Player.STATE_IDLE
-                    }
+    LaunchedEffect(Unit) {
+        viewModel.fetchVideos()
+    }
 
-                    override fun onIsPlayingChanged(isPlayingNow: Boolean) {
-                        isPlaying = isPlayingNow
-                        if (isPlayingNow) {
-                            showPauseIcon = false
+    firstVideo?.let { data ->
+        val videoUrl = data.videos.firstOrNull()?.url
+        if (!videoUrl.isNullOrEmpty()) {
+            val exoPlayer = remember {
+                SimpleExoPlayer.Builder(context).build().apply {
+                    setMediaItem(MediaItem.fromUri(Uri.parse(videoUrl)))
+                    prepare()
+                    volume = 1f
+                    addListener(object : Player.Listener {
+                        override fun onPlaybackStateChanged(state: Int) {
+                            isBuffering = state == Player.STATE_BUFFERING || state == Player.STATE_IDLE
                         }
-                    }
-                })
-            }
-        }
 
-        DisposableEffect(Unit) {
-            exoPlayer.playWhenReady = true
-            onDispose { exoPlayer.release() }
-        }
-
-        LaunchedEffect(showPauseIcon) {
-            if (showPauseIcon) {
-                delay(2000) // Hilangkan ikon setelah 2 detik
-                showPauseIcon = false
-            }
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable {
-                    exoPlayer.playWhenReady = !exoPlayer.playWhenReady
-                    showPauseIcon = true
+                        override fun onIsPlayingChanged(isPlayingNow: Boolean) {
+                            isPlaying = isPlayingNow
+                            if (isPlayingNow) {
+                                showPauseIcon = false
+                            }
+                        }
+                    })
                 }
-        ) {
-            AndroidView(
-                factory = {
-                    PlayerView(context).apply {
-                        player = exoPlayer
-                        useController = false
-                    }
-                },
-                modifier = Modifier.fillMaxSize()
-            )
-
-            // ✅ Circular Progress Indicator ketika buffering
-            AnimatedVisibility(
-                visible = isBuffering,
-                enter = fadeIn(),
-                exit = fadeOut(),
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .zIndex(2f)
-            ) {
-                CircularProgressIndicator(color = Color.White)
             }
 
-            // ✅ Ikon Pause (muncul saat di-klik atau saat video di-pause)
-            AnimatedVisibility(
-                visible = showPauseIcon || !isPlaying,
-                enter = fadeIn(),
-                exit = fadeOut(),
+            DisposableEffect(Unit) {
+                exoPlayer.playWhenReady = true
+                onDispose { exoPlayer.release() }
+            }
+
+            LaunchedEffect(showPauseIcon) {
+                if (showPauseIcon) {
+                    delay(2000) // Hilangkan ikon setelah 2 detik
+                    showPauseIcon = false
+                }
+            }
+
+            Box(
                 modifier = Modifier
-                    .align(Alignment.Center)
-                    .zIndex(2f)
+                    .fillMaxSize()
+                    .clickable {
+                        exoPlayer.playWhenReady = !exoPlayer.playWhenReady
+                        showPauseIcon = true
+                    }
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.play_circle),
-                    contentDescription = "Pause Icon",
-                    tint = Color.White,
-                    modifier = Modifier.size(64.dp)
+                AndroidView(
+                    factory = {
+                        PlayerView(context).apply {
+                            player = exoPlayer
+                            useController = false
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
                 )
+
+                // ✅ Circular Progress Indicator ketika buffering
+                AnimatedVisibility(
+                    visible = isBuffering,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .zIndex(2f)
+                ) {
+                    CircularProgressIndicator(color = Color.White)
+                }
+
+                // ✅ Ikon Pause (muncul saat di-klik atau saat video di-pause)
+                AnimatedVisibility(
+                    visible = showPauseIcon || !isPlaying,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .zIndex(2f)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.play_circle),
+                        contentDescription = "Pause Icon",
+                        tint = Color.White,
+                        modifier = Modifier.size(64.dp)
+                    )
+                }
+            }
+        } else {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "No Video URL Available", color = Color.White)
             }
         }
     } ?: run {

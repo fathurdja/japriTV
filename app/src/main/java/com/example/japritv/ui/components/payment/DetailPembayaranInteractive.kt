@@ -25,14 +25,15 @@ import androidx.compose.ui.unit.sp
 import com.example.japritv.R
 
 @Composable
-fun DetailPembayaranInteractive() {
+fun DetailPembayaranInteractive(color:Color) {
     var isExpanded by remember { mutableStateOf(true) }
 
     Box(
         modifier = Modifier
-
             .fillMaxWidth()
-            .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)) // Add border here
+            .clip(RoundedCornerShape(8.dp))
+            .border(1.dp, Color(0xFFE6E6E8), RoundedCornerShape(8.dp))
+            .background(color)// Add border here
             .padding(12.dp)
 
     ) {
@@ -140,8 +141,8 @@ fun DetailPembayaranInteractive() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview()
 @Composable
 fun PreviewPayNowUI() {
-    DetailPembayaranInteractive()
+    DetailPembayaranInteractive(color = Color.White)
 }
