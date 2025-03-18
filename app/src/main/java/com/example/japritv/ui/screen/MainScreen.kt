@@ -58,7 +58,7 @@ fun MainScreen(videoViewModel: VideoViewModel, data: ShowItemViewModel) {
 
         },
         bottomBar = {
-            if (currentRoute in listOf("home", "terlaris", "rating", "segera_tayang", "video", "upload","history","profile",)) {
+            if (currentRoute in listOf("home", "terlaris", "rating", "segera_tayang", "video", "upload","history","profile","nowPlayingScreen")) {
                 BottomNavigationBar(
                     selectedItem = selectedItem,
                     onItemSelected = { index ->

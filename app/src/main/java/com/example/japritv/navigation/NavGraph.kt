@@ -33,6 +33,7 @@ import com.example.japritv.ui.screen.UpComingScreen
 import com.example.japritv.ui.screen.UploadVideoForm
 import com.example.japritv.ui.screen.UploadVideoScreen
 import com.example.japritv.ui.screen.VideoScreen
+import com.example.japritv.ui.screen.VideoVerticalPagerScreen
 import com.example.japritv.viewmodel.PaymentViewModel
 import com.example.japritv.viewmodel.ShowItemViewModel
 import com.example.japritv.viewmodel.VideoViewModel
@@ -59,6 +60,9 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: V
         navigation(startDestination = "terlaris", route = "home") {
             composable("terlaris") {
                 HomeScreen(navController = navController)
+            }
+            composable("nowPlaying"){
+                VideoVerticalPagerScreen()
             }
             composable("rating") {
                 RatingScreen(shows = data.shows, navController = navController)

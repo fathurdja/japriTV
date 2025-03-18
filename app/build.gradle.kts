@@ -60,6 +60,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation ("com.google.accompanist:accompanist-pager:0.24.13-rc")
+    implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation ("androidx.navigation:navigation-compose:2.5.3")
     // ExoPlayer Core
