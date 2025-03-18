@@ -41,12 +41,10 @@ fun VideoScreen(viewModel: VideoViewModel) {
     var showPauseIcon by remember { mutableStateOf(false) }
 
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchVideos()
-    }
+
 
     firstVideo?.let { data ->
-        val videoUrl = data.videos.firstOrNull()?.url
+        val videoUrl = ""
         if (!videoUrl.isNullOrEmpty()) {
             val exoPlayer = remember {
                 SimpleExoPlayer.Builder(context).build().apply {

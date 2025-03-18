@@ -1,16 +1,13 @@
 package com.example.japritv.model
+import com.example.japritv.dao.VideoData
 import kotlinx.serialization.Serializable
 
 
 @Serializable
 data class ResponseVideo(
     val message: String,
-    val data: List<Data>
+    val data: List<VideoDataApi>
 )
 
-@Serializable
-data class Data(
-    val _id: String,
-    val videos: List<Video>
-)
+
 

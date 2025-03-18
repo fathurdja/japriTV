@@ -14,10 +14,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.japritv.dao.VideoData
+
 import com.example.japritv.model.Video
 
 @Composable
-fun ShowsGridSection(shows: List<Video>, onClick: () -> Unit) {
+fun ShowsGridSection(shows: List<VideoData>, onClick: (String) -> Unit) {
     // Memeriksa apakah daftar 'shows' kosong
     if (shows.isEmpty()) {
         // Menampilkan CircularProgressIndicator saat data kosong atau sedang dimuat

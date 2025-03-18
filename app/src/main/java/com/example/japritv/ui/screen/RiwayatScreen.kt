@@ -45,7 +45,7 @@ import com.example.japritv.viewmodel.VideoViewModel
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun RiwayatScreen(videoViewModel: VideoViewModel,onClick: () -> Unit) {
-    val riwayatMovies by videoViewModel.allVideos.collectAsState()
+    val riwayatMovies by videoViewModel.dataList.collectAsState()
     val sheetState = rememberModalBottomSheetState()
 
     val scope = rememberCoroutineScope()
@@ -53,9 +53,7 @@ fun RiwayatScreen(videoViewModel: VideoViewModel,onClick: () -> Unit) {
     var showSheet by remember { mutableStateOf(false) }
 
     // ✅ State untuk modal
-    LaunchedEffect(Unit) {
-        videoViewModel.fetchVideos()
-    }
+
 
     Scaffold(
         containerColor = Color.Black,

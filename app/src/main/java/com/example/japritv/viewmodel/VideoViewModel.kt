@@ -1,10 +1,16 @@
 package com.example.japritv.viewmodel
+
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.japritv.model.Data
+import androidx.room.Room
+import com.example.japritv.Repository.VideoRepository
+import com.example.japritv.dao.AppDatabase
+import com.example.japritv.dao.VideoData
+
 
 import com.example.japritv.model.ResponseVideo
 import com.example.japritv.model.Video
@@ -18,52 +24,78 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
-class VideoViewModel : ViewModel() {
-     private val _dataList = MutableStateFlow<List<Data>>(emptyList())
-    val dataList: StateFlow<List<Data>> = _dataList
+class VideoViewModel(private val videoRepository: VideoRepository) : ViewModel() {
+
+    private val _dataList = MutableStateFlow<List<VideoData>>(emptyList())
+    val dataList: StateFlow<List<VideoData>> = _dataList
+
+    private val _selectedVideo = MutableStateFlow<VideoData?>(null)
+    val selectedVideo: StateFlow<VideoData?> = _selectedVideo
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    val allVideos: StateFlow<List<Video>> = dataList.map { dataList ->
-        dataList.flatMap { it.videos }
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
     private val client = HttpClient {
         install(ContentNegotiation) {
             json(Json {
-                ignoreUnknownKeys = true  // Abaikan field yang tidak dikenal dalam respons
-                isLenient = true           // Izinkan parsing yang lebih fleksibel
+               ignoreUnknownKeys = true  // Ignore unknown fields in the response
+                isLenient = true           // Allow flexible parsing
                 prettyPrint = true
             })
         }
     }
 
-    fun fetchVideos() {
+    init {
+        fetchVideos()
+    }
+    fun fetchVideoById(id: String) {
+        viewModelScope.launch {
+            val video = videoRepository.getVideoById(id)
+            _selectedVideo.value = video  // ✅ Simpan hasil ke StateFlow
+        }
+    }
+    private fun fetchVideos() {
         viewModelScope.launch {
             _isLoading.value = true
-            try {
-                val response: ResponseVideo = client.get("https://api-japritv.vercel.app/api/video").body()
-                println(response)
-                if (response.data.isNotEmpty()) {
-                    _dataList.value = response.data
-                } else {
-                    println("API Error: ${response.message}")
+
+            // Ambil data dari Room
+            val videosFromRoom = videoRepository.getAllVideos()
+
+            if (videosFromRoom.isNotEmpty()) {
+                _dataList.value = videosFromRoom  // Langsung assign ke StateFlow
+            } else {
+                // Jika tidak ada data di Room, ambil dari API
+                try {
+                    val response: ResponseVideo = client.get("https://api-japritv.vercel.app/api/video").body()
+
+                    if (response.data.isNotEmpty()) {
+
+                        println(response)
+//                         Simpan data ke Room
+                        videoRepository.saveVideoData(response)
+
+                        // Ambil ulang data dari Room setelah penyimpanan
+                        val freshVideos = videoRepository.getAllVideos()
+                        _dataList.value = freshVideos
+                    } else {
+                        println("API Error: ${response.message}")
+                    }
+                } catch (e: Exception) {
+                    println("Network Error: ${e.message}")
                 }
-            } catch (e: Exception) {
-                println("Network Error: ${e.message}")
-            } finally {
-                _isLoading.value = false
             }
+
+            _isLoading.value = false
         }
     }
 
     override fun onCleared() {
         super.onCleared()
-        client.close()
+        client.close()  // Clean up client when ViewModel is cleared
     }
 }
-

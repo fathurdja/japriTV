@@ -53,16 +53,18 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: V
             SplashScreen(navController = navController)
         }
         composable("home") {
-            HomeScreen(navController = navController)
+            HomeScreen(navController = navController,videoViewModel = video)
         }
 
         // Sub-navigation for "home"
         navigation(startDestination = "terlaris", route = "home") {
             composable("terlaris") {
-                HomeScreen(navController = navController)
+                HomeScreen(navController = navController, videoViewModel = video)
             }
-            composable("nowPlaying"){
-                VideoVerticalPagerScreen()
+
+            composable("nowPlaying/{userId}"){ backStackEntry ->
+                val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+                VideoVerticalPagerScreen(viewModel = video, userId = userId)
             }
             composable("rating") {
                 RatingScreen(shows = data.shows, navController = navController)

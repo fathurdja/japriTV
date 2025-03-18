@@ -61,16 +61,14 @@ import com.example.japritv.viewmodel.VideoViewModel
 fun HomeScreen(
     navController: NavController,
     homeViewModel: ShowItemViewModel = viewModel(),
-    videoViewModel: VideoViewModel = viewModel()
+    videoViewModel: VideoViewModel
 ) {
     val shows by remember { mutableStateOf(homeViewModel.shows) }
-    val movies by videoViewModel.allVideos.collectAsState()
+    val movies by videoViewModel.dataList.collectAsState()
 
     val showPlayerWidget = remember { mutableStateOf(true) }
 
-    LaunchedEffect(Unit) {
-        videoViewModel.fetchVideos()
-    }
+
 
     Scaffold { paddingValues ->
         Box(modifier = Modifier
@@ -93,7 +91,8 @@ fun HomeScreen(
                             .fillMaxWidth()
                             .height(600.dp) // Sesuaikan tinggi sesuai kebutuhan
                     ) {
-                        ShowsGridSection(movies,onClick = {navController.navigate("nowPlaying") })
+                        ShowsGridSection(movies,onClick = {userId ->
+                            navController.navigate("nowPlaying/$userId")  })
                     }
                 }
             }

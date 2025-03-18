@@ -44,7 +44,7 @@ import com.example.japritv.viewmodel.VideoViewModel
 
 @Composable
 fun FeaturedGridSection(navController: NavController, videoViewModel: VideoViewModel) {
-    val videos by videoViewModel.allVideos.collectAsState()
+    val videos by videoViewModel.dataList.collectAsState()
     val listState = rememberLazyListState()
     var selectedIndex by remember { mutableStateOf(0) }
 
@@ -89,7 +89,7 @@ fun FeaturedGridSection(navController: NavController, videoViewModel: VideoViewM
                         ) {
                             Image(
                                 painter = painterResource(id = R.drawable.image_7), // Placeholder
-                                contentDescription = video.title,
+                                contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize()
                             )

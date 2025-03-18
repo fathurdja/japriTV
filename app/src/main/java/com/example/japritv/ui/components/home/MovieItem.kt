@@ -24,13 +24,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.japritv.R
-import com.example.japritv.model.Data
+import com.example.japritv.dao.VideoData
+
 
 import com.example.japritv.model.Show
 import com.example.japritv.model.Video
 
 @Composable
-fun MovieItem(show:Video, text: String,onClick: () -> Unit) {
+fun MovieItem(show:VideoData, text: String,onClick: (String) -> Unit) {
     Column(
         modifier = Modifier.padding(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -39,7 +40,7 @@ fun MovieItem(show:Video, text: String,onClick: () -> Unit) {
             modifier = Modifier
                 .aspectRatio(2f / 3f)
                 .clip(RoundedCornerShape(8.dp))
-                .clickable { onClick() }
+                .clickable { onClick(show.id) }
         ) {
             Image(
                 painter = painterResource(id = R.drawable.title_card),

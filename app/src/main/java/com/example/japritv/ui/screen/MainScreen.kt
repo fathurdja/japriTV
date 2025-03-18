@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -34,7 +35,7 @@ import com.example.japritv.viewmodel.VideoViewModel
 
 
 @Composable
-fun MainScreen(videoViewModel: VideoViewModel, data: ShowItemViewModel) {
+fun MainScreen(videoViewModel: VideoViewModel, data: ShowItemViewModel,) {
     val navController = rememberNavController()
     var searchText by remember { mutableStateOf("") }
 
@@ -44,6 +45,13 @@ fun MainScreen(videoViewModel: VideoViewModel, data: ShowItemViewModel) {
     val showItemViewModel: ShowItemViewModel = viewModel()
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
     Scaffold(
+//        floatingActionButton = {
+//            FloatingActionButton(
+//                onClick = { resetDatabase() } // 🔥 Panggil reset database
+//            ) {
+//                Text("Reset")
+//            }
+//        },
         containerColor = Color.Black,
         topBar = {
             if (currentRoute in listOf("home", "terlaris", "rating", "segera_tayang")) {
