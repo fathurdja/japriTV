@@ -64,7 +64,7 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: V
 
             composable("nowPlaying/{userId}"){ backStackEntry ->
                 val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
-                VideoVerticalPagerScreen(viewModel = video, userId = userId)
+                VideoVerticalPagerScreen(viewModel = video, userId = userId, onClickBack = {navController.popBackStack()})
             }
             composable("rating") {
                 RatingScreen(shows = data.shows, navController = navController)

@@ -41,6 +41,7 @@ import androidx.navigation.NavController
 import com.example.japritv.R
 import com.example.japritv.model.Show
 import com.example.japritv.viewmodel.VideoViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun FeaturedGridSection(navController: NavController, videoViewModel: VideoViewModel) {
@@ -49,12 +50,15 @@ fun FeaturedGridSection(navController: NavController, videoViewModel: VideoViewM
     var selectedIndex by remember { mutableStateOf(0) }
 
     // Observasi perubahan indeks saat LazyRow digulirkan
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex }
-            .collect { index ->
-                selectedIndex = index
-            }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(3000)
+            val nextIndex = (selectedIndex + 1) % videos.size
+            listState.animateScrollToItem(nextIndex)
+            selectedIndex = nextIndex
+        }
     }
+
 
     Column(
         modifier = Modifier

@@ -30,15 +30,18 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.japritv.R
 import com.example.japritv.ui.components.HeaderRightWithIcon
 import com.example.japritv.ui.components.video.ActionButtons
+import com.example.japritv.ui.components.video.ContainerEpisode
+import com.example.japritv.ui.components.video.ModalityContainer
 import com.example.japritv.viewmodel.VideoViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun VideoVerticalPagerScreen(viewModel: VideoViewModel, userId: String) {
+fun VideoVerticalPagerScreen(viewModel: VideoViewModel, userId: String, onClickBack: () -> Unit) {
     val video by viewModel.selectedVideo.collectAsState()
-
+    var showSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
     LaunchedEffect(userId) {
         viewModel.fetchVideoById(userId)
     }
@@ -62,7 +65,9 @@ fun VideoVerticalPagerScreen(viewModel: VideoViewModel, userId: String) {
                         context = context,
                         videoUrl = videoItem.url,
                         thumbnailUrl = "",
-                        pagerState = pagerState
+                        pagerState = pagerState,
+                        onClickEpisode = {showSheet=true}
+
                     )
 
                     // Header di bagian atas
@@ -77,11 +82,28 @@ fun VideoVerticalPagerScreen(viewModel: VideoViewModel, userId: String) {
                             color = Color.Transparent,
                             textColor = Color.White,
                             resId = R.drawable.arrowwhite,
-                            onBackClick = {}
+                            onBackClick = {onClickBack()}
                         )
                     }
                 }
             }
+        }
+    }
+    if (showSheet){
+        ModalBottomSheet(
+            containerColor = Color.Black,
+            modifier = Modifier.fillMaxHeight(),
+            sheetState = sheetState,
+            onDismissRequest = { showSheet = false },
+
+            ) {
+            ContainerEpisode()
+
+
+
+            // Tambahkan jarak bawah untuk swipe-to-dismiss
+
+
         }
     }
 }
@@ -93,6 +115,7 @@ fun VideoPlayer(
     thumbnailUrl: String,
     context: Context,
     pagerState: androidx.compose.foundation.pager.PagerState
+    ,onClickEpisode: () -> Unit
 ) {
     val image = rememberAsyncImagePainter(model = thumbnailUrl)
     var isPlaying by remember { mutableStateOf(true) }
@@ -139,7 +162,7 @@ fun VideoPlayer(
 
     LaunchedEffect(isPlaying) {
         if (isPlaying) {
-            delay(3000)
+            delay(1000)
             showControls = false
         }
     }
@@ -211,7 +234,12 @@ fun VideoPlayer(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.Bottom
         ) {
-            ActionButtons()
+            ActionButtons(
+                onBookmarkClick = { /* Handle bookmark click */ },
+                onLikeClick = { /* Handle like click */ },
+                onEpisodesClick = { onClickEpisode()},
+                onShareClick = { /* Handle share click */ }
+            )
         }
 
         // Bottom UI Elements
@@ -220,6 +248,7 @@ fun VideoPlayer(
                 .padding(vertical = 20.dp, horizontal = 16.dp)
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
+                .clickable { onClickEpisode() }
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -227,7 +256,7 @@ fun VideoPlayer(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
+                    Icon(painter = painterResource(id = R.drawable.playlist_play_icon_1), contentDescription = "Menu", tint = Color.White)
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("EP.1/EP.71", color = Color.White)
                 }

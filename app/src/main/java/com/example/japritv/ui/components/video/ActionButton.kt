@@ -26,14 +26,14 @@ import androidx.compose.ui.unit.sp
 import com.example.japritv.R
 
 @Composable
-fun ActionButtons() {
+fun ActionButtons(onBookmarkClick: () -> Unit = {}, onLikeClick: () -> Unit = {}, onEpisodesClick: () -> Unit = {}, onShareClick: () -> Unit = {}) {
     Column(
         modifier = Modifier.fillMaxHeight(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Bookmark button
-        Box(modifier = Modifier.clickable {  }) {
+        Box(modifier = Modifier.clickable {  onBookmarkClick()}) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
                     painter = painterResource(id = R.drawable.vector__13_),
@@ -47,7 +47,7 @@ fun ActionButtons() {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Like button
-        Box(modifier = Modifier.clickable {  }) {
+        Box(modifier = Modifier.clickable { onLikeClick() }) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
                     painter = painterResource(id = R.drawable.vector__14_),
@@ -61,7 +61,7 @@ fun ActionButtons() {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Episodes button
-        Box(modifier = Modifier.clickable {  }) {
+        Box(modifier = Modifier.clickable { onEpisodesClick() }) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
                     painter = painterResource(id = R.drawable.playlist_play_icon_1), // Placeholder icon
@@ -75,7 +75,7 @@ fun ActionButtons() {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Share button
-        Box(modifier = Modifier.clickable {  }) {
+        Box(modifier = Modifier.clickable { onShareClick() }) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
                     painter = painterResource(id = R.drawable.share_vector_icon_1),
