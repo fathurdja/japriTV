@@ -14,17 +14,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.japritv.R
 import com.example.japritv.ui.theme.JapriTvTheme
 
 
 @Composable
-fun UserInfo(onLoginClick: () -> Unit, onCopyClick: () -> Unit) {
+fun UserInfo(onLoginClick: () -> Unit, onCopyClick: () -> Unit,nameUser:String,profileImageUrl: String?) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -45,12 +48,16 @@ fun UserInfo(onLoginClick: () -> Unit, onCopyClick: () -> Unit) {
                             .size(50.dp)
                             .background(Color.Gray, CircleShape)
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.frame_3452979),
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(profileImageUrl ?: R.drawable.frame_3452979) // Gunakan default jika null
+                                .crossfade(true)
+                                .build(),
                             contentDescription = "User Avatar",
-
                             modifier = Modifier.fillMaxSize()
                         )
+
+
                     }
 
                     Spacer(modifier = Modifier.width(10.dp))
@@ -59,7 +66,7 @@ fun UserInfo(onLoginClick: () -> Unit, onCopyClick: () -> Unit) {
                     Box(modifier = Modifier.padding(vertical = 3.dp, horizontal = 8.dp)) {
                         Column {
                             Text(
-                                text = "Pengunjung",
+                                text = nameUser,
                                 color = Color.White,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold
@@ -113,7 +120,7 @@ fun UserInfo(onLoginClick: () -> Unit, onCopyClick: () -> Unit) {
 @Composable
 fun PreviewUserInfo() {
     JapriTvTheme {
-    UserInfo(onLoginClick = {}, onCopyClick = {})
+    UserInfo(onLoginClick = {}, onCopyClick = {}, nameUser = "Pengunjung", profileImageUrl = null)
     }
 }
 

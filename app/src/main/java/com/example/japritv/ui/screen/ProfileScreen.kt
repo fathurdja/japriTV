@@ -7,20 +7,28 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.japritv.dao.AppDatabase
 import com.example.japritv.ui.components.profile.Group214
 import com.example.japritv.ui.components.profile.MenuProfile
 import com.example.japritv.ui.components.profile.UserInfo
 import com.example.japritv.ui.theme.JapriTvTheme
+import com.example.japritv.viewmodel.UserViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(navController: NavController,db: AppDatabase) {
+    val viewModel: UserViewModel = remember { UserViewModel(db) }
+    val userInfo by viewModel.userInfo.collectAsState()
+
     // Background hitam untuk tampilan profil
    Scaffold(
        containerColor = Color.Black
@@ -34,6 +42,8 @@ fun ProfileScreen(navController: NavController) {
            Column(modifier = Modifier.fillMaxWidth()) {
                // Komponen UserInfo
                UserInfo(
+                 nameUser = userInfo?.name?.split(" ")?.take(2)?.joinToString(" ") ?: "Pengunjung",
+                   profileImageUrl = userInfo?.urlPicture,
                    onLoginClick = { navController.navigate("login")},
                    onCopyClick = { /* Handle Copy ID */ }
                )
@@ -57,11 +67,4 @@ fun ProfileScreen(navController: NavController) {
 
 
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewProfileScreen() {
-    JapriTvTheme {
-        val navController = rememberNavController()
-        ProfileScreen(navController)
-    }
-}
+

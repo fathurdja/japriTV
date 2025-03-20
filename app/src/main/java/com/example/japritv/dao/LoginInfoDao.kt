@@ -1,0 +1,18 @@
+package com.example.japritv.dao
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+
+@Dao
+interface LoginInfoDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveLoginInfo(loginInfo: LoginInfo)
+
+    @Query("SELECT * FROM login_info LIMIT 1")
+    suspend fun getLoginInfo(): LoginInfo?
+
+    @Query("DELETE FROM login_info")
+    suspend fun clearLoginInfo()
+}

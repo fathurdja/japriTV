@@ -1,4 +1,4 @@
-@file:OptIn(androidx.media3.common.util.UnstableApi::class)
+@file:OptIn(UnstableApi::class)
 
 package com.example.japritv.ui.screen
 
@@ -6,6 +6,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -24,6 +25,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import coil.compose.rememberAsyncImagePainter
@@ -42,6 +44,7 @@ fun VideoVerticalPagerScreen(viewModel: VideoViewModel, userId: String, onClickB
     val video by viewModel.selectedVideo.collectAsState()
     var showSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
+    var selectedEpisode by remember { mutableStateOf(1) }
     LaunchedEffect(userId) {
         viewModel.fetchVideoById(userId)
     }
@@ -53,6 +56,10 @@ fun VideoVerticalPagerScreen(viewModel: VideoViewModel, userId: String, onClickB
         initialPageOffsetFraction = 0f,
         pageCount = { video?.videos?.size ?: 0 }
     )
+    LaunchedEffect(selectedEpisode) {
+        val targetIndex = video?.videos?.indexOfFirst { it.episode == selectedEpisode } ?: 0
+        pagerState.animateScrollToPage(targetIndex)
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         VerticalPager(
@@ -97,7 +104,16 @@ fun VideoVerticalPagerScreen(viewModel: VideoViewModel, userId: String, onClickB
             onDismissRequest = { showSheet = false },
 
             ) {
-            ContainerEpisode()
+            video?.totalEpisode?.let {
+                ContainerEpisode(
+                    onEpisodeSelected = { episode ->
+                        selectedEpisode = episode
+                        showSheet = false // ✅ Tutup sheet setelah memilih episode
+                    },
+                    selectedEpisode = selectedEpisode,
+                    totalEpisodes = it
+                )
+            }
 
 
 
@@ -114,14 +130,14 @@ fun VideoPlayer(
     videoUrl: String,
     thumbnailUrl: String,
     context: Context,
-    pagerState: androidx.compose.foundation.pager.PagerState
+    pagerState: PagerState
     ,onClickEpisode: () -> Unit
 ) {
     val image = rememberAsyncImagePainter(model = thumbnailUrl)
     var isPlaying by remember { mutableStateOf(true) }
     var isBuffering by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
-    var showControls by remember { mutableStateOf(true) }
+    var showControls by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -160,7 +176,8 @@ fun VideoPlayer(
         }
     }
 
-    LaunchedEffect(isPlaying) {
+    LaunchedEffect(isPlaying, pagerState.currentPage) {
+        println("LaunchedEffect triggered: isPlaying=$isPlaying, currentPage=${pagerState.currentPage}")
         if (isPlaying) {
             delay(1000)
             showControls = false
@@ -202,7 +219,7 @@ fun VideoPlayer(
         }
 
         // Pause Button
-        if (showControls) {
+        if (isPlaying && showControls) {
             IconButton(
                 onClick = { exoPlayer.pause() },
                 modifier = Modifier.align(Alignment.Center)

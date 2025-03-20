@@ -35,10 +35,16 @@ import androidx.compose.ui.unit.sp
 import com.example.japritv.R
 
 @Composable
-fun ContainerEpisode() {
+fun ContainerEpisode(totalEpisodes: Int, selectedEpisode: Int, onEpisodeSelected: (Int) -> Unit) {
+    val episodesPerPage = 25 // Maksimal 5 baris x 5 episode
+    val totalTabs = (totalEpisodes / episodesPerPage) + if (totalEpisodes % episodesPerPage > 0) 1 else 0
+    val tabTitles = List(totalTabs) { index ->
+        val start = index * episodesPerPage + 1
+        val end = minOf((index + 1) * episodesPerPage, totalEpisodes)
+        "$start-$end"
+    }
+
     var selectedTabIndex by remember { mutableStateOf(0) }
-    var selectedEpisode by remember { mutableStateOf(1) }
-    val tabTitles = listOf("1-25", "26-50", "51-75", "76-97")
 
     Column(
         modifier = Modifier
@@ -60,8 +66,7 @@ fun ContainerEpisode() {
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Total 64 Episode", color = Color.Gray, fontSize = 14.sp)
+                Text(text = "Total $totalEpisodes Episode", color = Color.Gray, fontSize = 14.sp)
                 Row {
                     Chip(text = "Action")
                     Spacer(modifier = Modifier.width(8.dp))
@@ -71,11 +76,13 @@ fun ContainerEpisode() {
         }
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Tab untuk memilih rentang episode
         TabRow(
             selectedTabIndex = selectedTabIndex,
             containerColor = Color.Transparent,
             contentColor = Color.Gray,
-            divider = {}
+            divider = {},
+            indicator = {}
         ) {
             tabTitles.forEachIndexed { index, title ->
                 Tab(
@@ -84,29 +91,33 @@ fun ContainerEpisode() {
                     text = {
                         Text(
                             text = title,
-                            fontWeight = FontWeight.Bold,
-                            color = if (selectedTabIndex == index) Color.White else Color(0xFF565656)
+                            fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal,
+                            color = if (selectedTabIndex == index) Color.White else Color.Gray
                         )
                     }
                 )
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Menampilkan episode berdasarkan tab yang dipilih
+        val startEpisode = selectedTabIndex * episodesPerPage + 1
+        val endEpisode = minOf((selectedTabIndex + 1) * episodesPerPage, totalEpisodes)
+        val episodes = (startEpisode..endEpisode).toList()
 
         Column {
-            for (i in 0 until 5) {
+            episodes.chunked(5).forEach { rowEpisodes ->
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    for (j in 1..5) {
-                        val episodeNumber = i * 5 + j
-                        val isLocked = episodeNumber > 5
+                    rowEpisodes.forEach { episodeNumber ->
+                        val isLocked = episodeNumber > totalEpisodes
                         EpisodeButton(
                             episodeNumber = episodeNumber,
                             isLocked = isLocked,
                             isSelected = episodeNumber == selectedEpisode,
-                            onClick = { if (!isLocked) selectedEpisode = episodeNumber }
+                            onClick = { if (!isLocked) onEpisodeSelected(episodeNumber) }
                         )
                     }
                 }
@@ -115,6 +126,7 @@ fun ContainerEpisode() {
         }
     }
 }
+
 
 @Composable
 fun Chip(text: String) {
@@ -173,6 +185,6 @@ fun EpisodeButton(episodeNumber: Int, isLocked: Boolean, isSelected: Boolean, on
 @Preview(showBackground = true)
 @Composable
 fun ContainerEpisodePreview() {
-    ContainerEpisode()
+    ContainerEpisode(onEpisodeSelected = {}, selectedEpisode = 1, totalEpisodes = 50)
 }
 

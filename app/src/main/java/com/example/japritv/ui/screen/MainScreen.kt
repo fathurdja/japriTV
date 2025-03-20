@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -21,6 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.japritv.R
+import com.example.japritv.dao.AppDatabase
 import com.example.japritv.model.Show
 import com.example.japritv.navigation.NavGraph
 import com.example.japritv.ui.components.*
@@ -34,11 +36,13 @@ import com.example.japritv.viewmodel.ShowItemViewModel
 import com.example.japritv.viewmodel.VideoViewModel
 
 
+
 @Composable
 fun MainScreen(videoViewModel: VideoViewModel, data: ShowItemViewModel,) {
+    val context = LocalContext.current
     val navController = rememberNavController()
     var searchText by remember { mutableStateOf("") }
-
+    val db = AppDatabase.getDatabase(context)
     val shows by remember { mutableStateOf(data.shows) }
     var selectedItem by remember { mutableStateOf(0) }
     val categoryViewModel: CategoryViewModel = viewModel()
@@ -84,7 +88,7 @@ fun MainScreen(videoViewModel: VideoViewModel, data: ShowItemViewModel,) {
             }
         }
     ) { paddingValues ->
-        NavGraph(navController = navController, paddingValues = paddingValues,video = videoViewModel,data = data)
+        NavGraph(navController = navController, paddingValues = paddingValues,video = videoViewModel,data = data,db = db)
     }
 }
 

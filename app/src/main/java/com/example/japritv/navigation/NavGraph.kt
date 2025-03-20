@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import com.example.japritv.R
+import com.example.japritv.dao.AppDatabase
 import com.example.japritv.ui.components.Header
 import com.example.japritv.ui.components.HeaderRightWithIcon
 import com.example.japritv.ui.components.ScaffoldWithButton
@@ -39,7 +40,7 @@ import com.example.japritv.viewmodel.ShowItemViewModel
 import com.example.japritv.viewmodel.VideoViewModel
 
 @Composable
-fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: VideoViewModel,data:ShowItemViewModel) {
+fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: VideoViewModel,data:ShowItemViewModel,db:AppDatabase) {
 
 
     // Handle routing and navigation
@@ -222,7 +223,7 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: V
 
         }
 
-        composable("profile") { ProfileScreen(navController) }
+        composable("profile") { ProfileScreen(navController,db) }
         navigation(startDestination = "riwayatPembelian", route = "profileScreen") {
             composable("login") {
                 LoginScreen(onClick = { navController.navigate("home") })
