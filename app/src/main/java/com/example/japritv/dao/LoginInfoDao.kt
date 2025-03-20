@@ -13,6 +13,9 @@ interface LoginInfoDao {
     @Query("SELECT * FROM login_info LIMIT 1")
     suspend fun getLoginInfo(): LoginInfo?
 
+    @Query("SELECT tokenAuth FROM login_info WHERE id = 1")
+    suspend fun getTokenAuth(): String?
+
     @Query("DELETE FROM login_info")
     suspend fun clearLoginInfo()
 }

@@ -10,5 +10,6 @@ data class LoginInfo(
     val tokenAuth: String,
     val name: String,
     val urlPicture:String,
-    val infoRegistrasi: String
+    val infoRegistrasi: String,
+    val email : String
 )

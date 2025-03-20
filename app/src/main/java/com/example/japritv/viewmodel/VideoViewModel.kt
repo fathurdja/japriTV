@@ -53,52 +53,66 @@ class VideoViewModel(private val videoRepository: VideoRepository) : ViewModel()
         }
     }
 
-    init {
-        fetchVideos()
-    }
+
     fun fetchVideoById(id: String) {
         viewModelScope.launch {
             val video = videoRepository.getVideoById(id)
             _selectedVideo.value = video  // ✅ Simpan hasil ke StateFlow
         }
     }
-    private fun fetchVideos() {
+    fun fetchVideos() {
         viewModelScope.launch {
-            _isLoading.value = true
+
 
             // Ambil data dari Room
             val videosFromRoom = videoRepository.getAllVideos()
+            _dataList.value=videosFromRoom
 
-            if (videosFromRoom.isNotEmpty()) {
-                _dataList.value = videosFromRoom  // Langsung assign ke StateFlow
-            } else {
-                // Jika tidak ada data di Room, ambil dari API
-                try {
-                    val response: ResponseVideo = client.get("https://api-japritv.vercel.app/api/video").body()
+            try {
 
-                    if (response.data.isNotEmpty()) {
+                // Ambil data dari API
+                val response: ResponseVideo = client.get("https://japritv.vercel.app/api/video").body()
 
-                        println(response)
-//                         Simpan data ke Room
+                if (response.data.isNotEmpty()) {
+                    println("Data dari API: $response")
+
+                    // Bandingkan data API dengan data Room
+                    if (videosFromRoom != response.data) {
+                        _isLoading.value = true
+                        println("Ada perubahan data, memperbarui Room Database...")
+
+                        // Hapus data lama di Room
+                        videoRepository.clearVideos()
+
+                        // Simpan data terbaru ke Room
                         videoRepository.saveVideoData(response)
 
-                        // Ambil ulang data dari Room setelah penyimpanan
+                        // Ambil ulang data terbaru dari Room
                         val freshVideos = videoRepository.getAllVideos()
                         _dataList.value = freshVideos
                     } else {
-                        println("API Error: ${response.message}")
+                        println("Data sudah up-to-date, tidak perlu update Room")
+                        _dataList.value = videosFromRoom
                     }
-                } catch (e: Exception) {
-                    println("Network Error: ${e.message}")
+                } else {
+                    println("API Error: ${response.message}")
                 }
+            } catch (e: Exception) {
+                println("Network Error: ${e.message}")
+
+                // Jika terjadi error, gunakan data dari Room sebagai fallback
+                _dataList.value = videosFromRoom
             }
 
             _isLoading.value = false
         }
     }
 
+
     override fun onCleared() {
         super.onCleared()
         client.close()  // Clean up client when ViewModel is cleared
     }
+
+
 }

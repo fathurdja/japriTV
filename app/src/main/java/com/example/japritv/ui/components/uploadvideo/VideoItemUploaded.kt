@@ -30,10 +30,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.japritv.R
 import com.example.japritv.ui.theme.JapriTvTheme
+import java.io.File
 
 @Composable
 fun VideoItemUploaded(
-    fileName: String,
+    fileName: File?,
     fileSize: String,
     fileIcon: Int,
     onRemoveClick: () -> Unit
@@ -59,7 +60,7 @@ fun VideoItemUploaded(
             Spacer(modifier = Modifier.width(8.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = fileName,
+                    text = fileName?.name.toString(),
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
                     fontSize = 14.sp
@@ -91,7 +92,7 @@ fun VideoItemUploaded(
 fun VideoItemUploadedPreview() {
     JapriTvTheme {
         VideoItemUploaded (
-            fileName = "assets.zip",
+            fileName = null,
             fileSize = "5.3MB",
             fileIcon = R.drawable.video_vector_icon_1, // Example icon resource
             onRemoveClick = { /* Handle file removal logic */ }

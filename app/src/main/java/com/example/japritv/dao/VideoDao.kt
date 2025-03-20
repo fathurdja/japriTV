@@ -19,12 +19,14 @@ interface VideoDao {
 
     @Query("SELECT * FROM movie WHERE id = :id")
     suspend fun getVideoDataById(id: String): VideoData?
-
+    @Query("DELETE FROM movie") // ✅ Tambahkan fungsi ini untuk menghapus semua data
+    suspend fun clearVideos()
     @Query("SELECT * FROM movie")
     suspend fun getAllVideoData(): List<VideoData>
 
     @Query("SELECT * FROM movie WHERE id = :id")
     suspend fun getVideoById(id: String): VideoData?
+
 
 //    suspend fun getAllVideos(): List<VideoData> {
 //        val videoDataList = getAllVideoData()

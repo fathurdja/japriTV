@@ -34,6 +34,11 @@ class VideoRepository(private val videoDao: VideoDao) {
     suspend fun getVideoById(id: String): VideoData? {
         return videoDao.getVideoById(id)  // ✅ Ambil data dari Room
     }
+
+    suspend fun clearVideos() {
+        return videoDao.clearVideos()
+    }
+
     // Function to fetch all video data
 //    suspend fun getAllVideos(): List<VideoData> {
 //        val rawVideos = videoDao.getAllVideos()

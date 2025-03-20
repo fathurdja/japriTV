@@ -15,7 +15,7 @@ object AuthRepository {
     fun sendTokenToServer(idToken: String, db: AppDatabase, nama:String,profile:String,callback: (Boolean) -> Unit,) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("https://api-japritv.vercel.app/api/auth/google")
+                val url = URL("https://japritv.vercel.app/api/auth/google")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 connection.setRequestProperty("Authorization", "Bearer $idToken") // Kirim token sebagai header
@@ -33,12 +33,14 @@ object AuthRepository {
                     val name = nama
                     val urlPicture = profile
                     val infoRegistrasi = jsonResponse.getString("message")
+                    val email = jsonResponse.getString("email")
 
                     val loginInfo = LoginInfo(
                         tokenAuth = tokenAuth,
                         name = name,
                         urlPicture = urlPicture,
-                        infoRegistrasi = infoRegistrasi
+                        infoRegistrasi = infoRegistrasi,
+                        email = email
                     )
 
                     db.loginInfoDao().saveLoginInfo(loginInfo)
@@ -61,5 +63,7 @@ object AuthRepository {
             }
         }
     }
+
+
 }
 

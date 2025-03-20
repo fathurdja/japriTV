@@ -1,10 +1,12 @@
 package com.example.japritv.navigation
 
+import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph
@@ -37,11 +39,12 @@ import com.example.japritv.ui.screen.VideoScreen
 import com.example.japritv.ui.screen.VideoVerticalPagerScreen
 import com.example.japritv.viewmodel.PaymentViewModel
 import com.example.japritv.viewmodel.ShowItemViewModel
+import com.example.japritv.viewmodel.UploadEpisodeViewModel
 import com.example.japritv.viewmodel.VideoViewModel
 
 @Composable
-fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: VideoViewModel,data:ShowItemViewModel,db:AppDatabase) {
-
+fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: VideoViewModel,data:ShowItemViewModel,db:AppDatabase,uploadEpisodeViewModel: UploadEpisodeViewModel) {
+val  context = LocalContext.current
 
     // Handle routing and navigation
     NavHost(
@@ -87,20 +90,44 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: V
                     containerColor = Color.White,
                     navigationRoute = "Pembayaran",
                     titleButton = "Lanjutkan",
-                    content = { UploadVideoForm() },
+                    content = { UploadVideoForm(uploadVideoViewModel = uploadEpisodeViewModel) },
                     contentTop = {
                         HeaderRightWithIcon(
                             "Upload Video",
                             Color.White,
                             Color.Black,
                             R.drawable.vector__8_,
-                            onBackClick = { navController.popBackStack() })
+                            onBackClick = { navController.popBackStack() }
+                        )
                     },
                     colorButton = Color(0xFFD32F2F),
                     colorTextButton = Color.White,
-                    modifier = Modifier
+                    modifier = Modifier,
+                    onClick = {
+                        val episode = uploadEpisodeViewModel.episodes.firstOrNull() // Ambil episode pertama
+
+                        if (episode?.fileName != null) {
+                            uploadEpisodeViewModel.uploadVideoToServer(
+                                context = context,
+                                title = episode.movieTitle,
+                                videoFiles = listOf(episode.fileName),
+                                episode = uploadEpisodeViewModel.episodes.indexOf(episode) + 1, // Urutan episode
+                        // Gunakan thumbnail sebagai poster
+                                onSuccess = { url ->
+                                    Log.d("Upload", "Video Uploaded Successfully: $url")
+                                },
+                                onFailure = { error ->
+                                    Log.e("Upload", "Upload Failed: $error")
+                                }
+                            ) //HAPUS koma ekstra di sini!
+                        } else {
+                            Log.e("Upload", "No episode selected or file is empty!")
+                        }
+                    }
+
                 )
             }
+
             composable("Pembayaran") {
                 ScaffoldWithButton(
                     navController = navController,
@@ -118,7 +145,8 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: V
                     content = { PaymentScreen() },
                     colorButton = Color(0xFFD32F2F),
                     colorTextButton = Color.White,
-                    modifier = Modifier
+                    modifier = Modifier,
+                    onClick = {  }
                 )
 
 
@@ -244,7 +272,8 @@ fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: V
                     )},
                     colorButton = Color(0XFFD22F26),
                     colorTextButton = Color.White,
-                    modifier = Modifier
+                    modifier = Modifier,
+                    onClick = {}
 
                 )
             }

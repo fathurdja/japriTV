@@ -33,12 +33,13 @@ import com.example.japritv.ui.components.home.CustomTopBar
 import com.example.japritv.ui.components.home.SearchResultList
 import com.example.japritv.viewmodel.CategoryViewModel
 import com.example.japritv.viewmodel.ShowItemViewModel
+import com.example.japritv.viewmodel.UploadEpisodeViewModel
 import com.example.japritv.viewmodel.VideoViewModel
 
 
 
 @Composable
-fun MainScreen(videoViewModel: VideoViewModel, data: ShowItemViewModel,) {
+fun MainScreen(videoViewModel: VideoViewModel, data: ShowItemViewModel,uploadEpisodeViewModel: UploadEpisodeViewModel) {
     val context = LocalContext.current
     val navController = rememberNavController()
     var searchText by remember { mutableStateOf("") }
@@ -47,6 +48,7 @@ fun MainScreen(videoViewModel: VideoViewModel, data: ShowItemViewModel,) {
     var selectedItem by remember { mutableStateOf(0) }
     val categoryViewModel: CategoryViewModel = viewModel()
     val showItemViewModel: ShowItemViewModel = viewModel()
+
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
     Scaffold(
 //        floatingActionButton = {
@@ -88,7 +90,7 @@ fun MainScreen(videoViewModel: VideoViewModel, data: ShowItemViewModel,) {
             }
         }
     ) { paddingValues ->
-        NavGraph(navController = navController, paddingValues = paddingValues,video = videoViewModel,data = data,db = db)
+        NavGraph(navController = navController, paddingValues = paddingValues,video = videoViewModel,data = data,db = db, uploadEpisodeViewModel = uploadEpisodeViewModel)
     }
 }
 

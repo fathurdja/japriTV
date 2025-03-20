@@ -14,18 +14,22 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
 import com.example.japritv.Repository.VideoRepository
 import com.example.japritv.dao.AppDatabase
+import com.example.japritv.factory.UploadEpisodeViewModelFactory
 import com.example.japritv.factory.VideoViewModelFactory
 import com.example.japritv.navigation.NavGraph
 import com.example.japritv.ui.screen.MainScreen
 import com.example.japritv.ui.screen.SplashScreen
 import com.example.japritv.ui.theme.JapriTvTheme
 import com.example.japritv.viewmodel.ShowItemViewModel
+import com.example.japritv.viewmodel.UploadEpisodeViewModel
 import com.example.japritv.viewmodel.VideoViewModel
+import kotlinx.coroutines.launch
 
 class  MainActivity : ComponentActivity() {
 
@@ -47,11 +51,11 @@ class  MainActivity : ComponentActivity() {
         setContent {
             val videoViewModel: VideoViewModel = viewModel(factory = VideoViewModelFactory(videoRepository))
             val data: ShowItemViewModel = viewModel()
-
+            val uploadViewModel: UploadEpisodeViewModel = viewModel(factory = UploadEpisodeViewModelFactory(database))
             MainScreen(
                 data = data,
                 videoViewModel = videoViewModel,
-
+                uploadEpisodeViewModel = uploadViewModel
             )
         }
     }

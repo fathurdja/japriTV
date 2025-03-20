@@ -4,6 +4,7 @@ import LoadingUpload
 import android.graphics.DashPathEffect
 
 import android.provider.CalendarContract.Colors
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -64,10 +65,13 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun EpisodeUploadComponent(
+    onClick: () -> Unit ,
     episodeIndex: Int,
     uploadVideoViewModel: UploadEpisodeViewModel,
     episode: Episode
 ) {
+
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -166,11 +170,7 @@ fun EpisodeUploadComponent(
                                 )
                             }
                             .clickable {
-                                uploadVideoViewModel.uploadFile(
-                                    episodeIndex,
-                                    "example_video.mp4",
-                                    "5 MB"
-                                )
+                               onClick()
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -193,14 +193,14 @@ fun EpisodeUploadComponent(
                     // Tampilkan LoadingUpload saat sedang mengunggah
                     Spacer(modifier = Modifier.height(16.dp))
                     LoadingUpload(progress = episode.progress)
-                } else if (episode.fileName.isNotEmpty()) {
+                } else if (episode.fileName!=null) {
                     // Jika file sudah selesai diupload, tampilkan VideoItemUploaded
                         VideoItemUploaded(
                             fileName = episode.fileName,
                             fileSize = episode.fileSize,
                             fileIcon = R.drawable.video_vector_icon_1, // Sesuaikan dengan resource yang kamu punya
                             onRemoveClick = {
-//                        uploadVideoViewModel.removeFile(episodeIndex)
+
                             }
                         )
 
@@ -226,11 +226,7 @@ fun EpisodeUploadComponent(
                                 )
                             }
                             .clickable {
-                                uploadVideoViewModel.uploadFile(
-                                    episodeIndex,
-                                    "example_video.mp4",
-                                    "5 MB"
-                                )
+                               onClick()
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -257,21 +253,7 @@ fun EpisodeUploadComponent(
 }
 
 
-@Preview
-@Composable
-private fun EpisodeUploadComponentPreview() {
 
-    val video = UploadEpisodeViewModel()
-    JapriTvTheme {
-        video.episodes.forEachIndexed { index, episode ->
-            EpisodeUploadComponent(
-                episodeIndex = index,
-                uploadVideoViewModel =video,
-                episode = episode
-            )
-        }
-    }
-}
 
 
 

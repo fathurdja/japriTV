@@ -68,7 +68,9 @@ fun HomeScreen(
 
     val showPlayerWidget = remember { mutableStateOf(true) }
 
-
+    LaunchedEffect(Unit) {
+        videoViewModel.fetchVideos() // ✅ Fetch video saat layar dibuka
+    }
 
     Scaffold { paddingValues ->
         Box(modifier = Modifier

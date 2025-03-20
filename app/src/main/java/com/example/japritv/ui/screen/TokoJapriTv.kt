@@ -113,8 +113,8 @@ private fun TokoJapriTvPreview() {
         )},
         colorButton = Color.Red,
         colorTextButton = Color.White,
-        modifier = Modifier
-
+        modifier = Modifier,
+        onClick = {}
     )
 }
 @Preview
