@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -16,10 +17,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.japritv.dao.AppDatabase
-import com.example.japritv.ui.components.profile.Group214
+import com.example.japritv.ui.components.profile.MembershipCard
+
 import com.example.japritv.ui.components.profile.MenuProfile
 import com.example.japritv.ui.components.profile.UserInfo
 import com.example.japritv.ui.components.profile.UserProfile
+import com.example.japritv.ui.components.profile.Wallet
 import com.example.japritv.ui.theme.JapriTvTheme
 import com.example.japritv.viewmodel.UserViewModel
 
@@ -29,6 +32,13 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
     val viewModel: UserViewModel = remember { UserViewModel(db) }
     val userInfo by viewModel.userInfo.collectAsState()
 
+    LaunchedEffect(Unit) {
+        if (userInfo!= null){
+
+            viewModel.updateSubscriptionInfo(userInfo!!.tokenAuth,db, userInfo!!.name,userInfo!!.urlPicture)
+        }
+
+    }
     // Background hitam untuk tampilan profil
     Scaffold(
         containerColor = Color.Black
@@ -41,7 +51,22 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
 
-                if (userInfo == null) {
+                if (userInfo !== null) {
+                    UserProfile(
+                        nameUser = userInfo?.name
+                            ?.split(" ") // Pisah berdasarkan spasi
+                            ?.take(2)    // Ambil 2 kata pertama
+                            ?.joinToString(" ") // Gabungkan kembali
+                            ?: "Pengunjung",
+
+                        email = userInfo?.email ?: "Email tidak tersedia",
+                        picture = userInfo?.urlPicture ?: ""
+                        ,userId = userInfo?.userId ?: "ID tidak tersedia",
+                        onClick = { navController.navigate("login") }
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    MembershipCard(level = "Mingguan")
+                }else{
                     UserInfo(
                         nameUser = "Pengunjung",
                         profileImageUrl = null,
@@ -49,22 +74,13 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
                         onCopyClick = { /* Handle Copy ID */ }
                     )
                 }
-                UserProfile(
-                    nameUser = userInfo?.name
-                        ?.split(" ") // Pisah berdasarkan spasi
-                        ?.take(2)    // Ambil 2 kata pertama
-                        ?.joinToString(" ") // Gabungkan kembali
-                        ?: "Pengunjung",
 
-                    email = userInfo?.email ?: "Email tidak tersedia",
-                    picture = userInfo?.urlPicture ?: ""
-                )
 
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Komponen Dompet
-                Group214(
+                Wallet (
                     onIsiUlangClick = { navController.navigate("TokoJapri") }
                 )
 

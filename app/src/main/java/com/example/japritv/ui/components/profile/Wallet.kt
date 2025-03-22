@@ -20,7 +20,7 @@ import com.example.japritv.R
 
 
 @Composable
-fun Group214(onIsiUlangClick: () -> Unit) {
+fun Wallet(onIsiUlangClick: () -> Unit) {
     val DoradoApprox100 = Color(0xFF565656) // Warna border dan garis pemisah
     val MineShaftApprox100 = Color(0xFF343434)
     // Container utama dengan border
@@ -122,6 +122,6 @@ fun Group214(onIsiUlangClick: () -> Unit) {
 @Preview
 @Composable
 fun PreviewGroup214() {
-    Group214(onIsiUlangClick = {})
+    Wallet(onIsiUlangClick = {})
 }
 

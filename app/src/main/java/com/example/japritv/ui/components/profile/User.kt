@@ -2,6 +2,7 @@ package com.example.japritv.ui.components.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,7 +35,7 @@ import coil.request.ImageRequest
 import com.example.japritv.R
 
 @Composable
-fun UserProfile(nameUser: String, email: String,picture:String) {
+fun UserProfile(nameUser: String, email: String,picture:String, userId: String,onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -47,6 +48,7 @@ fun UserProfile(nameUser: String, email: String,picture:String) {
         Box(
             modifier = Modifier
                 .size(50.dp)
+                .clip(CircleShape)
                 .background(Color.Gray, CircleShape)
         ) {
             AsyncImage(
@@ -69,7 +71,7 @@ fun UserProfile(nameUser: String, email: String,picture:String) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "Wandy Roseandy",
+                    text = nameUser,
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -83,18 +85,17 @@ fun UserProfile(nameUser: String, email: String,picture:String) {
                     modifier = Modifier
                         .clip(RoundedCornerShape(24))
                         .background(Color.Gray)
-
                         .padding(horizontal = 18.dp, vertical = 4.dp)
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "wendyroseandy@gmail.com",
+                text = email,
                 color = Color.White,
                 fontSize = 12.sp
             )
             Text(
-                text = "08123456789",
+                text = userId,
                 color = Color.White,
                 fontSize = 12.sp
             )
@@ -105,7 +106,8 @@ fun UserProfile(nameUser: String, email: String,picture:String) {
             painter = painterResource(id = R.drawable.vector__15_),
             contentDescription = "Edit Icon",
             tint = Color.White,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(24.dp).clickable { onClick() }
+
         )
     }
 }
@@ -118,5 +120,7 @@ fun UserProfilePreview() {
         nameUser = "Wandy Roseandy",
         email = "wendyroseandy@gmail.com",
         picture = "https://example.com/profile.jpg"
+        ,userId = "ID123456789"
+        , onClick = {}
     )
 }

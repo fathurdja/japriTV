@@ -12,13 +12,43 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 object AuthRepository {
-    fun sendTokenToServer(idToken: String, db: AppDatabase, nama:String,profile:String,callback: (Boolean) -> Unit,) {
-        CoroutineScope(Dispatchers.IO).launch {
+    suspend fun sendTokenToServer(idToken: String, db: AppDatabase, nama: String, profile: String): Boolean {
+        return withContext(Dispatchers.IO) {
             try {
+
                 val url = URL("https://japritv.vercel.app/api/auth/google")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
-                connection.setRequestProperty("Authorization", "Bearer $idToken") // Kirim token sebagai header
+                connection.setRequestProperty("Authorization", "Bearer $idToken")
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doInput = true
+
+                val responseCode = connection.responseCode
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+                Log.d("AuthRepository", "Response Code: $responseCode")
+                Log.d("AuthRepository", "Response Body: $responseMessage")
+
+                if (responseCode == 200) {
+                    val success = getDataLogin(db, idToken, nama, profile) // Menunggu hasil sebelum menyimpan
+                    if (success) {
+                        return@withContext true
+                    }
+                }
+                return@withContext false
+            } catch (e: Exception) {
+                Log.e("AuthRepository", "Gagal mengirim token ke server", e)
+                return@withContext false
+            }
+        }
+    }
+
+    private suspend fun getDataLogin(db: AppDatabase, idToken: String, nama: String, profile: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = URL("https://japritv.vercel.app/api/user/profile")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Authorization", "Bearer $idToken")
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doInput = true
 
@@ -29,41 +59,40 @@ object AuthRepository {
 
                 if (responseCode == 200) {
                     val jsonResponse = JSONObject(responseMessage)
-                    val tokenAuth = idToken
-                    val name = nama
-                    val urlPicture = profile
-                    val infoRegistrasi = jsonResponse.getString("message")
-                    val email = jsonResponse.getString("email")
+                    val data = jsonResponse.getJSONObject("data")
+                    val email = data.getString("email")
+                    val userId = data.getString("_id")
+                    val coins = data.getInt("coins")
+                    val createdAt = data.getString("createdAt")
+                    val updatedAt = data.getString("updatedAt")
+                    val referral = data.getString("referral")
 
                     val loginInfo = LoginInfo(
-                        tokenAuth = tokenAuth,
-                        name = name,
-                        urlPicture = urlPicture,
-                        infoRegistrasi = infoRegistrasi,
-                        email = email
+                        tokenAuth = idToken,
+                        name = nama,
+                        urlPicture = profile,
+                        infoRegistrasi = "Berhasil Login",
+                        email = email,
+                        userId = userId,
+                        coins = coins,
+                        createdAt = createdAt,
+                        updatedAt = updatedAt,
+                        referral = referral
                     )
-
+                    Log.d("AuthRepository", "Saving login info: $loginInfo")
                     db.loginInfoDao().saveLoginInfo(loginInfo)
-
-                    withContext(Dispatchers.Main) {
-                        callback(true)
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        callback(false)
-                    }
+                    return@withContext true
+                } else if (responseCode == 400) {
+                    Log.d("AuthRepository", "Token expired, refreshing token")
+                    sendTokenToServer(idToken, db, nama, profile) // Refresh token dan coba lagi
                 }
-
+                return@withContext false
             } catch (e: Exception) {
-                Log.e("AuthRepository", idToken)
-                Log.e("AuthRepository", "Gagal mengirim token ke server", e)
-                withContext(Dispatchers.Main) {
-                    callback(false)
-                }
+                Log.e("AuthRepository", "Gagal mendapatkan data login", e)
+                return@withContext false
             }
         }
     }
-
-
 }
+
 

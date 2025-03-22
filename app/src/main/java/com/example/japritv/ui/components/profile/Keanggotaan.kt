@@ -1,6 +1,7 @@
 package com.example.japritv.ui.components.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,11 +35,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun Keanggotaan(tipe:String,harga:String,hargaLama:String,onClick:()->Unit,benefits:String) {
+fun Keanggotaan(tipe: String, harga: String, hargaLama: String, benefits: String, isSelected: Boolean, onClick: () -> Unit) {
     Box(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .width(400.dp)
-            .height(135.dp).padding(horizontal = 16.dp).clip(RoundedCornerShape(8.dp)).clickable { onClick() }
+            .height(135.dp)
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { onClick() }
+            .border(2.dp, if (isSelected) Color.Red else Color.Transparent, RoundedCornerShape(8.dp))
     ) {
         Box(
             modifier = Modifier
@@ -43,14 +53,11 @@ fun Keanggotaan(tipe:String,harga:String,hargaLama:String,onClick:()->Unit,benef
                     Brush.horizontalGradient(
                         colors = listOf(
                             Color(0xFF2A2521),
-                            Color(0xFF000000), // Black
-                          // Dark Brown
-                              // Gold Brown
+                            Color(0xFF000000) // Black
                         )
                     )
                 )
         )
-        // Main card
         Card(
             modifier = Modifier.fillMaxSize(),
             colors = CardDefaults.cardColors(
@@ -63,20 +70,14 @@ fun Keanggotaan(tipe:String,harga:String,hargaLama:String,onClick:()->Unit,benef
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                // Title Box
                 Text(
                     text = tipe,
                     color = Color(0xFFEFC55F),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
-
                 Spacer(modifier = Modifier.height(8.dp))
-
-                // Price Box
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = harga,
                         color = Color(0xFFEFC55F),
@@ -91,10 +92,7 @@ fun Keanggotaan(tipe:String,harga:String,hargaLama:String,onClick:()->Unit,benef
                         textDecoration = TextDecoration.LineThrough
                     )
                 }
-
                 Spacer(modifier = Modifier.height(12.dp))
-
-                // Button Box
                 Box(
                     modifier = Modifier
                         .background(Color(0xFFC5A75A), shape = RoundedCornerShape(10.dp))
@@ -110,13 +108,11 @@ fun Keanggotaan(tipe:String,harga:String,hargaLama:String,onClick:()->Unit,benef
                 }
             }
         }
-
-        // Timer banner
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .clip(RoundedCornerShape(topEnd = 8.dp, bottomStart = 8.dp))
-                .background( Color(0xFFD22F26))
+                .background(Color(0xFFD22F26))
                 .padding(horizontal = 12.dp, vertical = 4.dp)
         ) {
             Text(
@@ -129,15 +125,19 @@ fun Keanggotaan(tipe:String,harga:String,hargaLama:String,onClick:()->Unit,benef
     }
 }
 
-@Preview
-@Composable
-fun PreviewCardMinimal() {
-    Keanggotaan(
-        tipe = "Bulanan",
-        harga = "Rp 100.000",
-        hargaLama = "Rp 150.000",
-        onClick = {},
-        benefits = "Semua Episode Bisa dinonton Gratis"
-    )
-}
+
+
+//@Preview
+//@Composable
+//fun PreviewCardMinimal() {
+//
+//    Keanggotaan(
+//        tipe = "Bulanan",
+//        harga = "Rp 250.000",
+//        hargaLama = "Rp 500.000",
+//        benefits = "Semua episode bisa ditonton gratis",
+//        isSelected = selectedMembership == "Bulanan",
+//        onClick = { onSelect("Bulanan") }
+//    )
+//}
 

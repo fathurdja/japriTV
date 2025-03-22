@@ -1,12 +1,15 @@
 package com.example.japritv.provider
 
 import android.content.Context
+import android.credentials.GetCredentialRequest
 import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 
 import com.example.japritv.R
 import com.example.japritv.model.GoogleAccount
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 
@@ -25,7 +28,29 @@ class GoogleAuthUiProvider(
         Log.e("GoogleAuthUiProvider", "Sign-in failed: ${e.message}")
         null
     }
+    suspend fun getGoogleAccount(): GoogleAccount? {
+        return try {
+            val credential = credentialManager.getCredential(
+                context = activityContext,
+                request = getCredentialRequest()
+            ).credential
 
+            if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                GoogleAccount(
+                    token = googleIdTokenCredential.idToken,
+                    displayName = googleIdTokenCredential.displayName ?: "",
+                    profileImageUrl = googleIdTokenCredential.profilePictureUri?.toString()
+                )
+            } else {
+                Log.e("GoogleAuthUiProvider", "Unexpected credential type for GoogleAccount")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("GoogleAuthUiProvider", "Failed to get GoogleAccount: ${e.message}")
+            null
+        }
+    }
     private fun handleSignIn(credential: androidx.credentials.Credential): GoogleAccount? = when {
         credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL -> {
             try {
@@ -40,19 +65,49 @@ class GoogleAuthUiProvider(
                 null
             }
         }
+
         else -> {
             Log.e("GoogleAuthUiProvider", "Unexpected credential type")
             null
         }
     }
 
-    private fun getCredentialRequest(): androidx.credentials.GetCredentialRequest = androidx.credentials.GetCredentialRequest.Builder()
-        .addCredentialOption(getGoogleIdOption())
-        .build()
+    private fun getCredentialRequest(): androidx.credentials.GetCredentialRequest =
+        androidx.credentials.GetCredentialRequest.Builder()
+            .addCredentialOption(getGoogleIdOption())
+            .build()
 
-    private fun getGoogleIdOption(): com.google.android.libraries.identity.googleid.GetGoogleIdOption = com.google.android.libraries.identity.googleid.GetGoogleIdOption.Builder()
-        .setFilterByAuthorizedAccounts(false)
-        .setAutoSelectEnabled(true)
-        .setServerClientId("635195907142-ml4hd7eo14u3okb22lqqc6o4b0tcfhhk.apps.googleusercontent.com") // ganti dengan WEB_CLIENT_ID
-        .build()
+
+
+
+
+    private fun getGoogleIdOption(): GetGoogleIdOption =
+     GetGoogleIdOption.Builder()
+            .setFilterByAuthorizedAccounts(true)
+            .setServerClientId("635195907142-ml4hd7eo14u3okb22lqqc6o4b0tcfhhk.apps.googleusercontent.com") // ganti dengan WEB_CLIENT_ID
+            .setAutoSelectEnabled(true)
+            .build()
+
+
+    suspend fun refreshToken(): String? {
+        return try {
+            val credential = credentialManager.getCredential(
+                context = activityContext,
+                request = getCredentialRequest()
+            ).credential
+
+            if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                googleIdTokenCredential.idToken
+            } else {
+                Log.e("GoogleAuthUiProvider", "Unexpected credential type for refresh token")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("GoogleAuthUiProvider", "Token refresh failed: ${e.message}")
+            null
+        }
+    }
+
+
 }

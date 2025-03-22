@@ -11,5 +11,10 @@ data class LoginInfo(
     val name: String,
     val urlPicture:String,
     val infoRegistrasi: String,
-    val email : String
+    val email : String,
+    val userId: String,
+    val coins: Int,
+    val createdAt: String,
+    val updatedAt: String,
+    val referral: String,
 )

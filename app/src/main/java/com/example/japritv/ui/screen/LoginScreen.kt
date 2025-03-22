@@ -112,17 +112,19 @@ fun LoginScreen(onClick: () -> Unit) {
                                             authTokenDao.saveToken(AuthToken(token = googleAccount.token))
                                         }
 
-                                        AuthRepository.sendTokenToServer(
-                                            idToken = googleAccount.token,
-                                            db = db,
-                                            nama= googleAccount.displayName ?: "", // Ubah dari `nama` ke `name`
-                                            profile = googleAccount.profileImageUrl ?: ""
-                                        ) { success ->  // Pastikan callback diberikan
-                                            if (success) {
-                                                onClick()
-                                            } else {
-                                                Log.e("LoginScreen", "Gagal mengautentikasi token di server")
-                                            }
+                                        val success = withContext(Dispatchers.IO) {
+                                            AuthRepository.sendTokenToServer(
+                                                idToken = googleAccount.token,
+                                                db = db,
+                                                nama = googleAccount.displayName ?: "",
+                                                profile = googleAccount.profileImageUrl ?: ""
+                                            )
+                                        }
+
+                                        if (success) {
+                                            onClick()
+                                        } else {
+                                            Log.e("LoginScreen", "Gagal mengautentikasi token di server")
                                         }
                                     } else {
                                         Log.e("LoginScreen", "Google Sign-In failed")
@@ -133,6 +135,7 @@ fun LoginScreen(onClick: () -> Unit) {
                             icon = R.drawable.logo_googleg_48dp,
                             color = Color(0xFF313131)
                         )
+
                     }
                 }
             }

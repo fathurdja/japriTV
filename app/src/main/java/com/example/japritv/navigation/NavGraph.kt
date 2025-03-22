@@ -4,9 +4,12 @@ import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph
@@ -17,6 +20,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import com.example.japritv.R
 import com.example.japritv.dao.AppDatabase
+import com.example.japritv.model.GoogleAccount
+import com.example.japritv.provider.GoogleAuthUiProvider
+import com.example.japritv.provider.GoogleSignInHelper
 import com.example.japritv.ui.components.Header
 import com.example.japritv.ui.components.HeaderRightWithIcon
 import com.example.japritv.ui.components.ScaffoldWithButton
@@ -40,12 +46,17 @@ import com.example.japritv.ui.screen.VideoVerticalPagerScreen
 import com.example.japritv.viewmodel.PaymentViewModel
 import com.example.japritv.viewmodel.ShowItemViewModel
 import com.example.japritv.viewmodel.UploadEpisodeViewModel
+import com.example.japritv.viewmodel.UserViewModel
 import com.example.japritv.viewmodel.VideoViewModel
+import kotlinx.coroutines.launch
 
 @Composable
-fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: VideoViewModel,data:ShowItemViewModel,db:AppDatabase,uploadEpisodeViewModel: UploadEpisodeViewModel) {
+fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: VideoViewModel,data:ShowItemViewModel,db:AppDatabase,uploadEpisodeViewModel: UploadEpisodeViewModel,userViewModel: UserViewModel) {
 val  context = LocalContext.current
 
+
+    val coroutineScope = rememberCoroutineScope()
+    val credentialManager: CredentialManager = remember { CredentialManager.create(context) }
     // Handle routing and navigation
     NavHost(
         navController = navController as NavHostController,
@@ -261,7 +272,7 @@ val  context = LocalContext.current
                     navController = navController ,
                     containerColor = Color.Black,
                     navigationRoute = "MetodeBayar",
-                    content = {TokoJapriTV()},
+                    content = {TokoJapriTV(userViewModel = userViewModel)},
                     titleButton = "Lanjut Ke Pembayaran",
                     contentTop = {HeaderRightWithIcon(
                         title = "Toko Japri Tv",
@@ -273,7 +284,27 @@ val  context = LocalContext.current
                     colorButton = Color(0XFFD22F26),
                     colorTextButton = Color.White,
                     modifier = Modifier,
-                    onClick = {}
+                    onClick = {
+
+                        coroutineScope.launch {
+
+                            val googleSignInHelper = GoogleSignInHelper(context)
+                            val googleAccount = googleSignInHelper.getGoogleAccount()
+
+                            if (googleAccount != null) {
+                                userViewModel.loadUserInfo()
+                                val level = userViewModel.selectedMembership.value
+                                val idToken = googleAccount.token
+                                val profile = userViewModel.userInfo.value?.urlPicture
+                                val name = userViewModel.userInfo.value?.name
+
+                                if (level != null && idToken != null && name != null && profile != null) {
+                                    userViewModel.makeSubscription(idToken, level,db, name, profile)
+                                }
+                            }
+                        }
+                    }
+
 
                 )
             }

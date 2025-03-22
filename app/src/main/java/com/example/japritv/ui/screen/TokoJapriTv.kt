@@ -9,6 +9,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.japritv.R
 import com.example.japritv.ui.components.CustomBoxButton
@@ -24,9 +30,12 @@ import com.example.japritv.ui.components.ScaffoldWithButton
 import com.example.japritv.ui.components.ScaffoldWithoutButton
 import com.example.japritv.ui.components.profile.CoinGrid
 import com.example.japritv.ui.components.profile.Keanggotaan
+import com.example.japritv.viewmodel.UserViewModel
 
 @Composable
-fun TokoJapriTV() {
+fun TokoJapriTV(userViewModel: UserViewModel) {
+    val selectedMembership by userViewModel.selectedMembership.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -56,28 +65,11 @@ fun TokoJapriTV() {
             modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
         )
 
+        MembershipOptions(selectedMembership ?: "") {
+            userViewModel.setSelectedMembership(it)
+        }
         // Membership Cards
-       Box(modifier = Modifier.padding(horizontal = 12.dp)) {
-          Column {
-              Keanggotaan(
-                  tipe = "Mingguan",
-                  harga = "Rp 100.000",
-                  hargaLama = "Rp 99.000",
-                  benefits = "Untuk 50 judul video",
-                  onClick = {}
-              )
 
-              Spacer(modifier = Modifier.height(14.dp))
-
-              Keanggotaan(
-                  tipe = "Bulanan",
-                  harga = "Rp 250.000",
-                  hargaLama = "Rp 500.000",
-                  benefits = "Semua episode bisa ditonton gratis"
-                  ,onClick = {}
-              )
-          }
-       }
 
 
 //       Box(modifier = Modifier.fillMaxWidth().padding(top = 150.dp, start = 20.dp, end = 20.dp)) {
@@ -94,15 +86,39 @@ fun TokoJapriTV() {
     }
 }
 
+
+@Composable
+fun MembershipOptions(selectedMembership: String, onSelect: (String) -> Unit) {
+    Column(modifier = Modifier.padding(horizontal = 12.dp)) {
+        Keanggotaan(
+            tipe = "Mingguan",
+            harga = "Rp 100.000",
+            hargaLama = "Rp 99.000",
+            benefits = "Untuk 50 judul video",
+            isSelected = selectedMembership == "mingguan",
+            onClick = { onSelect("mingguan") }
+        )
+        Spacer(modifier = Modifier.height(14.dp))
+        Keanggotaan(
+            tipe = "Bulanan",
+            harga = "Rp 250.000",
+            hargaLama = "Rp 500.000",
+            benefits = "Semua episode bisa ditonton gratis",
+            isSelected = selectedMembership == "bulanan",
+            onClick = { onSelect("bulanan") }
+        )
+    }
+}
 @Preview
 @Composable
 private fun TokoJapriTvPreview() {
+    val userViewModel:UserViewModel = viewModel()
     val navController= rememberNavController()
     ScaffoldWithButton(
         navController = navController ,
         containerColor = Color.Black,
         navigationRoute = "",
-        content = {TokoJapriTV()},
+        content = {TokoJapriTV(userViewModel)},
         titleButton = "Lanjut Ke Pembayaran",
         contentTop = {HeaderRightWithIcon(
             title = "Toko Japri Tv",
@@ -120,10 +136,13 @@ private fun TokoJapriTvPreview() {
 @Preview
 @Composable
 private fun TokoJapriTvPreview2() {
+    val userViewModel:UserViewModel = viewModel()
     val navController= rememberNavController()
     ScaffoldWithoutButton(
         containerColor = Color.Black,
-        content = {TokoJapriTV()},
+        content = {TokoJapriTV(userViewModel
+
+        )},
         contentTop = { HeaderRightWithIcon(
             title = "Toko Japri Tv",
             color = Color.Black,
@@ -131,5 +150,6 @@ private fun TokoJapriTvPreview2() {
             resId = R.drawable.arrowwhite,
             onBackClick = {}
         ) }
-    ) 
+    )
 }
+

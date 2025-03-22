@@ -34,12 +34,13 @@ import com.example.japritv.ui.components.home.SearchResultList
 import com.example.japritv.viewmodel.CategoryViewModel
 import com.example.japritv.viewmodel.ShowItemViewModel
 import com.example.japritv.viewmodel.UploadEpisodeViewModel
+import com.example.japritv.viewmodel.UserViewModel
 import com.example.japritv.viewmodel.VideoViewModel
 
 
 
 @Composable
-fun MainScreen(videoViewModel: VideoViewModel, data: ShowItemViewModel,uploadEpisodeViewModel: UploadEpisodeViewModel) {
+fun MainScreen(videoViewModel: VideoViewModel, data: ShowItemViewModel,uploadEpisodeViewModel: UploadEpisodeViewModel,userViewModel: UserViewModel) {
     val context = LocalContext.current
     val navController = rememberNavController()
     var searchText by remember { mutableStateOf("") }
@@ -90,7 +91,7 @@ fun MainScreen(videoViewModel: VideoViewModel, data: ShowItemViewModel,uploadEpi
             }
         }
     ) { paddingValues ->
-        NavGraph(navController = navController, paddingValues = paddingValues,video = videoViewModel,data = data,db = db, uploadEpisodeViewModel = uploadEpisodeViewModel)
+        NavGraph(navController = navController, paddingValues = paddingValues,video = videoViewModel,data = data,db = db, uploadEpisodeViewModel = uploadEpisodeViewModel,userViewModel = userViewModel)
     }
 }
 
