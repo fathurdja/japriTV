@@ -100,8 +100,10 @@ fun ModalityContainer(onClick: ()-> Unit) {
             harga = "Rp 100.000",
             hargaLama = "Rp 150.000",
             onClick = {},
-            benefits = "Semua episode gratis"
-            ,isSelected = false
+            benefits = "Semua episode gratis",
+            isSelected = false,
+            setharga = false,
+            setHarga = {},
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -113,7 +115,9 @@ fun ModalityContainer(onClick: ()-> Unit) {
             hargaLama = "Rp 150.000",
             onClick = {},
             benefits = "Semua episode gratis",
-            isSelected = false
+            isSelected = false,
+            setharga = false,
+            setHarga = {}
         )
         Spacer(modifier = Modifier.height(30.dp))
         Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)){

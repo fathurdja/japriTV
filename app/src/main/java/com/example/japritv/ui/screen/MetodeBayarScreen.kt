@@ -19,11 +19,11 @@ import com.example.japritv.viewmodel.PaymentViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
 @Composable
-fun MetodeBayarScreen(viewModel: PaymentViewModel, navigateTo: ()->Unit) {
+fun MetodeBayarScreen(viewModel: PaymentViewModel, navigateTo: (String)->Unit) {
     val paymentMethods by viewModel.paymentMethods.observeAsState(emptyList())
         LazyColumn(modifier = Modifier.padding(vertical = 20.dp)) {
             itemsIndexed(paymentMethods) { index, category ->
-                ExpandableList(category = category, isInitiallyExpanded = index == 0, onItemClicked = navigateTo)
+                ExpandableList(category = category, isInitiallyExpanded = index == 0, onItemClicked = { navigateTo(category.title) })
             }
         }
 

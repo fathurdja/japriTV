@@ -4,8 +4,9 @@ data class subscriptionData(
     val _id: String,
     val userId: String,
     val level: String,
+    val price: Int,
     val startDate: String,
     val endDate: String,
-    val isPayed: Boolean,
+    var isPayed: Boolean,
     val isExpired: Boolean
 )

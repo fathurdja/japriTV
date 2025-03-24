@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.example.japritv.R
 
 @Composable
-fun PaymentCard() {
+fun PaymentCard(nominal:String) {
     Column(
         modifier = Modifier
             .border(1.dp,  Color(0xFFE6E6E8), shape = RoundedCornerShape(12.dp))
@@ -66,7 +66,7 @@ fun PaymentCard() {
 
         Column(modifier = Modifier.padding(16.dp)) {
             PaymentInfoRow(label = "Nomor Virtual Account", value = "2370027689")
-            PaymentInfoRow(label = "Nominal pembelian", value = "Rp 100.000")
+            PaymentInfoRow(label = "Nominal pembelian", value = nominal)
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "BCA - Virtual Account", fontWeight = FontWeight.Bold, fontSize = 14.sp)
@@ -105,5 +105,5 @@ fun onCopyClick(value: String, clipboardManager: ClipboardManager, context: Cont
 @Preview
 @Composable
 fun PreviewPaymentCard() {
-    PaymentCard()
+    PaymentCard(nominal = "Rp 100.000")
 }

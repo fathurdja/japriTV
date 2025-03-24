@@ -35,6 +35,8 @@ import com.example.japritv.viewmodel.UserViewModel
 @Composable
 fun TokoJapriTV(userViewModel: UserViewModel) {
     val selectedMembership by userViewModel.selectedMembership.collectAsState()
+    val nominal by userViewModel.nominal.collectAsState()
+
 
     Column(
         modifier = Modifier
@@ -65,9 +67,14 @@ fun TokoJapriTV(userViewModel: UserViewModel) {
             modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
         )
 
-        MembershipOptions(selectedMembership ?: "") {
-            userViewModel.setSelectedMembership(it)
-        }
+        MembershipOptions(
+            selectedMembership = selectedMembership ?: "",
+            nominal = nominal ?: 0,// Pastikan selectedMembership tidak null
+            onSelect = { userViewModel.setSelectedMembership(it)
+                        userViewModel.setNominal(nominal)},
+            harga = { userViewModel.setNominal(nominal) } // Pastikan fungsi harga menerima nilai
+        )
+
         // Membership Cards
 
 
@@ -88,7 +95,7 @@ fun TokoJapriTV(userViewModel: UserViewModel) {
 
 
 @Composable
-fun MembershipOptions(selectedMembership: String, onSelect: (String) -> Unit) {
+fun MembershipOptions(selectedMembership: String, nominal:Int,onSelect: (String) -> Unit, harga:(Int)->Unit) {
     Column(modifier = Modifier.padding(horizontal = 12.dp)) {
         Keanggotaan(
             tipe = "Mingguan",
@@ -96,7 +103,12 @@ fun MembershipOptions(selectedMembership: String, onSelect: (String) -> Unit) {
             hargaLama = "Rp 99.000",
             benefits = "Untuk 50 judul video",
             isSelected = selectedMembership == "mingguan",
-            onClick = { onSelect("mingguan") }
+            onClick = {
+                onSelect("mingguan")
+
+            },
+            setharga = nominal == 100000,
+            setHarga = {harga(100000)}
         )
         Spacer(modifier = Modifier.height(14.dp))
         Keanggotaan(
@@ -105,7 +117,9 @@ fun MembershipOptions(selectedMembership: String, onSelect: (String) -> Unit) {
             hargaLama = "Rp 500.000",
             benefits = "Semua episode bisa ditonton gratis",
             isSelected = selectedMembership == "bulanan",
-            onClick = { onSelect("bulanan") }
+            onClick = { onSelect("bulanan") },
+            setharga = nominal == 250000,
+             setHarga = {harga(250000)}
         )
     }
 }

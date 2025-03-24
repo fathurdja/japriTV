@@ -35,7 +35,7 @@ fun MembershipCard(level: String) {
             )
 
             .border(
-                width = 1.dp,
+                width = 3.dp,
                 color = Color(0xFFC5A75A),
                 shape = RoundedCornerShape(16.dp)
             )
@@ -43,16 +43,16 @@ fun MembershipCard(level: String) {
     ) {
         Box(
             modifier = Modifier
+                .padding(top = 3.dp)
                 .background(
                     color = Color(0xFF413327),
                     shape = RoundedCornerShape(8.dp)
                 ).align(Alignment.TopEnd)
-                .padding(top = 12.dp, end = 20.dp)
+                .padding(top = 12.dp, end = 20.dp, bottom = 5.dp, start = 12.dp)
 
         ) {
             Text(
                 text = "Masa berlaku 21/07/2025",
-
                 color = Color(0xFFC5A75A),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium

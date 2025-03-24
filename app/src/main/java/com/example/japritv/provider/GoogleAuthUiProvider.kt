@@ -1,14 +1,11 @@
 package com.example.japritv.provider
 
 import android.content.Context
-import android.credentials.GetCredentialRequest
 import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 
-import com.example.japritv.R
 import com.example.japritv.model.GoogleAccount
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -71,16 +68,10 @@ class GoogleAuthUiProvider(
             null
         }
     }
-
     private fun getCredentialRequest(): androidx.credentials.GetCredentialRequest =
         androidx.credentials.GetCredentialRequest.Builder()
             .addCredentialOption(getGoogleIdOption())
             .build()
-
-
-
-
-
     private fun getGoogleIdOption(): GetGoogleIdOption =
      GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(true)
@@ -89,25 +80,7 @@ class GoogleAuthUiProvider(
             .build()
 
 
-    suspend fun refreshToken(): String? {
-        return try {
-            val credential = credentialManager.getCredential(
-                context = activityContext,
-                request = getCredentialRequest()
-            ).credential
 
-            if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                googleIdTokenCredential.idToken
-            } else {
-                Log.e("GoogleAuthUiProvider", "Unexpected credential type for refresh token")
-                null
-            }
-        } catch (e: Exception) {
-            Log.e("GoogleAuthUiProvider", "Token refresh failed: ${e.message}")
-            null
-        }
-    }
 
 
 }

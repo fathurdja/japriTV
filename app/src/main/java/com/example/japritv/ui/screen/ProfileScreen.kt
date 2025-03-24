@@ -35,7 +35,8 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
     LaunchedEffect(Unit) {
         if (userInfo!= null){
 
-            viewModel.updateSubscriptionInfo(userInfo!!.tokenAuth,db, userInfo!!.name,userInfo!!.urlPicture)
+            viewModel.loadSubscriptionInfo(userInfo!!.tokenAuth,db, userInfo!!.name,userInfo!!.urlPicture)
+
         }
 
     }

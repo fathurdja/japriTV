@@ -1,11 +1,22 @@
 package com.example.japritv.navigation
 
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -19,8 +30,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import com.example.japritv.R
+import com.example.japritv.Repository.ProfileRepository
 import com.example.japritv.dao.AppDatabase
 import com.example.japritv.model.GoogleAccount
+import com.example.japritv.model.subscriptionData
 import com.example.japritv.provider.GoogleAuthUiProvider
 import com.example.japritv.provider.GoogleSignInHelper
 import com.example.japritv.ui.components.Header
@@ -51,10 +64,19 @@ import com.example.japritv.viewmodel.VideoViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun NavGraph(navController: NavController, paddingValues: PaddingValues,video: VideoViewModel,data:ShowItemViewModel,db:AppDatabase,uploadEpisodeViewModel: UploadEpisodeViewModel,userViewModel: UserViewModel) {
-val  context = LocalContext.current
-
-
+fun NavGraph(
+    navController: NavController,
+    paddingValues: PaddingValues,
+    video: VideoViewModel,
+    data: ShowItemViewModel,
+    db: AppDatabase,
+    uploadEpisodeViewModel: UploadEpisodeViewModel,
+    userViewModel: UserViewModel,
+    paymentViewModel: PaymentViewModel
+) {
+    val context = LocalContext.current
+    val datasubs: subscriptionData
+    var isLoading by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val credentialManager: CredentialManager = remember { CredentialManager.create(context) }
     // Handle routing and navigation
@@ -68,7 +90,7 @@ val  context = LocalContext.current
             SplashScreen(navController = navController)
         }
         composable("home") {
-            HomeScreen(navController = navController,videoViewModel = video)
+            HomeScreen(navController = navController, videoViewModel = video)
         }
 
         // Sub-navigation for "home"
@@ -77,9 +99,12 @@ val  context = LocalContext.current
                 HomeScreen(navController = navController, videoViewModel = video)
             }
 
-            composable("nowPlaying/{userId}"){ backStackEntry ->
+            composable("nowPlaying/{userId}") { backStackEntry ->
                 val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
-                VideoVerticalPagerScreen(viewModel = video, userId = userId, onClickBack = {navController.popBackStack()})
+                VideoVerticalPagerScreen(
+                    viewModel = video,
+                    userId = userId,
+                    onClickBack = { navController.popBackStack() })
             }
             composable("rating") {
                 RatingScreen(shows = data.shows, navController = navController)
@@ -115,7 +140,8 @@ val  context = LocalContext.current
                     colorTextButton = Color.White,
                     modifier = Modifier,
                     onClick = {
-                        val episode = uploadEpisodeViewModel.episodes.firstOrNull() // Ambil episode pertama
+                        val episode =
+                            uploadEpisodeViewModel.episodes.firstOrNull() // Ambil episode pertama
 
                         if (episode?.fileName != null) {
                             uploadEpisodeViewModel.uploadVideoToServer(
@@ -123,7 +149,7 @@ val  context = LocalContext.current
                                 title = episode.movieTitle,
                                 videoFiles = listOf(episode.fileName),
                                 episode = uploadEpisodeViewModel.episodes.indexOf(episode) + 1, // Urutan episode
-                        // Gunakan thumbnail sebagai poster
+                                // Gunakan thumbnail sebagai poster
                                 onSuccess = { url ->
                                     Log.d("Upload", "Video Uploaded Successfully: $url")
                                 },
@@ -157,7 +183,7 @@ val  context = LocalContext.current
                     colorButton = Color(0xFFD32F2F),
                     colorTextButton = Color.White,
                     modifier = Modifier,
-                    onClick = {  }
+                    onClick = { }
                 )
 
 
@@ -185,7 +211,7 @@ val  context = LocalContext.current
 
             }
             composable("InstruksiBayar") {
-                val viewModel = viewModel<PaymentViewModel>()
+
                 ScaffoldWithoutButton(
                     containerColor = Color.White,
                     contentTop = {
@@ -197,11 +223,23 @@ val  context = LocalContext.current
                             onBackClick = { navController.popBackStack() })
                     },
                     content = {
+
                         InstruksiBayarScreen(
                             colortext = Color(0XFFD22F26),
                             colorButton = Color.White,
                             onClick = { navController.navigate("home") },
-                            onClickBack = { navController.popBackStack() })
+                            onClickBack = { navController.popBackStack() },
+                            dataPayment = subscriptionData(
+                                _id = "",
+                                userId = "",
+                                level = "",
+                                price = 0,
+                                startDate = "",
+                                endDate ="",
+                                isPayed = false,
+                                isExpired = false
+                            )
+                        )
                     },
 
                     )
@@ -211,8 +249,12 @@ val  context = LocalContext.current
 
 
         }
-        composable("history"){RiwayatScreen(videoViewModel = video, onClick = {navController.navigate("MetodeBayarBlack") })}
-        navigation(startDestination = "MetodeBayar", route = "riwayatRoute"){
+        composable("history") {
+            RiwayatScreen(
+                videoViewModel = video,
+                onClick = { navController.navigate("MetodeBayarBlack") })
+        }
+        navigation(startDestination = "MetodeBayar", route = "riwayatRoute") {
             composable("MetodeBayarBlack") {
                 val viewModel = viewModel<PaymentViewModel>()
                 ScaffoldWithoutButton(
@@ -228,7 +270,10 @@ val  context = LocalContext.current
                     content = {
                         MetodeBayarScreen(
                             viewModel,
-                            navigateTo = { navController.navigate("InstruksiBayarBlack") })
+                            navigateTo = {
+
+                                navController.navigate("InstruksiBayarBlack")
+                            })
                     },
 
                     )
@@ -252,7 +297,18 @@ val  context = LocalContext.current
                             colortext = Color.White,
                             colorButton = Color.Black,
                             onClick = { navController.navigate("home") },
-                            onClickBack = { navController.popBackStack() })
+                            onClickBack = { navController.popBackStack() },
+                            dataPayment = subscriptionData(
+                                _id = "",
+                                userId = "",
+                                level = "",
+                                price = 0,
+                                startDate = "",
+                                endDate ="",
+                                isPayed = false,
+                                isExpired = false
+                            )
+                        )
                     },
 
                     )
@@ -262,25 +318,27 @@ val  context = LocalContext.current
 
         }
 
-        composable("profile") { ProfileScreen(navController,db) }
+        composable("profile") { ProfileScreen(navController, db) }
         navigation(startDestination = "riwayatPembelian", route = "profileScreen") {
             composable("login") {
                 LoginScreen(onClick = { navController.navigate("home") })
             }
-            composable("TokoJapri"){
+            composable("TokoJapri") {
                 ScaffoldWithButton(
-                    navController = navController ,
+                    navController = navController,
                     containerColor = Color.Black,
-                    navigationRoute = "MetodeBayar",
-                    content = {TokoJapriTV(userViewModel = userViewModel)},
+                    navigationRoute = "MetodeBayarSubscriptionOrCoins",
+                    content = { TokoJapriTV(userViewModel = userViewModel) },
                     titleButton = "Lanjut Ke Pembayaran",
-                    contentTop = {HeaderRightWithIcon(
-                        title = "Toko Japri Tv",
-                        color = Color.Black,
-                        textColor = Color.White,
-                        resId = R.drawable.arrowwhite,
-                        onBackClick = {navController.popBackStack()}
-                    )},
+                    contentTop = {
+                        HeaderRightWithIcon(
+                            title = "Toko Japri Tv",
+                            color = Color.Black,
+                            textColor = Color.White,
+                            resId = R.drawable.arrowwhite,
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    },
                     colorButton = Color(0XFFD22F26),
                     colorTextButton = Color.White,
                     modifier = Modifier,
@@ -292,21 +350,127 @@ val  context = LocalContext.current
                             val googleAccount = googleSignInHelper.getGoogleAccount()
 
                             if (googleAccount != null) {
-                                userViewModel.loadUserInfo()
+//                                userViewModel.resetTokenUser(googleAccount.token)
                                 val level = userViewModel.selectedMembership.value
                                 val idToken = googleAccount.token
                                 val profile = userViewModel.userInfo.value?.urlPicture
                                 val name = userViewModel.userInfo.value?.name
+                                val id = userViewModel.userInfo.value?.userId
+                                val datasubs = userViewModel.subscriptionInfo.value
 
-                                if (level != null && idToken != null && name != null && profile != null) {
-                                    userViewModel.makeSubscription(idToken, level,db, name, profile)
+                                if (level != null &&  name != null && profile != null && id != null && datasubs == null) {
+                                    userViewModel.makeSubscription(
+                                        idToken,
+                                        level,
+                                        db,
+                                        name,
+                                        profile
+                                    )
+                                    Toast.makeText(context, "Berhasil Membeli Membership", Toast.LENGTH_SHORT).show()
+                                }else if (
+                                    datasubs != null
+                                ){
+                                    userViewModel.setSubscriptionInfo(datasubs, idToken, db = db)
+                                    userViewModel.newsubscriptionInfo.value = userViewModel.subscriptionInfo.value
+                                    println(datasubs.isPayed)
+                                    Toast.makeText(context, "Berhasil Mengupdate Membership", Toast.LENGTH_SHORT).show()
                                 }
+
+
                             }
+
+
                         }
                     }
 
 
                 )
+            }
+            composable("MetodeBayarSubscriptionOrCoins") {
+
+                ScaffoldWithoutButton(
+                    containerColor = Color.White,
+                    contentTop = {
+                        HeaderRightWithIcon(
+                            "Konfirmasi Pembayaran",
+                            Color.White,
+                            Color.Black,
+                            R.drawable.vector__9_,
+                            onBackClick = { navController.popBackStack() })
+                    },
+                    content = {
+
+                        MetodeBayarScreen(
+                            paymentViewModel,
+                            navigateTo = {
+                                val data = userViewModel.subscriptionInfo.value
+                                println("data subscription ${data?.isPayed}")
+                                navController.navigate("InstruksiBayarSubscriptionOrCoins")
+                            }
+
+                        )
+
+                    },
+
+                    )
+
+
+            }
+            composable("InstruksiBayarSubscriptionOrCoins") {
+                ScaffoldWithoutButton(
+                    containerColor = Color.White,
+                    contentTop = {
+                        HeaderRightWithIcon(
+                            "Instruksi Pembayaran",
+                            Color.White,
+                            Color.Black,
+                            R.drawable.vector__9_,
+                            onBackClick = { navController.popBackStack() })
+                    },
+                    content = {
+
+                        val subscriptionInfo by userViewModel.subscriptionInfo.collectAsState()
+                        val data = userViewModel.userInfo.value
+                        LaunchedEffect(Unit) {
+                            val result = data?.tokenAuth?.let { it1 ->
+                                ProfileRepository.getDataSubscription(
+                                    it1,
+                                    db,
+                                    data.name,
+                                    data.urlPicture
+                                )
+                            }
+
+
+                        }
+
+                        if (subscriptionInfo != null) {
+                            InstruksiBayarScreen(
+                                colortext = Color(0XFFD22F26),
+                                colorButton = Color.White,
+                                onClick = { navController.navigate("home") },
+                                onClickBack = { navController.popBackStack() },
+                                dataPayment = subscriptionInfo!! // Pastikan data ada
+                            )
+                        } else {
+                            // Tampilkan loading indicator jika data belum ada
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        }
+
+
+
+
+
+
+
+
+                    },
+
+                    )
+
+
             }
         }
     }

@@ -2,11 +2,14 @@ package com.example.japritv.Repository
 
 import android.util.Log
 import com.example.japritv.dao.AppDatabase
+import com.example.japritv.dao.AuthToken
 import com.example.japritv.dao.LoginInfo
+import com.example.japritv.model.ApiResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
@@ -42,7 +45,7 @@ object AuthRepository {
         }
     }
 
-    private suspend fun getDataLogin(db: AppDatabase, idToken: String, nama: String, profile: String): Boolean {
+    suspend fun getDataLogin(db: AppDatabase, idToken: String, nama: String, profile: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
                 val url = URL("https://japritv.vercel.app/api/user/profile")
@@ -93,6 +96,46 @@ object AuthRepository {
             }
         }
     }
+
+     suspend fun resetToken(idToken: String,db: AppDatabase):String{
+         return withContext(Dispatchers.IO) {
+             try {
+                 val url = URL("https://japritv.vercel.app/api/auth/google")
+                 val connection = url.openConnection() as HttpURLConnection
+                 connection.requestMethod = "GET"
+                 connection.setRequestProperty("Authorization", "Bearer $idToken")
+                 connection.setRequestProperty("Content-Type", "application/json")
+                 connection.doInput = true
+
+                 val responseCode = connection.responseCode
+                 val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+                 Log.d("AuthRepository", "Response Code: $responseCode")
+                 Log.d("AuthRepository", "Response Body: $responseMessage")
+
+                 if (responseCode == 200) {
+                     val newToken = extractToken(responseMessage)
+                     db.authTokenDao().saveToken(authToken = AuthToken(id = 1, token = newToken) )
+                     Log.d("reset Token ","Berhasil reset")
+                     return@withContext idToken
+                 }else
+                     return@withContext ""
+             }catch (e:Exception){
+                 Log.e("reset Token ","gagal reset")
+                 return@withContext ""
+             }
+         }
+     }
+
+    fun extractToken(response: String): String {
+        return try {
+            val jsonObject = JSONObject(response)
+            jsonObject.getString("token") // Pastikan key `"token"` sesuai dengan respons API
+        } catch (e: JSONException) {
+            Log.e("extractToken", "Gagal parsing JSON: ${e.message}")
+            ""
+        }
+    }
+
 }
 
 

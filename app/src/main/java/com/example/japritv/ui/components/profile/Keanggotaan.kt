@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun Keanggotaan(tipe: String, harga: String, hargaLama: String, benefits: String, isSelected: Boolean, onClick: () -> Unit) {
+fun Keanggotaan(tipe: String, harga: String, hargaLama: String, benefits: String, isSelected: Boolean, setharga:Boolean,onClick: () -> Unit,setHarga:()->Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
