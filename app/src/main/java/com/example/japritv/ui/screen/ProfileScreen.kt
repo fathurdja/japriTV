@@ -2,6 +2,7 @@ package com.example.japritv.ui.screen
 
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -25,21 +26,31 @@ import com.example.japritv.ui.components.profile.UserProfile
 import com.example.japritv.ui.components.profile.Wallet
 import com.example.japritv.ui.theme.JapriTvTheme
 import com.example.japritv.viewmodel.UserViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfileScreen(navController: NavController, db: AppDatabase) {
     val viewModel: UserViewModel = remember { UserViewModel(db) }
     val userInfo by viewModel.userInfo.collectAsState()
+    val subscriptionInfo by viewModel.subscriptionInfo.collectAsState()
 
-    LaunchedEffect(Unit) {
-        if (userInfo!= null){
-
-            viewModel.loadSubscriptionInfo(userInfo!!.tokenAuth,db, userInfo!!.name,userInfo!!.urlPicture)
-
+    LaunchedEffect(userInfo) {
+        userInfo?.let { user ->
+            Log.e("profile", "$user")
+            viewModel.loadSubscriptionInfo(user.tokenAuth, db, user.name, user.urlPicture)
         }
-
     }
+    fun formatDate(isoDate: String): String {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+
+        val date: Date? = inputFormat.parse(isoDate)
+        return date?.let { outputFormat.format(it) } ?: "Invalid Date"
+    }
+
     // Background hitam untuk tampilan profil
     Scaffold(
         containerColor = Color.Black
@@ -52,7 +63,7 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
 
-                if (userInfo !== null) {
+                if (userInfo != null) {
                     UserProfile(
                         nameUser = userInfo?.name
                             ?.split(" ") // Pisah berdasarkan spasi
@@ -61,13 +72,22 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
                             ?: "Pengunjung",
 
                         email = userInfo?.email ?: "Email tidak tersedia",
-                        picture = userInfo?.urlPicture ?: ""
-                        ,userId = userInfo?.userId ?: "ID tidak tersedia",
+                        picture = userInfo?.urlPicture ?: "",
+                        userId = userInfo?.userId ?: "ID tidak tersedia",
                         onClick = { navController.navigate("login") }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    MembershipCard(level = "Mingguan")
-                }else{
+                    if (subscriptionInfo != null && subscriptionInfo?.isPayed == true) {
+                        val date = formatDate(subscriptionInfo!!.endDate)
+                        MembershipCard(
+                            level = subscriptionInfo!!.level,
+                            endDate = date,
+                            totalVideosWatched = 0,
+                            totalVideosAvailable = 0
+                        )
+                    }
+
+                } else {
                     UserInfo(
                         nameUser = "Pengunjung",
                         profileImageUrl = null,
@@ -81,7 +101,7 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Komponen Dompet
-                Wallet (
+                Wallet(
                     onIsiUlangClick = { navController.navigate("TokoJapri") }
                 )
 

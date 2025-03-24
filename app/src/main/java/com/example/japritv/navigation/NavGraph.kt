@@ -164,7 +164,6 @@ fun NavGraph(
 
                 )
             }
-
             composable("Pembayaran") {
                 ScaffoldWithButton(
                     navController = navController,
@@ -179,7 +178,8 @@ fun NavGraph(
                             R.drawable.vector__9_,
                             onBackClick = { navController.popBackStack() })
                     },
-                    content = { PaymentScreen() },
+                    content = {
+                        PaymentScreen(uploadEpisodeViewModel = uploadEpisodeViewModel) },
                     colorButton = Color(0xFFD32F2F),
                     colorTextButton = Color.White,
                     modifier = Modifier,
@@ -371,12 +371,17 @@ fun NavGraph(
                                     datasubs != null
                                 ){
                                     userViewModel.setSubscriptionInfo(datasubs, idToken, db = db)
-                                    userViewModel.newsubscriptionInfo.value = userViewModel.subscriptionInfo.value
+                                    userViewModel.newsubscriptionInfo.value = datasubs
                                     println(datasubs.isPayed)
                                     Toast.makeText(context, "Berhasil Mengupdate Membership", Toast.LENGTH_SHORT).show()
+                                }else{
+                                    Toast.makeText(context, "Gagal Membeli Membership", Toast.LENGTH_SHORT).show()
                                 }
 
 
+                            }else
+                            {
+                                Toast.makeText(context, "Gagal Membeli Membership", Toast.LENGTH_SHORT).show()
                             }
 
 
@@ -403,7 +408,7 @@ fun NavGraph(
                         MetodeBayarScreen(
                             paymentViewModel,
                             navigateTo = {
-                                val data = userViewModel.subscriptionInfo.value
+                                val data = userViewModel.newsubscriptionInfo.value
                                 println("data subscription ${data?.isPayed}")
                                 navController.navigate("InstruksiBayarSubscriptionOrCoins")
                             }
@@ -429,7 +434,7 @@ fun NavGraph(
                     },
                     content = {
 
-                        val subscriptionInfo by userViewModel.subscriptionInfo.collectAsState()
+                        val subscriptionInfo by userViewModel.newsubscriptionInfo.collectAsState()
                         val data = userViewModel.userInfo.value
                         LaunchedEffect(Unit) {
                             val result = data?.tokenAuth?.let { it1 ->

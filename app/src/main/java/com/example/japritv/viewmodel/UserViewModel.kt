@@ -1,5 +1,6 @@
 package com.example.japritv.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.japritv.Repository.AuthRepository
@@ -104,6 +105,7 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
 
             } else {
                 subscriptionInfo.value = null
+                Log.e("UserViewModel", "Failed to update subscription info")
             }
         }
     }

@@ -45,9 +45,10 @@ object AuthRepository {
         }
     }
 
-    suspend fun getDataLogin(db: AppDatabase, idToken: String, nama: String, profile: String): Boolean {
+    suspend fun getDataLogin(db: AppDatabase, idToken: String, namaUser: String, profile: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
+                Log.d("AuthRepository", "Nama user dari parameter: $namaUser")
                 val url = URL("https://japritv.vercel.app/api/user/profile")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
@@ -69,10 +70,10 @@ object AuthRepository {
                     val createdAt = data.getString("createdAt")
                     val updatedAt = data.getString("updatedAt")
                     val referral = data.getString("referral")
-
+                    Log.d("AuthRepository", "Saving login info: $namaUser")
                     val loginInfo = LoginInfo(
                         tokenAuth = idToken,
-                        name = nama,
+                        name = namaUser,
                         urlPicture = profile,
                         infoRegistrasi = "Berhasil Login",
                         email = email,
@@ -82,12 +83,13 @@ object AuthRepository {
                         updatedAt = updatedAt,
                         referral = referral
                     )
-                    Log.d("AuthRepository", "Saving login info: $loginInfo")
+
+
                     db.loginInfoDao().saveLoginInfo(loginInfo)
                     return@withContext true
                 } else if (responseCode == 400) {
                     Log.d("AuthRepository", "Token expired, refreshing token")
-                    sendTokenToServer(idToken, db, nama, profile) // Refresh token dan coba lagi
+                    sendTokenToServer(idToken, db, namaUser, profile) // Refresh token dan coba lagi
                 }
                 return@withContext false
             } catch (e: Exception) {
@@ -97,34 +99,37 @@ object AuthRepository {
         }
     }
 
-     suspend fun resetToken(idToken: String,db: AppDatabase):String{
-         return withContext(Dispatchers.IO) {
-             try {
-                 val url = URL("https://japritv.vercel.app/api/auth/google")
-                 val connection = url.openConnection() as HttpURLConnection
-                 connection.requestMethod = "GET"
-                 connection.setRequestProperty("Authorization", "Bearer $idToken")
-                 connection.setRequestProperty("Content-Type", "application/json")
-                 connection.doInput = true
+    suspend fun resetToken(idToken: String, db: AppDatabase): String {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = URL("https://japritv.vercel.app/api/auth/google")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Authorization", "Bearer $idToken")
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doInput = true
 
-                 val responseCode = connection.responseCode
-                 val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
-                 Log.d("AuthRepository", "Response Code: $responseCode")
-                 Log.d("AuthRepository", "Response Body: $responseMessage")
+                val responseCode = connection.responseCode
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+                Log.d("AuthRepository", "Response Code: $responseCode")
+                Log.d("AuthRepository", "Response Body: $responseMessage")
 
-                 if (responseCode == 200) {
-                     val newToken = extractToken(responseMessage)
-                     db.authTokenDao().saveToken(authToken = AuthToken(id = 1, token = newToken) )
-                     Log.d("reset Token ","Berhasil reset")
-                     return@withContext idToken
-                 }else
-                     return@withContext ""
-             }catch (e:Exception){
-                 Log.e("reset Token ","gagal reset")
-                 return@withContext ""
-             }
-         }
-     }
+                if (responseCode == 200) {
+                    val newToken = idToken
+                    db.authTokenDao().saveToken(authToken = AuthToken(id = 1, token = newToken))
+                    Log.d("reset Token", "Berhasil reset")
+                    return@withContext idToken
+                } else {
+                    Log.e("reset Token", "Gagal reset, Response Code: $responseCode, Message: $responseMessage")
+                    return@withContext ""
+                }
+            } catch (e: Exception) {
+                Log.e("reset Token", "Gagal reset, Exception: ${e.message}", e)
+                return@withContext ""
+            }
+        }
+    }
+
 
     fun extractToken(response: String): String {
         return try {

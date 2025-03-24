@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun MembershipCard(level: String) {
+fun MembershipCard(level: String,endDate: String, totalVideosWatched: Int, totalVideosAvailable: Int) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -52,9 +52,9 @@ fun MembershipCard(level: String) {
 
         ) {
             Text(
-                text = "Masa berlaku 21/07/2025",
+                text = "Masa berlaku ${endDate}",
                 color = Color(0xFFC5A75A),
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Medium
             )
         }
@@ -71,7 +71,6 @@ fun MembershipCard(level: String) {
                 verticalArrangement = Arrangement.Bottom,) {
                 Text(
                     text = "Anggota ${level}",
-
                     color =Color(0xFFC5A75A),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
@@ -81,7 +80,7 @@ fun MembershipCard(level: String) {
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "Kamu sudah menonton 37 dari 50 video.",
+                    text = "Kamu sudah menonton ${totalVideosWatched} dari ${totalVideosAvailable} video.",
                     color = Color(0xFFC5A75A),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal
@@ -94,8 +93,8 @@ fun MembershipCard(level: String) {
 }
 
 // Preview function
-@Preview()
-@Composable
-fun PreviewMinimalCard() {
-    MembershipCard(level = "Mingguan")
-}
+//@Preview()
+//@Composable
+//fun PreviewMinimalCard() {
+//    MembershipCard(level = "Mingguan")
+//}

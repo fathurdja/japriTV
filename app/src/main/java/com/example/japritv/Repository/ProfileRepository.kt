@@ -14,7 +14,7 @@ import java.net.URL
 
 object ProfileRepository {
     suspend fun updateDataSubscription(
-        _id: String,
+        id: String,
         idToken: String,
         db: AppDatabase,
         nama: String,
@@ -22,44 +22,47 @@ object ProfileRepository {
     ): subscriptionData? {
         return withContext(Dispatchers.IO) {
             try {
-                val url = URL("https://japritv.vercel.app/api/user/subscription/${_id}")
+                Log.e("Profile Repository", "_id: $id")
+                Log.e("Profile Repository", "token: $idToken")
+
+                val url = URL("https://japritv.vercel.app/api/user/subscription/$id")
                 val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "GET"
+                connection.requestMethod = "POST"
                 connection.setRequestProperty("Authorization", "Bearer $idToken")
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doInput = true
 
                 val responseCode = connection.responseCode
-                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+
+                val responseMessage = try {
+                    connection.inputStream.bufferedReader().use { it.readText() }
+                } catch (e: Exception) {
+                    connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No response body"
+                }
+
                 Log.d("GetDataProfileRepository", "Response Code: $responseCode")
                 Log.d("GetDataProfileRepository", "Response Body: $responseMessage")
 
                 if (responseCode == 200) {
                     val jsonResponse = JSONObject(responseMessage)
-                    val data = jsonResponse.optJSONObject("data") ?: return@withContext null
+                    val data = jsonResponse.optJSONObject("message") ?: return@withContext null
+                    Log.e("Profile Repository", "$data")
 
-                    return@withContext subscriptionData(
-                        _id = data.getString("_id"),
-                        userId = data.getString("userId"),
-                        level = data.getString("level"),
-                        startDate = data.getString("startDate"),
-                        endDate = data.getString("endDate"),
-                        isPayed = data.getBoolean("isPayed"),
-                        isExpired = data.getBoolean("isExpired"),
-                        price = data.getInt("price")
-                    )
                 } else if (responseCode == 400) {
-                    Log.e("AuthRepo", "Token Expired")
+                    Log.e("AuthRepo", "Token Expired: $responseMessage")
                     sendTokenToServer(idToken, db, nama, profile)
+                } else {
+                    Log.e("ProfileRepository", "Unexpected Response: $responseCode - $responseMessage")
                 }
+
                 return@withContext null
             } catch (e: Exception) {
-
                 Log.e("ProfileRepository", "Error dalam getDataSubscription", e)
                 return@withContext null
             }
         }
     }
+
     suspend fun getDataSubscription(
         idToken: String,
         db: AppDatabase,
@@ -116,7 +119,7 @@ object ProfileRepository {
         return withContext(Dispatchers.IO) {
 
             try {
-                sendTokenToServer(idToken, db, nama, profile)
+//                sendTokenToServer(idToken, db, nama, profile)
                 val url = URL("https://japritv.vercel.app/api/user/subscription")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"

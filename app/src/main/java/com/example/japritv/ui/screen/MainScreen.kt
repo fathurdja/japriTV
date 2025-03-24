@@ -1,5 +1,6 @@
 package com.example.japritv.ui.screen
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,6 +25,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.japritv.R
 import com.example.japritv.Repository.AuthRepository
+import com.example.japritv.Repository.ProfileRepository
 import com.example.japritv.dao.AppDatabase
 import com.example.japritv.model.Show
 import com.example.japritv.navigation.NavGraph
@@ -40,6 +42,7 @@ import com.example.japritv.viewmodel.ShowItemViewModel
 import com.example.japritv.viewmodel.UploadEpisodeViewModel
 import com.example.japritv.viewmodel.UserViewModel
 import com.example.japritv.viewmodel.VideoViewModel
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -62,17 +65,22 @@ fun MainScreen(
 
     val userInfo by userViewModel.userInfo.collectAsState()
     val subscriptionInfo by userViewModel.subscriptionInfo.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
-    val googleSignInHelper = GoogleSignInHelper(context)
 
 
     LaunchedEffect(userInfo) {
-
+        val googleSignInHelper = GoogleSignInHelper(context)
         val googleAccount = googleSignInHelper.getGoogleAccount()
-        if (googleAccount!=null){
-           AuthRepository.resetToken(googleAccount.token,db)
+        if (googleAccount != null) {
+            AuthRepository.resetToken(googleAccount.token, db)
             userInfo?.let { user ->
-                AuthRepository.getDataLogin(db, googleAccount.token, user.name, user.urlPicture)
+                AuthRepository.getDataLogin(
+                    db = db,
+                    idToken = googleAccount.token,
+                    namaUser = user.name,
+                    profile = user.urlPicture
+                )
                 userViewModel.loadUserInfo()
                 userViewModel.loadSubscriptionInfo(
                     idToken = googleAccount.token,
@@ -143,19 +151,39 @@ fun MainScreen(
                 content = {
                     InstruksiBayarScreen(
                         onClick = {
-                            userViewModel.updateSubscriptionInfo(
-                                userInfo!!.tokenAuth,
-                                db,
-                                userInfo!!.name,
-                                userInfo!!.urlPicture,
-                                subscriptionInfo!!._id
-                            )
-                            Toast.makeText(context,"Berhasil membayar", Toast.LENGTH_SHORT).show()
-                            if (subscriptionInfo!!.isPayed) {
-                                navController.navigate("home")
+                            coroutineScope.launch {
+                                val newsubscriptionInfo = userViewModel.subscriptionInfo.value
+                                val googleSignInHelperag = GoogleSignInHelper(context)
+                                val googleAccount = googleSignInHelperag.getGoogleAccount()
+                                Log.e("MainScreen", "newsubscriptionInfo: $newsubscriptionInfo")
+                                Log.e("MainScreen", "token: ${googleAccount?.token}")
+
+                                if (newsubscriptionInfo != null && googleAccount != null) {
+
+                                   val payment = ProfileRepository.updateDataSubscription(
+                                        newsubscriptionInfo._id,
+                                        googleAccount.token,
+                                        db,
+                                        userInfo!!.name,
+                                        userInfo!!.urlPicture
+                                    )
+                                   userViewModel.subscriptionInfo.value = payment
+
+                                    Toast.makeText(context, "Berhasil membayar", Toast.LENGTH_SHORT).show()
+
+                                    // 🔥 Hapus layar sebelumnya agar tidak kembali ke InstruksiBayarScreen
+                                    navController.navigate("home") {
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            inclusive = true
+                                        }
+                                    }
+                                } else {
+                                    Toast.makeText(context, "Gagal membayar", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         },
-                        onClickBack = { navController.popBackStack() },
+
+                                onClickBack = { navController.popBackStack() },
                         colortext = Color.Black,
                         colorButton = Color.Gray,
                         dataPayment = subscriptionInfo!!,
