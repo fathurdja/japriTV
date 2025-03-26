@@ -27,17 +27,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.japritv.R
 
 @Composable
-fun ContainerEpisode(totalEpisodes: Int, selectedEpisode: Int, onEpisodeSelected: (Int) -> Unit) {
+fun ContainerEpisode(
+    totalEpisodes: Int,
+    selectedEpisode: Int,
+    onEpisodeSelected: (Int) -> Unit,
+    title: String,
+    poster: String
+) {
     val episodesPerPage = 25 // Maksimal 5 baris x 5 episode
-    val totalTabs = (totalEpisodes / episodesPerPage) + if (totalEpisodes % episodesPerPage > 0) 1 else 0
+    val totalTabs =
+        (totalEpisodes / episodesPerPage) + if (totalEpisodes % episodesPerPage > 0) 1 else 0
     val tabTitles = List(totalTabs) { index ->
         val start = index * episodesPerPage + 1
         val end = minOf((index + 1) * episodesPerPage, totalEpisodes)
@@ -53,15 +62,15 @@ fun ContainerEpisode(totalEpisodes: Int, selectedEpisode: Int, onEpisodeSelected
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(id = R.drawable.title_card),
-                contentDescription = null,
+            AsyncImage(
+                model = poster,
+                contentDescription = "Background Image",
                 modifier = Modifier.size(80.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
-                    text = "Money Heist: Korea. Joint Economic Area",
+                    text = title,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
@@ -149,7 +158,7 @@ fun EpisodeButton(episodeNumber: Int, isLocked: Boolean, isSelected: Boolean, on
             .height(36.dp)
             .background(
                 when {
-                    isSelected ->  Color(0xFFD22F26)
+                    isSelected -> Color(0xFFD22F26)
                     isLocked -> Color(0xFF565656)
                     else -> Color(0xFF565656)
                 },
@@ -158,8 +167,11 @@ fun EpisodeButton(episodeNumber: Int, isLocked: Boolean, isSelected: Boolean, on
             .padding(8.dp)
             .clickable(enabled = !isLocked, onClick = onClick)
     ) {
-        if (isLocked){
-            Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+        if (isLocked) {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = episodeNumber.toString(),
                     color = Color.White,
@@ -171,7 +183,7 @@ fun EpisodeButton(episodeNumber: Int, isLocked: Boolean, isSelected: Boolean, on
                     tint = Color.White
                 )
             }
-        }else{
+        } else {
             Text(
                 text = episodeNumber.toString(),
                 color = Color.White,
@@ -185,6 +197,6 @@ fun EpisodeButton(episodeNumber: Int, isLocked: Boolean, isSelected: Boolean, on
 @Preview(showBackground = true)
 @Composable
 fun ContainerEpisodePreview() {
-    ContainerEpisode(onEpisodeSelected = {}, selectedEpisode = 1, totalEpisodes = 50)
+    ContainerEpisode(onEpisodeSelected = {}, selectedEpisode = 1, totalEpisodes = 50, title = "", poster = "")
 }
 

@@ -54,7 +54,13 @@ fun TokoJapriTV(userViewModel: UserViewModel) {
         )
 
         // Coin Grid
-        CoinGrid()
+        CoinGrid(
+            selectedCoin = selectedMembership ?: "",
+            onCoinSelected = { coin, price ->
+                userViewModel.setSelectedMembership(coin)
+                userViewModel.setNominal(price.replace("Rp ", "").replace(".", "").toInt())
+            }
+        )
 
         Spacer(modifier = Modifier.height(18.dp))
 

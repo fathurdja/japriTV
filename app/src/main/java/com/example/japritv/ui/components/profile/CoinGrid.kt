@@ -1,7 +1,9 @@
 package com.example.japritv.ui.components.profile
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,7 +42,10 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.withStyle
 
 @Composable
-fun CoinGrid() {
+fun CoinGrid(
+    selectedCoin: String,
+    onCoinSelected: (String, String) -> Unit
+) {
     // Data yang akan ditampilkan secara dinamis
     val coinData = listOf(
         Pair("10 + 2", "Rp 19.000"),
@@ -58,21 +63,30 @@ fun CoinGrid() {
     ) {
 
         items(coinData) { coin ->
-            CoinCard(coin.first, coin.second)
+            CoinCard(
+                coins = coin.first,
+                price = coin.second,
+                isSelected = selectedCoin == coin.first, // Menentukan apakah kartu ini dipilih
+                onClick = { onCoinSelected(coin.first, coin.second) }
+            )
         }
+
+
     }
 }
 
 // Composable function for individual coin card
 @Composable
-fun CoinCard(coins: String, price: String) {
+fun CoinCard(coins: String, price: String,isSelected: Boolean, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(Color(0xFF333333)),
+        border = if (isSelected) BorderStroke(2.dp, Color.Red) else null,
         modifier = Modifier
             .width(180.dp)
             .height(100.dp)
-            .padding(8.dp) // Padding antar kartu
+            .padding(8.dp)
+            .clickable { onClick() }// Padding antar kartu
     ) {
         Column(
             modifier = Modifier
@@ -124,8 +138,8 @@ fun formatCoinText(coins: String): AnnotatedString {
 }
 
 // Preview function
-@Preview(showBackground = true)
-@Composable
-fun CoinGridPreview() {
-    CoinGrid()
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun CoinGridPreview() {
+//    CoinGrid()
+//}

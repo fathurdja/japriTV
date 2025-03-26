@@ -23,6 +23,8 @@ interface VideoDao {
     suspend fun clearVideos()
     @Query("SELECT * FROM movie")
     suspend fun getAllVideoData(): List<VideoData>
+    @Query("SELECT poster FROM movie WHERE id = :id")
+    suspend fun getPosterById(id: String): String?
 
     @Query("SELECT * FROM movie WHERE id = :id")
     suspend fun getVideoById(id: String): VideoData?

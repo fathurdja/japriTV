@@ -36,6 +36,7 @@ import com.example.japritv.viewmodel.UploadEpisodeViewModel
 fun UploadVideoForm(uploadVideoViewModel: UploadEpisodeViewModel) {
     val context = LocalContext.current
     val episodes = uploadVideoViewModel.episodes
+    val lastIndex = episodes.lastIndex.coerceAtLeast(0)
 
     val videoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -44,13 +45,14 @@ fun UploadVideoForm(uploadVideoViewModel: UploadEpisodeViewModel) {
             val file = uploadVideoViewModel.getFileFromUri(context, it)
             val fileSize = uploadVideoViewModel.getFileSize(context, it)
 
-            val thumbnail = uploadVideoViewModel.getVideoThumbnail(context, it)
+            if (file != null) {
+                val thumbnail = uploadVideoViewModel.getVideoThumbnailFromFile(file) // Ambil thumbnail dari File
 
-            if (file!=null) {
-                uploadVideoViewModel.uploadFile(0, file, fileSize,thumbnail) // Contoh untuk episode pertama
+                uploadVideoViewModel.uploadFile(lastIndex, file, fileSize, thumbnail!!)
             }
         }
     }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -60,6 +62,8 @@ fun UploadVideoForm(uploadVideoViewModel: UploadEpisodeViewModel) {
         Column( modifier = Modifier
             .padding(horizontal = 12.dp)
             .fillMaxWidth()
+
+
             .verticalScroll(rememberScrollState()), // Aktifkan scroll
             verticalArrangement = Arrangement.spacedBy(12.dp)) {
             WarningUpload(text = "Maksimal unggah hingga 15 video dengan total ukuran file 12,94 GB")
@@ -71,6 +75,10 @@ fun UploadVideoForm(uploadVideoViewModel: UploadEpisodeViewModel) {
                         episode = episode,
                         onClick = {
                             videoPickerLauncher.launch("video/*")
+                        },
+                        clear={
+                            uploadVideoViewModel.deleteUploadedFile(index)
+
                         }
                     )
                 }
@@ -90,6 +98,7 @@ fun UploadVideoForm(uploadVideoViewModel: UploadEpisodeViewModel) {
                     onClick = {
                         videoPickerLauncher.launch("video/*")
                     }
+                    , clear = {}
                 )
             }
            Box(modifier = Modifier.padding(horizontal = 3.dp)){

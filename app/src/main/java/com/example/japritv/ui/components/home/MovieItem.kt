@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.example.japritv.R
 import com.example.japritv.dao.VideoData
 
@@ -42,8 +43,14 @@ fun MovieItem(show:VideoData, text: String,onClick: (String) -> Unit) {
                 .clip(RoundedCornerShape(8.dp))
                 .clickable { onClick(show.id) }
         ) {
+            val painter = if (show.poster.isNotEmpty()) {
+                rememberAsyncImagePainter(model = show.poster) // ✅ Pakai poster dari show
+            } else {
+                painterResource(id = R.drawable.title_card) // 🔄 Pakai default kalau null
+            }
+
             Image(
-                painter = painterResource(id = R.drawable.title_card),
+                painter = painter,
                 contentDescription = show.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()

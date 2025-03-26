@@ -110,6 +110,7 @@ fun LoginScreen(onClick: () -> Unit) {
                                     if (googleAccount != null) {
                                         withContext(Dispatchers.IO) {
                                             authTokenDao.saveToken(AuthToken(token = googleAccount.token))
+                                            println(googleAccount.token)
                                         }
 
                                         val success = withContext(Dispatchers.IO) {

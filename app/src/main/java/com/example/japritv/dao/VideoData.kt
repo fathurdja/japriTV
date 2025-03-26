@@ -11,10 +11,16 @@ data class VideoData(
     @PrimaryKey val id: String,
     val title: String,
     val userId: String,
-    val totalSize: Long,
-    val videos: List<Video>,  // Disimpan dalam format JSON
+    val totalView: Int,
+    val totalSearch: Int,
+    val totalSales: Int,
+    val releaseAt: String,
+    val isRelease: Boolean,
+    val poster: String,
+    val video: List<Video>,
     val createdAt: String,
     val updatedAt: String,
     val price: Int,
     val totalEpisode: Int
 )
+

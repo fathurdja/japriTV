@@ -1,4 +1,4 @@
-@file:OptIn(UnstableApi::class)
+
 
 package com.example.japritv.ui.screen
 
@@ -24,9 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
 import coil.compose.rememberAsyncImagePainter
 import com.example.japritv.R
@@ -47,17 +49,22 @@ fun VideoVerticalPagerScreen(viewModel: VideoViewModel, userId: String, onClickB
     var selectedEpisode by remember { mutableStateOf(1) }
     LaunchedEffect(userId) {
         viewModel.fetchVideoById(userId)
+
+    }
+    LaunchedEffect(video) {
+        video?.let { viewModel.getPoster(it.id) }
     }
 
+    val poster by viewModel.poster.collectAsState()
     val context = LocalContext.current
 
     val pagerState = rememberPagerState(
         initialPage = 0,
         initialPageOffsetFraction = 0f,
-        pageCount = { video?.videos?.size ?: 0 }
+        pageCount = { video?.video?.size ?: 0 }
     )
     LaunchedEffect(selectedEpisode) {
-        val targetIndex = video?.videos?.indexOfFirst { it.episode == selectedEpisode } ?: 0
+        val targetIndex = video?.video?.indexOfFirst { it.episode == selectedEpisode } ?: 0
         pagerState.animateScrollToPage(targetIndex)
     }
 
@@ -66,12 +73,12 @@ fun VideoVerticalPagerScreen(viewModel: VideoViewModel, userId: String, onClickB
             state = pagerState,
             modifier = Modifier.fillMaxSize()
         ) { page ->
-            video?.videos?.getOrNull(page)?.let { videoItem ->
+            video?.video?.getOrNull(page)?.let { videoItem ->
                 Box(modifier = Modifier.fillMaxSize()) {
                     VideoPlayer(
                         context = context,
                         videoUrl = videoItem.url,
-                        thumbnailUrl = "",
+                        thumbnailUrl = poster ?: "",
                         pagerState = pagerState,
                         onClickEpisode = {showSheet=true}
 
@@ -111,7 +118,9 @@ fun VideoVerticalPagerScreen(viewModel: VideoViewModel, userId: String, onClickB
                         showSheet = false // ✅ Tutup sheet setelah memilih episode
                     },
                     selectedEpisode = selectedEpisode,
-                    totalEpisodes = it
+                    totalEpisodes = it,
+                    title = video!!.title,
+                    poster = poster ?: ""
                 )
             }
 
@@ -135,40 +144,33 @@ fun VideoPlayer(
 ) {
     val image = rememberAsyncImagePainter(model = thumbnailUrl)
     var isPlaying by remember { mutableStateOf(true) }
-    var isBuffering by remember { mutableStateOf(false) }
+    var isBuffering by remember { mutableStateOf(true) }
     var progress by remember { mutableFloatStateOf(0f) }
     var showControls by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
 
     val exoPlayer = remember {
-        ExoPlayer.Builder(context).build().apply {
-            setMediaItem(MediaItem.fromUri(Uri.parse(videoUrl)))
-            prepare()
-            playWhenReady = true
-            volume = 1f
-            addListener(object : Player.Listener {
-                override fun onPlaybackStateChanged(state: Int) {
-                    isBuffering = state == Player.STATE_BUFFERING || state == Player.STATE_IDLE
-                    if (state == Player.STATE_ENDED) {
-                        val nextPage = pagerState.currentPage + 1
-                        if (nextPage < pagerState.pageCount) {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(nextPage)
-                            }
-                        }
-                    }
-                }
+        ExoPlayer.Builder(context)
+            .setMediaSourceFactory(DefaultMediaSourceFactory(context)) // Tambahkan ini
+            .build().apply {
+                val mediaItem = MediaItem.Builder()
+                    .setUri(videoUrl)
+                    .setMimeType(MimeTypes.APPLICATION_M3U8) // ✅ Pastikan MIME type sesuai
+                    .build()
 
-                override fun onIsPlayingChanged(isPlayingNow: Boolean) {
-                    isPlaying = isPlayingNow
-                    if (isPlaying) {
-                        showControls = true
+                setMediaItem(mediaItem)
+                prepare()
+                playWhenReady = true
+                volume = 1f
+                addListener(object : Player.Listener {
+                    override fun onPlaybackStateChanged(state: Int) {
+                        isBuffering = state == Player.STATE_BUFFERING || state == Player.STATE_IDLE
                     }
-                }
-            })
-        }
+                })
+            }
     }
+
 
     DisposableEffect(Unit) {
         onDispose {
@@ -196,8 +198,26 @@ fun VideoPlayer(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .clickable { showControls = !showControls }
+            .clickable {
+                if (exoPlayer.isPlaying) {
+                    exoPlayer.pause()
+                    isPlaying = false
+                } else {
+                    exoPlayer.play()
+                    isPlaying = true
+                }
+                showControls = true
+             }
     ) {
+
+        if (!isPlaying || isBuffering) {
+            Image(
+                painter = image,
+                contentDescription = "Thumbnail",
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
         // Video Player
         AndroidView(
             factory = { ctx ->
@@ -210,36 +230,25 @@ fun VideoPlayer(
         )
 
         // Thumbnail sebelum video mulai
-        if (!isPlaying && !isBuffering) {
-            Image(
-                painter = image,
-                contentDescription = "Thumbnail",
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
-        // Pause Button
-        if (isPlaying && showControls) {
+        if (showControls) {
             IconButton(
-                onClick = { exoPlayer.pause() },
+                onClick = {
+                    if (exoPlayer.isPlaying) {
+                        exoPlayer.pause()
+                        isPlaying = false
+                    } else {
+                        exoPlayer.play()
+                        isPlaying = true
+                    }
+                },
                 modifier = Modifier.align(Alignment.Center)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.pause_circle),
-                    contentDescription = "Pause",
+                    painter = painterResource(id = if (exoPlayer.isPlaying) R.drawable.pause_circle else R.drawable.play_circle),
+                    contentDescription = if (exoPlayer.isPlaying) "Pause" else "Play",
                     tint = Color.White,
                     modifier = Modifier.size(48.dp)
                 )
-            }
-        }
-
-        // Play Button
-        if (!isPlaying && !isBuffering) {
-            IconButton(
-                onClick = { exoPlayer.play() },
-                modifier = Modifier.align(Alignment.Center)
-            ) {
-                Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = Color.White, modifier = Modifier.size(48.dp))
             }
         }
 

@@ -26,21 +26,25 @@ import com.example.japritv.ui.theme.JapriTvTheme
 import com.example.japritv.viewmodel.PaymentViewModel
 
 @Composable
-fun InstruksiBayarScreen(modifier: Modifier = Modifier,onClick :()->Unit,onClickBack:()->Unit, colortext:Color,colorButton:Color,dataPayment:subscriptionData) {
+fun InstruksiBayarScreen(modifier: Modifier = Modifier,onClick :()->Unit,onClickBack:()->Unit, colortext:Color,colorButton:Color,dataPayment:subscriptionData?,) {
 
 
 
 
     Box(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
         Column(modifier=Modifier.padding(vertical = 20.dp)) {
-            PaymentCard(dataPayment.price.toString())
+            if (dataPayment != null) {
+                PaymentCard(dataPayment.price.toString())
+            }
             Spacer(modifier = Modifier.padding(vertical = 15.dp))
 
-            if (!dataPayment.isPayed){
-                DetailPembayaranSubsOrCoin(color = Color.White, tipeSubs = dataPayment.level, Amount = "Rp 150.000")
+            if (dataPayment != null) {
+                if (dataPayment.isPayed){
+                    DetailPembayaranSubsOrCoin(color = Color.White, tipeSubs = dataPayment.level, Amount = "Rp 150.000")
 
-            }else{
-                DetailPembayaranInteractive(color = Color.White)
+                }else{
+                    DetailPembayaranInteractive(color = Color.White)
+                }
             }
 
             Spacer(modifier = Modifier.height(25.dp))

@@ -51,15 +51,17 @@ class PaymentViewModel : ViewModel() {
     }
 
 
-    suspend fun getDataSubscription(idToken: String, db: AppDatabase, nama: String, profile: String){
-        val response = ProfileRepository.getDataSubscription(idToken, db, nama, profile)
+    suspend fun getDataSubscription( db: AppDatabase, ){
+        val response = ProfileRepository.getDataSubscription( db)
         subscriptionInfo.value = response
 
     }
-//    suspend fun updateSubscription(idToken: String,){
-//        val response = ProfileRepository.updateSubscription(idToken)
-//        isSubscriptionUpdated.value = response
-//    }
+//
+    suspend fun makeTransactionVideo(db: AppDatabase, amount: Int, idCreator: String){
+        viewModelScope.launch {
+            ProfileRepository.makeDataTransaction(db = db, amount = amount, idCreator = idCreator)
+        }
+    }
 }
 
 

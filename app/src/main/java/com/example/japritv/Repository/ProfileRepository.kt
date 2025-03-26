@@ -15,20 +15,19 @@ import java.net.URL
 object ProfileRepository {
     suspend fun updateDataSubscription(
         id: String,
-        idToken: String,
+
         db: AppDatabase,
-        nama: String,
-        profile: String
-    ): subscriptionData? {
+
+        ): subscriptionData? {
         return withContext(Dispatchers.IO) {
             try {
-                Log.e("Profile Repository", "_id: $id")
-                Log.e("Profile Repository", "token: $idToken")
 
-                val url = URL("https://japritv.vercel.app/api/user/subscription/$id")
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token
+                val url = URL("https://japritv-v2.vercel.app/api/subscription/$id")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
-                connection.setRequestProperty("Authorization", "Bearer $idToken")
+                connection.setRequestProperty("Authorization", token)
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doInput = true
 
@@ -37,7 +36,8 @@ object ProfileRepository {
                 val responseMessage = try {
                     connection.inputStream.bufferedReader().use { it.readText() }
                 } catch (e: Exception) {
-                    connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No response body"
+                    connection.errorStream?.bufferedReader()?.use { it.readText() }
+                        ?: "No response body"
                 }
 
                 Log.d("GetDataProfileRepository", "Response Code: $responseCode")
@@ -50,9 +50,12 @@ object ProfileRepository {
 
                 } else if (responseCode == 400) {
                     Log.e("AuthRepo", "Token Expired: $responseMessage")
-                    sendTokenToServer(idToken, db, nama, profile)
+
                 } else {
-                    Log.e("ProfileRepository", "Unexpected Response: $responseCode - $responseMessage")
+                    Log.e(
+                        "ProfileRepository",
+                        "Unexpected Response: $responseCode - $responseMessage"
+                    )
                 }
 
                 return@withContext null
@@ -64,17 +67,16 @@ object ProfileRepository {
     }
 
     suspend fun getDataSubscription(
-        idToken: String,
         db: AppDatabase,
-        nama: String,
-        profile: String
     ): subscriptionData? {
         return withContext(Dispatchers.IO) {
             try {
-                val url = URL("https://japritv.vercel.app/api/user/subscription/")
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: ""
+                val url = URL("https://japritv-v2.vercel.app/api/subscription/")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
-                connection.setRequestProperty("Authorization", "Bearer $idToken")
+                connection.setRequestProperty("Authorization", token)
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doInput = true
 
@@ -89,7 +91,7 @@ object ProfileRepository {
 
                     return@withContext subscriptionData(
                         _id = data.getString("_id"),
-                        userId = data.getString("userId"),
+                        userId = data.getString("user"),
                         level = data.getString("level"),
                         startDate = data.getString("startDate"),
                         endDate = data.getString("endDate"),
@@ -99,7 +101,7 @@ object ProfileRepository {
                     )
                 } else if (responseCode == 400) {
                     Log.e("AuthRepo", "Token Expired")
-                    sendTokenToServer(idToken, db, nama, profile)
+
                 }
                 return@withContext null
             } catch (e: Exception) {
@@ -110,20 +112,20 @@ object ProfileRepository {
     }
 
     suspend fun makeSubscription(
-        idToken: String,
         level: String,
         db: AppDatabase,
-        nama: String,
-        profile: String
     ): subscriptionData? {
         return withContext(Dispatchers.IO) {
 
             try {
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: ""
+                Log.e("ProfileRepository", "Token: $token")
 //                sendTokenToServer(idToken, db, nama, profile)
-                val url = URL("https://japritv.vercel.app/api/user/subscription")
+                val url = URL("https://japritv-v2.vercel.app/api/subscription")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
-                connection.setRequestProperty("Authorization", "Bearer $idToken")
+                connection.setRequestProperty("Authorization", token)
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doOutput = true
 
@@ -147,7 +149,7 @@ object ProfileRepository {
 
                     return@withContext subscriptionData(
                         _id = data.getString("_id"),
-                        userId = data.getString("userId"),
+                        userId = data.getString("user"),
                         level = data.getString("level"),
                         startDate = data.getString("startDate"),
                         endDate = data.getString("endDate"),
@@ -158,7 +160,7 @@ object ProfileRepository {
 
                 } else if (responseCode == 400) {
                     Log.e("AuthRepo", "Token Expired")
-                    sendTokenToServer(idToken, db, nama, profile)
+
                 }
                 return@withContext null
             } catch (e: Exception) {
@@ -170,26 +172,25 @@ object ProfileRepository {
     }
 
     suspend fun makeDataTransaction(
-        idToken: String,
         amount: Int,
         idCreator: String,
         db: AppDatabase,
-        nama: String,
-        profile: String
-    ): Boolean {
+
+        ): Boolean {
         return withContext(Dispatchers.IO) {
 
             try {
-                sendTokenToServer(idToken, db, nama, profile)
-                val url = URL("https://japritv.vercel.app/api/user/transaction")
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: ""
+                val url = URL("https://japritv-v2.vercel.app/api/transaction")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
-                connection.setRequestProperty("Authorization", "Bearer $idToken")
+                connection.setRequestProperty("Authorization", token)
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doOutput = true
 
                 val requestBody = JSONObject().apply {
-                    put("creatorId", idCreator)  // Replace with actual creatorId
+                    put("videoId", idCreator)  // Replace with actual creatorId
                     put("amount", amount)  // Replace with actual amount if needed
                 }.toString()
 
@@ -207,21 +208,20 @@ object ProfileRepository {
                 if (responseCode == 200) {
                     Log.d("ProfileRepository", "Response Body: $responseMessage")
                     return@withContext getDataTransaction(
-                        idToken,
-                        amount,
-                        idCreator,
-                        db,
-                        nama,
-                        profile
+                        db = db
                     )
                 } else if (responseCode == 400) {
                     Log.d("ProfileRepository", "Response Body: $responseMessage")
                     Log.e("AuthRepo", "Token Expired")
-                    sendTokenToServer(idToken, db, nama, profile)
+
+                } else {
+                    Log.e("ProfileRepository", "Request failed with error: $responseMessage")
+
                 }
                 return@withContext false
             } catch (e: Exception) {
                 Log.e("ProfileRepository", "Gagal membuat transaksi ", e)
+
 
                 return@withContext false
             }
@@ -229,21 +229,17 @@ object ProfileRepository {
     }
 
     suspend fun getDataTransaction(
-        idToken: String,
-        amount: Int,
-        idCreator: String,
-        db: AppDatabase,
-        nama: String,
-        profile: String
+        db: AppDatabase
     ): Boolean {
         return withContext(Dispatchers.IO) {
 
             try {
-                sendTokenToServer(idToken, db, nama, profile)
-                val url = URL("https://japritv.vercel.app/api/user/transaction")
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token
+                val url = URL("https://japritv.vercel.app/api/transaction")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
-                connection.setRequestProperty("Authorization", "Bearer $idToken")
+                connection.setRequestProperty("Authorization", token)
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doOutput = true
 
@@ -270,7 +266,7 @@ object ProfileRepository {
                 } else if (responseCode == 400) {
                     Log.d("ProfileRepository", "Response Body: $responseMessage")
                     Log.e("AuthRepo", "Token Expired")
-                    sendTokenToServer(idToken, db, nama, profile)
+//                    sendTokenToServer(idToken, db, nama, profile)
                 }
                 return@withContext false
             } catch (e: Exception) {
@@ -281,7 +277,7 @@ object ProfileRepository {
         }
     }
 
-    suspend fun updateSubscription(idToken: String,id:String):Boolean {
+    suspend fun updateSubscription(idToken: String, id: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
                 val url = URL("https://japritv.vercel.app/api/user/subscription/${id}")
@@ -299,7 +295,7 @@ object ProfileRepository {
                 if (responseCode == 200) {
                     return@withContext true
                     Log.d("ProfileRepository", "Response Body: $responseMessage")
-                }else{
+                } else {
 
                     Log.d("ProfileRepository", "Response Body: $responseMessage")
                 }
@@ -310,13 +306,18 @@ object ProfileRepository {
         }
     }
 
-    suspend fun deleteSubscription(idToken: String,id:String):Boolean {
+    suspend fun deleteSubscription(id: String, db: AppDatabase): Boolean {
         return withContext(Dispatchers.IO) {
             try {
+
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: ""
+
+                println(token)
                 val url = URL("https://japritv.vercel.app/api/user/subscription/${id}")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "DELETE"
-                connection.setRequestProperty("Authorization", "Bearer $idToken")
+                connection.setRequestProperty("Authorization", token)
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doOutput = true
 
@@ -328,7 +329,7 @@ object ProfileRepository {
                 if (responseCode == 200) {
                     return@withContext true
                     Log.d("ProfileRepository", "Response Body: $responseMessage")
-                }else{
+                } else {
 
                     Log.d("ProfileRepository", "Response Body: $responseMessage")
                 }

@@ -17,12 +17,17 @@ class VideoRepository(private val videoDao: VideoDao) {
                 id = videoData.id,
                 title = videoData.title,
                 userId = videoData.userId,
-                totalSize = videoData.totalSize,
-                videos = videoData.videos,  // ✅ Tidak perlu encode JSON lagi, langsung simpan sebagai List
                 createdAt = videoData.createdAt,
                 updatedAt = videoData.updatedAt,
                 price = videoData.price,
-                totalEpisode = videoData.totalEpisode
+                totalEpisode = videoData.totalEpisode,
+                totalView = videoData.totalView,
+                totalSearch = videoData.totalSearch,
+                totalSales = videoData.totalSales,
+                releaseAt = videoData.releaseAt,
+                isRelease = videoData.isRelease,
+                poster = videoData.poster,
+                video = videoData.video,
             )
         }
         videoDataList.forEach { videoDao.insertVideoData(it) }
@@ -33,6 +38,10 @@ class VideoRepository(private val videoDao: VideoDao) {
     }
     suspend fun getVideoById(id: String): VideoData? {
         return videoDao.getVideoById(id)  // ✅ Ambil data dari Room
+    }
+
+    suspend fun getPosterById(id: String): String? {
+        return videoDao.getPosterById(id)
     }
 
     suspend fun clearVideos() {

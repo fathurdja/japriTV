@@ -72,11 +72,16 @@ class GoogleAuthUiProvider(
         androidx.credentials.GetCredentialRequest.Builder()
             .addCredentialOption(getGoogleIdOption())
             .build()
+
+
+
+
+
     private fun getGoogleIdOption(): GetGoogleIdOption =
      GetGoogleIdOption.Builder()
-            .setFilterByAuthorizedAccounts(true)
+            .setFilterByAuthorizedAccounts(false)
             .setServerClientId("635195907142-ml4hd7eo14u3okb22lqqc6o4b0tcfhhk.apps.googleusercontent.com") // ganti dengan WEB_CLIENT_ID
-            .setAutoSelectEnabled(true)
+            .setAutoSelectEnabled(false)
             .build()
 
 

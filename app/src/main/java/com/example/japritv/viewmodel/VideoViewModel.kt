@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
-class VideoViewModel(private val videoRepository: VideoRepository) : ViewModel() {
+class VideoViewModel(private val videoRepository: VideoRepository, private val db: AppDatabase) : ViewModel() {
 
     private val _dataList = MutableStateFlow<List<VideoData>>(emptyList())
     val dataList: StateFlow<List<VideoData>> = _dataList
@@ -42,6 +42,9 @@ class VideoViewModel(private val videoRepository: VideoRepository) : ViewModel()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _poster = MutableStateFlow<String?>(null)
+    val poster: StateFlow<String?> = _poster
 
     private val client = HttpClient {
         install(ContentNegotiation) {
@@ -53,7 +56,11 @@ class VideoViewModel(private val videoRepository: VideoRepository) : ViewModel()
         }
     }
 
-
+    fun getPoster(id: String) {
+        viewModelScope.launch {
+            _poster.value = videoRepository.getPosterById(id) // ✅ Ambil hanya poster
+        }
+    }
     fun fetchVideoById(id: String) {
         viewModelScope.launch {
             val video = videoRepository.getVideoById(id)
@@ -68,10 +75,19 @@ class VideoViewModel(private val videoRepository: VideoRepository) : ViewModel()
             val videosFromRoom = videoRepository.getAllVideos()
             _dataList.value=videosFromRoom
 
-            try {
 
+
+            try {
+                val authInfo = db.loginInfoDao().getLoginInfo()
+                val token = authInfo?.tokenAuth
                 // Ambil data dari API
-                val response: ResponseVideo = client.get("https://japritv.vercel.app/api/video").body()
+                val response: ResponseVideo = client.get("https://japritv-v2.vercel.app/api/video") {
+                    headers {
+                        if (token != null) {
+                            append("Authorization", token)
+                        }
+                    }
+                }.body()
 
                 if (response.data.isNotEmpty()) {
                     println("Data dari API: $response")

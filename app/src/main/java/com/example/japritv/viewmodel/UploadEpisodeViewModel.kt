@@ -107,6 +107,11 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
             }
 
             // Simpan poster ke file jika ada
+            val posterFile = getVideoThumbnailFromFile(videoFiles.firstOrNull() ?: return@launch)
+            val posterPart = posterFile?.let { file ->
+                val requestBody = RequestBody.create("image/jpeg".toMediaTypeOrNull(), file)
+                MultipartBody.Part.createFormData("poster", file.name, requestBody)
+            }
 
 
             // Tambahkan field lain dengan RequestBody
@@ -123,8 +128,10 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
                 .addFormDataPart("title", null, titlePart)
                 .addFormDataPart("episode", null, episodePart)
 
+
             // Tambahkan video dan poster
             videoParts.forEach { requestBodyBuilder.addPart(it) }
+            posterPart?.let { requestBodyBuilder.addPart(it) }
 
 
             val requestBody = requestBodyBuilder.build()
@@ -136,9 +143,9 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
             Log.d("Upload", "Request Body:\n$requestBodyDebug")
             // Buat request ke server
             val request = Request.Builder()
-                .url("https://japritv.vercel.app/api/creator/upload")
+                .url("https://japritv-v2.vercel.app/api/upload")
                 .post(requestBody)
-                .addHeader("Authorization", "Bearer $token")
+                .addHeader("Authorization", token)
                 .build()
 
             client.newCall(request).enqueue(object : Callback {
@@ -169,7 +176,7 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
 
 
 
-    fun uploadFile(episodeIndex: Int, file: File, fileSize: String, poster: Bitmap?) {
+    fun uploadFile(episodeIndex: Int, file: File, fileSize: String, poster: File) {
         val episode = _episodes[episodeIndex]
         _episodes[episodeIndex] = episode.copy(
             isUploading = true,
@@ -223,16 +230,29 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
             ))
     }
 
-    fun getVideoThumbnail(context: Context, videoUri: Uri): Bitmap? {
-        val retriever = MediaMetadataRetriever()
+    fun getVideoThumbnailFromFile(videoFile: File): File? {
         return try {
-            retriever.setDataSource(context, videoUri)
-            retriever.getFrameAtTime(1000000, MediaMetadataRetriever.OPTION_CLOSEST) // Ambil frame pada detik ke-1
-        } catch (e: Exception) {
-            Log.e("UploadEpisodeViewModel", "Error getting thumbnail: ${e.message}")
-            null
-        } finally {
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(videoFile.absolutePath) // Ambil data dari file path
+
+            // Ambil frame di detik ke-1
+            val bitmap: Bitmap? = retriever.getFrameAtTime(1000000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+
             retriever.release()
+
+            if (bitmap != null) {
+                // Simpan thumbnail ke file
+                val thumbnailFile = File(videoFile.parent, "thumbnail_${videoFile.nameWithoutExtension}.jpg")
+                FileOutputStream(thumbnailFile).use { out ->
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out)
+                }
+                thumbnailFile
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 
@@ -277,4 +297,34 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
             "0 MB"
         }
     }
+
+    fun deleteUploadedFile(episodeIndex: Int) {
+        val episode = _episodes.getOrNull(episodeIndex) ?: return
+
+        // Hapus file video jika ada
+        episode.fileName?.let { file ->
+            if (file.exists()) {
+                file.delete()
+                Log.d("DeleteFile", "File ${file.name} berhasil dihapus")
+            }
+        }
+
+        // Hapus thumbnail jika ada
+        episode.thumbnail?.let { file ->
+            if (file.exists()) {
+                file.delete()
+                Log.d("DeleteFile", "Thumbnail ${file.name} berhasil dihapus")
+            }
+        }
+
+        // Reset episode setelah file dihapus
+        _episodes[episodeIndex] = episode.copy(
+            fileName = null,
+            fileSize = "",
+            progress = 0f,
+            isUploading = false,
+            thumbnail = null
+        )
+    }
+
 }

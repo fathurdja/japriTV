@@ -179,11 +179,24 @@ fun NavGraph(
                             onBackClick = { navController.popBackStack() })
                     },
                     content = {
-                        PaymentScreen(uploadEpisodeViewModel = uploadEpisodeViewModel) },
+                        PaymentScreen(uploadEpisodeViewModel = uploadEpisodeViewModel)
+
+
+                    },
                     colorButton = Color(0xFFD32F2F),
                     colorTextButton = Color.White,
                     modifier = Modifier,
-                    onClick = { }
+                    onClick = {
+                   coroutineScope.launch {
+                       paymentViewModel.makeTransactionVideo(
+                           db = db,
+                           amount = 1,
+                           idCreator = "67e1c59fbde6e5bd487768ff"
+                       )
+                   }
+
+
+                    }
                 )
 
 
@@ -235,7 +248,7 @@ fun NavGraph(
                                 level = "",
                                 price = 0,
                                 startDate = "",
-                                endDate ="",
+                                endDate = "",
                                 isPayed = false,
                                 isExpired = false
                             )
@@ -252,11 +265,16 @@ fun NavGraph(
         composable("history") {
             RiwayatScreen(
                 videoViewModel = video,
-                onClick = { navController.navigate("MetodeBayarBlack") })
+                onClick = { selectedCoin, selectedPrice ->
+                    navController.navigate("MetodeBayarBlack/$selectedCoin/$selectedPrice")
+                })
         }
         navigation(startDestination = "MetodeBayar", route = "riwayatRoute") {
-            composable("MetodeBayarBlack") {
+            composable("MetodeBayarBlack/{coin}/{price}") { backStackEntry ->
                 val viewModel = viewModel<PaymentViewModel>()
+                val coin = backStackEntry.arguments?.getString("coin") ?: ""
+                val price = backStackEntry.arguments?.getString("price") ?: ""
+
                 ScaffoldWithoutButton(
                     containerColor = Color.Black,
                     contentTop = {
@@ -271,8 +289,7 @@ fun NavGraph(
                         MetodeBayarScreen(
                             viewModel,
                             navigateTo = {
-
-                                navController.navigate("InstruksiBayarBlack")
+                                navController.navigate("InstruksiBayarBlack/$coin/$price")
                             })
                     },
 
@@ -280,8 +297,8 @@ fun NavGraph(
 
 
             }
-            composable("InstruksiBayarBlack") {
-                val viewModel = viewModel<PaymentViewModel>()
+            composable("InstruksiBayarBlack/{coin}/{price}") {
+
                 ScaffoldWithoutButton(
                     containerColor = Color.Black,
                     contentTop = {
@@ -298,16 +315,7 @@ fun NavGraph(
                             colorButton = Color.Black,
                             onClick = { navController.navigate("home") },
                             onClickBack = { navController.popBackStack() },
-                            dataPayment = subscriptionData(
-                                _id = "",
-                                userId = "",
-                                level = "",
-                                price = 0,
-                                startDate = "",
-                                endDate ="",
-                                isPayed = false,
-                                isExpired = false
-                            )
+                            dataPayment = null,
                         )
                     },
 
@@ -346,42 +354,53 @@ fun NavGraph(
 
                         coroutineScope.launch {
 
-                            val googleSignInHelper = GoogleSignInHelper(context)
-                            val googleAccount = googleSignInHelper.getGoogleAccount()
 
-                            if (googleAccount != null) {
 //                                userViewModel.resetTokenUser(googleAccount.token)
-                                val level = userViewModel.selectedMembership.value
-                                val idToken = googleAccount.token
-                                val profile = userViewModel.userInfo.value?.urlPicture
-                                val name = userViewModel.userInfo.value?.name
-                                val id = userViewModel.userInfo.value?.userId
-                                val datasubs = userViewModel.subscriptionInfo.value
-
-                                if (level != null &&  name != null && profile != null && id != null && datasubs == null) {
-                                    userViewModel.makeSubscription(
-                                        idToken,
-                                        level,
-                                        db,
-                                        name,
-                                        profile
-                                    )
-                                    Toast.makeText(context, "Berhasil Membeli Membership", Toast.LENGTH_SHORT).show()
-                                }else if (
-                                    datasubs != null
-                                ){
-                                    userViewModel.setSubscriptionInfo(datasubs, idToken, db = db)
-                                    userViewModel.newsubscriptionInfo.value = datasubs
-                                    println(datasubs.isPayed)
-                                    Toast.makeText(context, "Berhasil Mengupdate Membership", Toast.LENGTH_SHORT).show()
-                                }else{
-                                    Toast.makeText(context, "Gagal Membeli Membership", Toast.LENGTH_SHORT).show()
-                                }
+                            val level = userViewModel.selectedMembership.value
 
 
-                            }else
+                            val datasubscription = userViewModel.subscriptionInfo.value
+
+                            if (level != null) {
+                                userViewModel.makeSubscription(
+                                    level,
+                                    db,
+                                )
+                                Toast.makeText(
+                                    context,
+                                    "Berhasil Membeli Membership",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else if (
+                                datasubscription != null
+                            ) {
+                                userViewModel.setSubscriptionInfo(
+                                    subscription = datasubscription,
+                                    db = db
+                                )
+                                userViewModel.newsubscriptionInfo.value = datasubscription
+                                println(datasubscription.isPayed)
+                                Toast.makeText(
+                                    context,
+                                    "Berhasil Mengupdate Membership",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Gagal Membeli Membership",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+
+
+
                             {
-                                Toast.makeText(context, "Gagal Membeli Membership", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Gagal Membeli Membership",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
 
 
@@ -439,10 +458,7 @@ fun NavGraph(
                         LaunchedEffect(Unit) {
                             val result = data?.tokenAuth?.let { it1 ->
                                 ProfileRepository.getDataSubscription(
-                                    it1,
-                                    db,
-                                    data.name,
-                                    data.urlPicture
+                                    db = db
                                 )
                             }
 
@@ -459,16 +475,13 @@ fun NavGraph(
                             )
                         } else {
                             // Tampilkan loading indicator jika data belum ada
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 CircularProgressIndicator()
                             }
                         }
-
-
-
-
-
-
 
 
                     },

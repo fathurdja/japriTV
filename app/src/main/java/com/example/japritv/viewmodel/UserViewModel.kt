@@ -39,9 +39,9 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
 //        }
 //    }
 
-    fun loadSubscriptionInfo(idToken: String, db: AppDatabase, nama: String, profile: String) {
+    fun loadSubscriptionInfo( db: AppDatabase,) {
         viewModelScope.launch {
-            val subscription = ProfileRepository.getDataSubscription(idToken, db, nama, profile)
+            val subscription = ProfileRepository.getDataSubscription(db = db)
             subscriptionInfo.value = subscription
         }
     }
@@ -63,15 +63,17 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
         _selectedMembership.value = membership
     }
 
-    fun setSubscriptionInfo(subscription: subscriptionData, token: String, db: AppDatabase) {
+    fun setSubscriptionInfo(subscription: subscriptionData, db: AppDatabase) {
         viewModelScope.launch {
-            ProfileRepository.deleteSubscription(idToken = token, id = subscription._id)
+            subscriptionInfo.value?.let {
+                ProfileRepository.deleteSubscription(
+                    id = it._id,
+                    db = db
+                )
+            }
             val newsubscription = ProfileRepository.makeSubscription(
-                idToken = token,
                 level = subscription.level,
                 db = db,
-                nama = subscription.userId,
-                profile = subscription.userId
             )
             newsubscriptionInfo.value = newsubscription
         }
@@ -80,26 +82,20 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
     }
 
     fun makeSubscription(
-        idToken: String,
         level: String,
         db: AppDatabase,
-        nama: String,
-        profile: String
     ) {
         viewModelScope.launch {
-            ProfileRepository.makeSubscription(idToken, level, db, nama, profile)
+            ProfileRepository.makeSubscription(level, db,)
         }
     }
 
     fun updateSubscriptionInfo(
-        idToken: String,
         db: AppDatabase,
-        nama: String,
-        profile: String,
         id: String
     ) {
         viewModelScope.launch {
-            val success = ProfileRepository.updateDataSubscription(id, idToken, db, nama, profile)
+            val success = ProfileRepository.updateDataSubscription(id, db, )
             if (success != null) {
                 subscriptionInfo.value = success
 

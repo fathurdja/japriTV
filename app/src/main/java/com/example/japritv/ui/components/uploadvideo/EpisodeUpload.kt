@@ -68,7 +68,8 @@ fun EpisodeUploadComponent(
     onClick: () -> Unit ,
     episodeIndex: Int,
     uploadVideoViewModel: UploadEpisodeViewModel,
-    episode: Episode
+    episode: Episode,
+    clear:()->Unit
 ) {
 
 
@@ -200,7 +201,7 @@ fun EpisodeUploadComponent(
                             fileSize = episode.fileSize,
                             fileIcon = R.drawable.video_vector_icon_1, // Sesuaikan dengan resource yang kamu punya
                             onRemoveClick = {
-
+                                clear()
                             }
                         )
 

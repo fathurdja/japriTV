@@ -59,7 +59,7 @@ class  MainActivity : ComponentActivity() {
 
         setContent {
             val userViewModel: UserViewModel = viewModel(factory = UserViewModelfactory(database))
-            val videoViewModel: VideoViewModel = viewModel(factory = VideoViewModelFactory(videoRepository))
+            val videoViewModel: VideoViewModel = viewModel(factory = VideoViewModelFactory(videoRepository,database))
             val data: ShowItemViewModel = viewModel()
 
             val uploadViewModel: UploadEpisodeViewModel = viewModel(factory = UploadEpisodeViewModelFactory(database))

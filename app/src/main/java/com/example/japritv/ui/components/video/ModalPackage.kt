@@ -19,6 +19,10 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,7 +36,10 @@ import com.example.japritv.ui.components.profile.CoinGrid
 import com.example.japritv.ui.components.profile.Keanggotaan
 
 @Composable
-fun ModalityContainer(onClick: ()-> Unit) {
+fun ModalityContainer(onClick: ()-> Unit,selectedCoin: String,
+                      onCoinSelected: (String, String) -> Unit) {
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -90,7 +97,9 @@ fun ModalityContainer(onClick: ()-> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Coin options
-        CoinGrid()
+        CoinGrid(
+            selectedCoin = selectedCoin, onCoinSelected = onCoinSelected
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -131,5 +140,5 @@ fun ModalityContainer(onClick: ()-> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun ModalityContainerPreview() {
-    ModalityContainer(onClick = {})
+    ModalityContainer(onClick = {}, selectedCoin ="", onCoinSelected = { _, _ ->} )
 }

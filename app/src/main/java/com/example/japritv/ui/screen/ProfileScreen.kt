@@ -40,7 +40,7 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
     LaunchedEffect(userInfo) {
         userInfo?.let { user ->
             Log.e("profile", "$user")
-            viewModel.loadSubscriptionInfo(user.tokenAuth, db, user.name, user.urlPicture)
+            viewModel.loadSubscriptionInfo (db)
         }
     }
     fun formatDate(isoDate: String): String {

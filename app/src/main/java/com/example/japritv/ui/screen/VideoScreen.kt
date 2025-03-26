@@ -5,11 +5,19 @@ import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.*
+import androidx.compose.foundation.pager.VerticalPager
+
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,115 +34,76 @@ import androidx.media3.exoplayer.SimpleExoPlayer
 import androidx.media3.ui.PlayerView
 import com.example.japritv.R
 import com.example.japritv.model.ResponseVideo
+import com.example.japritv.ui.components.video.ContainerEpisode
+import com.example.japritv.ui.components.video.VideoPage
 import com.example.japritv.viewmodel.VideoViewModel
+import com.google.accompanist.pager.ExperimentalPagerApi
+
+
 import kotlinx.coroutines.delay
 
-@OptIn(UnstableApi::class)
+@kotlin.OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
+
 fun VideoScreen(viewModel: VideoViewModel) {
-    val context = LocalContext.current
     val videoList by viewModel.dataList.collectAsState() // ✅ Observasi data dari ViewModel
-    val isLoading by viewModel.isLoading.collectAsState() // ✅ Observasi status loading
-    val firstVideo = videoList.firstOrNull()
-    var isBuffering by remember { mutableStateOf(true) } // ✅ Mulai dengan true karena video masih loading
-    var isPlaying by remember { mutableStateOf(true) }
-    var showPauseIcon by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
+    val pagerState = rememberPagerState(
+        initialPage = 0,
+        initialPageOffsetFraction = 0f,
+        pageCount = { videoList.size }
+    )
 
+    var showSheet by remember { mutableStateOf(false) }
+    var selectedEpisode by remember { mutableStateOf(1) }
 
+    val sheetState = rememberModalBottomSheetState()
 
-    firstVideo?.let { data ->
-        val videoUrl = ""
-        if (!videoUrl.isNullOrEmpty()) {
-            val exoPlayer = remember {
-                SimpleExoPlayer.Builder(context).build().apply {
-                    setMediaItem(MediaItem.fromUri(Uri.parse(videoUrl)))
-                    prepare()
-                    volume = 1f
-                    addListener(object : Player.Listener {
-                        override fun onPlaybackStateChanged(state: Int) {
-                            isBuffering = state == Player.STATE_BUFFERING || state == Player.STATE_IDLE
-                        }
-
-                        override fun onIsPlayingChanged(isPlayingNow: Boolean) {
-                            isPlaying = isPlayingNow
-                            if (isPlayingNow) {
-                                showPauseIcon = false
-                            }
-                        }
-                    })
-                }
-            }
-
-            DisposableEffect(Unit) {
-                exoPlayer.playWhenReady = true
-                onDispose { exoPlayer.release() }
-            }
-
-            LaunchedEffect(showPauseIcon) {
-                if (showPauseIcon) {
-                    delay(2000) // Hilangkan ikon setelah 2 detik
-                    showPauseIcon = false
-                }
-            }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clickable {
-                        exoPlayer.playWhenReady = !exoPlayer.playWhenReady
-                        showPauseIcon = true
-                    }
-            ) {
-                AndroidView(
-                    factory = {
-                        PlayerView(context).apply {
-                            player = exoPlayer
-                            useController = false
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize()
+    Column {
+        VerticalPager(
+            modifier = Modifier.fillMaxSize(),
+            state = pagerState,
+        ) { page ->
+            if (videoList.isNotEmpty()) { // ✅ Cek agar tidak akses indeks kosong
+                VideoPage(
+                    share = 0,
+                    like = 0,
+                    judul = videoList[page].title,
+                    deskripsi = "",
+                    url = videoList[page].poster,
+                    onClick = {  },
+                    onEpisodeClick = { showSheet = true },
+                    onLikeClick = {},
+                    onBookmarkClick = {}
                 )
-
-                // ✅ Circular Progress Indicator ketika buffering
-                AnimatedVisibility(
-                    visible = isBuffering,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .zIndex(2f)
-                ) {
-                    CircularProgressIndicator(color = Color.White)
-                }
-
-                // ✅ Ikon Pause (muncul saat di-klik atau saat video di-pause)
-                AnimatedVisibility(
-                    visible = showPauseIcon || !isPlaying,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .zIndex(2f)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.play_circle),
-                        contentDescription = "Pause Icon",
-                        tint = Color.White,
-                        modifier = Modifier.size(64.dp)
-                    )
-                }
-            }
-        } else {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "No Video URL Available", color = Color.White)
             }
         }
-    } ?: run {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(text = "No Video Available", color = Color.White)
+    }
+
+    // Bottom Sheet untuk memilih episode
+    if (showSheet && pagerState.currentPage in videoList.indices) {
+        ModalBottomSheet(
+            containerColor = Color.Black,
+            modifier = Modifier.fillMaxHeight(),
+            sheetState = sheetState,
+            onDismissRequest = { showSheet = false }
+        ) {
+            val currentVideo = videoList[pagerState.currentPage].video.size
+
+            ContainerEpisode(
+                onEpisodeSelected = { episode ->
+                    selectedEpisode = episode
+                    showSheet = false // ✅ Tutup sheet setelah memilih episode
+                },
+                selectedEpisode = selectedEpisode,
+                totalEpisodes = currentVideo,
+                title = videoList[pagerState.currentPage].title,
+                poster = videoList[pagerState.currentPage].poster
+            )
         }
     }
 }
+
 
 

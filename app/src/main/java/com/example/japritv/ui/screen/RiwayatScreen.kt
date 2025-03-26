@@ -44,11 +44,13 @@ import com.example.japritv.viewmodel.VideoViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun RiwayatScreen(videoViewModel: VideoViewModel,onClick: () -> Unit) {
+fun RiwayatScreen(videoViewModel: VideoViewModel,onClick: (String, String) -> Unit) {
     val riwayatMovies by videoViewModel.dataList.collectAsState()
     val sheetState = rememberModalBottomSheetState()
 
     val scope = rememberCoroutineScope()
+    var selectedCoin by remember { mutableStateOf("") }
+    var selectedPrice by remember { mutableStateOf("") }
 
     var showSheet by remember { mutableStateOf(false) }
 
@@ -88,12 +90,12 @@ fun RiwayatScreen(videoViewModel: VideoViewModel,onClick: () -> Unit) {
                 onDismissRequest = { showSheet = false },
 
             ) {
-                ModalityContainer(onClick = onClick)
-
-
-
-                // Tambahkan jarak bawah untuk swipe-to-dismiss
-
+                ModalityContainer(onClick = { onClick(selectedCoin, selectedPrice) },
+                    selectedCoin = selectedCoin,
+                    onCoinSelected = { coin, price ->
+                        selectedCoin = coin
+                        selectedPrice = price
+                    })
 
             }
         }

@@ -10,5 +10,5 @@ data class Episode(
     val fileSize: String ,
     val isUploading: Boolean = false,
     val progress: Float = 0f,
-    val thumbnail: Bitmap?
+    val thumbnail: File?
 )

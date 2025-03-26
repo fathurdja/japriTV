@@ -70,27 +70,11 @@ fun MainScreen(
 
 
     LaunchedEffect(userInfo) {
-        val googleSignInHelper = GoogleSignInHelper(context)
-        val googleAccount = googleSignInHelper.getGoogleAccount()
-        if (googleAccount != null) {
-            AuthRepository.resetToken(googleAccount.token, db)
-            userInfo?.let { user ->
-                AuthRepository.getDataLogin(
-                    db = db,
-                    idToken = googleAccount.token,
-                    namaUser = user.name,
-                    profile = user.urlPicture
-                )
-                userViewModel.loadUserInfo()
-                userViewModel.loadSubscriptionInfo(
-                    idToken = googleAccount.token,
-                    db = db,
-                    nama = user.name,
-                    profile = user.urlPicture
-                )
-            }
-        }
-
+        userViewModel.loadSubscriptionInfo(
+            db = db,
+        )
+        val video = videoViewModel.fetchVideos()
+        println(video)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -160,16 +144,14 @@ fun MainScreen(
 
                                 if (newsubscriptionInfo != null && googleAccount != null) {
 
-                                   val payment = ProfileRepository.updateDataSubscription(
-                                        newsubscriptionInfo._id,
-                                        googleAccount.token,
-                                        db,
-                                        userInfo!!.name,
-                                        userInfo!!.urlPicture
+                                    val payment = ProfileRepository.updateDataSubscription(
+                                       id =newsubscriptionInfo._id,
+                                        db = db
                                     )
-                                   userViewModel.subscriptionInfo.value = payment
+                                    userViewModel.subscriptionInfo.value = payment
 
-                                    Toast.makeText(context, "Berhasil membayar", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Berhasil membayar", Toast.LENGTH_SHORT)
+                                        .show()
 
                                     // 🔥 Hapus layar sebelumnya agar tidak kembali ke InstruksiBayarScreen
                                     navController.navigate("home") {
@@ -178,12 +160,13 @@ fun MainScreen(
                                         }
                                     }
                                 } else {
-                                    Toast.makeText(context, "Gagal membayar", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Gagal membayar", Toast.LENGTH_SHORT)
+                                        .show()
                                 }
                             }
                         },
 
-                                onClickBack = { navController.popBackStack() },
+                        onClickBack = { navController.popBackStack() },
                         colortext = Color.Black,
                         colorButton = Color.Gray,
                         dataPayment = subscriptionInfo!!,

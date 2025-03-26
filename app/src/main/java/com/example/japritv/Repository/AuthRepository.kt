@@ -18,11 +18,12 @@ object AuthRepository {
     suspend fun sendTokenToServer(idToken: String, db: AppDatabase, nama: String, profile: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-
-                val url = URL("https://japritv.vercel.app/api/auth/google")
+                println(idToken)
+                val url = URL("https://japritv-v2.vercel.app/api/auth/google")
                 val connection = url.openConnection() as HttpURLConnection
+                connection.setRequestProperty("Authorization", idToken)
                 connection.requestMethod = "GET"
-                connection.setRequestProperty("Authorization", "Bearer $idToken")
+
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doInput = true
 
@@ -30,9 +31,18 @@ object AuthRepository {
                 val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
                 Log.d("AuthRepository", "Response Code: $responseCode")
                 Log.d("AuthRepository", "Response Body: $responseMessage")
+                val jsonObject= JSONObject(responseMessage)
+                val tokenAcces = jsonObject.getString("data")
+                db.authTokenDao().saveToken(
+                    authToken = AuthToken(
+                        id = 1,
+                        token = tokenAcces
+                    )
+                )
 
                 if (responseCode == 200) {
-                    val success = getDataLogin(db, idToken, nama, profile) // Menunggu hasil sebelum menyimpan
+                    val success = getDataLogin(db, tokenAcces, nama, profile)
+                    // Menunggu hasil sebelum menyimpan
                     if (success) {
                         return@withContext true
                     }
@@ -49,10 +59,10 @@ object AuthRepository {
         return withContext(Dispatchers.IO) {
             try {
                 Log.d("AuthRepository", "Nama user dari parameter: $namaUser")
-                val url = URL("https://japritv.vercel.app/api/user/profile")
+                val url = URL("https://japritv-v2.vercel.app/api/profile")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
-                connection.setRequestProperty("Authorization", "Bearer $idToken")
+                connection.setRequestProperty("Authorization", idToken)
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doInput = true
 
@@ -66,7 +76,7 @@ object AuthRepository {
                     val data = jsonResponse.getJSONObject("data")
                     val email = data.getString("email")
                     val userId = data.getString("_id")
-                    val coins = data.getInt("coins")
+                    val coins = data.getInt("__v")
                     val createdAt = data.getString("createdAt")
                     val updatedAt = data.getString("updatedAt")
                     val referral = data.getString("referral")
