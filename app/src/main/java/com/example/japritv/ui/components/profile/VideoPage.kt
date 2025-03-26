@@ -131,7 +131,7 @@ fun MovieScreen(share:Int,like:Int,judul:String,deskripsi:String) {
 fun IconWithText(iconRes: Int, text: String) {
     Column (
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { }
+        modifier = Modifier.clickable {}
     ) {
         Image(
             painter = painterResource(id = iconRes),
