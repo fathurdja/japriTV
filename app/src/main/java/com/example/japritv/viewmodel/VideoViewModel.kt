@@ -22,6 +22,7 @@ import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +32,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import java.net.HttpURLConnection
+import java.net.URL
 
 class VideoViewModel(private val videoRepository: VideoRepository, private val db: AppDatabase) : ViewModel() {
 
@@ -88,61 +91,67 @@ class VideoViewModel(private val videoRepository: VideoRepository, private val d
         }
     }
     fun fetchVideos() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
+            _isLoading.value = true
 
-
-            // Ambil data dari Room
+            // Ambil data dari Room sebagai fallback awal
             val videosFromRoom = videoRepository.getAllVideos()
-            _dataList.value=videosFromRoom
-
-
+            _dataList.value = videosFromRoom
 
             try {
-                val authInfo = db.loginInfoDao().getLoginInfo()
-                val token = authInfo?.tokenAuth
-                // Ambil data dari API
-                val response: ResponseVideo = client.get("https://japritv-v2.vercel.app/api/video") {
-                    headers {
-                        if (token != null) {
-                            append("Authorization", token)
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: ""
+
+                val url = URL("https://japritv-v2.vercel.app/api/video")
+                val connection = url.openConnection() as HttpURLConnection
+
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Authorization", token)
+                connection.setRequestProperty("Accept", "application/json")
+                connection.connectTimeout = 10000
+                connection.readTimeout = 10000
+
+                val responseCode = connection.responseCode
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val responseStream = connection.inputStream.bufferedReader().use { it.readText() }
+
+                    val json = Json { ignoreUnknownKeys = true }
+                    val response: ResponseVideo = json.decodeFromString(responseStream)
+                    if (response.data.isNotEmpty()) {
+                        println("Data dari API berhasil diambil: ${response.data.size} video")
+
+                        val isDifferent = videosFromRoom.size != response.data.size ||
+                                videosFromRoom.zip(response.data).any { (roomVideo, apiVideo) ->
+                                    roomVideo.id != apiVideo.id || roomVideo.updatedAt != apiVideo.updatedAt
+                                }
+
+                        if (isDifferent) {
+                            println("Ada perubahan data, memperbarui Room Database...")
+                            videoRepository.clearVideos()
+                            videoRepository.saveVideoData(response)
+
+                            // Ambil ulang data terbaru dari Room
+                            _dataList.value = videoRepository.getAllVideos()
+                        } else {
+                            println("Data dari API sama dengan yang ada di Room, tidak perlu update.")
                         }
-                    }
-                }.body()
-
-                if (response.data.isNotEmpty()) {
-                    println("Data dari API: $response")
-
-                    // Bandingkan data API dengan data Room
-                    if (videosFromRoom != response.data) {
-                        _isLoading.value = true
-                        println("Ada perubahan data, memperbarui Room Database...")
-
-                        // Hapus data lama di Room
-                        videoRepository.clearVideos()
-
-                        // Simpan data terbaru ke Room
-                        videoRepository.saveVideoData(response)
-
-                        // Ambil ulang data terbaru dari Room
-                        val freshVideos = videoRepository.getAllVideos()
-                        _dataList.value = freshVideos
                     } else {
-                        println("Data sudah up-to-date, tidak perlu update Room")
-                        _dataList.value = videosFromRoom
+                        println("API Error: ${response.message}")
                     }
                 } else {
-                    println("API Error: ${response.message}")
+                    println("Server Error: $responseCode - ${connection.responseMessage}")
                 }
+                connection.disconnect()
             } catch (e: Exception) {
-                println("Network Error: ${e.message}")
-
-                // Jika terjadi error, gunakan data dari Room sebagai fallback
-                _dataList.value = videosFromRoom
+                println("Network Error: ${e.message}, menggunakan data dari Room sebagai fallback.")
             }
 
             _isLoading.value = false
         }
     }
+
+
+
 
 
     override fun onCleared() {

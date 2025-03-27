@@ -22,6 +22,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,16 +46,23 @@ import com.example.japritv.ui.components.Header
 import com.example.japritv.ui.components.uploadvideo.RequirementsWithLogin
 import com.example.japritv.ui.components.uploadvideo.RequirementsWithoutLogin
 import com.example.japritv.ui.theme.JapriTvTheme
+import com.example.japritv.viewmodel.UserViewModel
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun UploadVideoScreen(isLoggedIn: Boolean = false
-                      ,navController: NavController,login:()->Unit) {
+fun UploadVideoScreen(
+    userViewModel: UserViewModel, navController: NavController, login: () -> Unit
+) {
+    val isLoggedIn by userViewModel.isLoggedin.collectAsState()
+
+    LaunchedEffect(Unit) {
+        userViewModel.loadUserInfo()
+    }
     Scaffold(
         topBar = {
             Box(modifier = Modifier.padding(vertical = 30.dp)) {
-                Header("Upload Video",Color.Black,Color.White)
+                Header("Upload Video", Color.Black, Color.White)
             }
         },
         containerColor = Color.Black, // Set the background color of the entire screen
@@ -110,7 +119,7 @@ fun UploadVideoScreen(isLoggedIn: Boolean = false
                     Box(modifier = Modifier.padding(horizontal = 15.dp)) {
                         DynamicActionButton(
                             text = "Mulai upload karya",
-                            onClick = {navController.navigate("uploadEpisode")}
+                            onClick = { navController.navigate("uploadEpisode") }
                         )
                     }
                 }
@@ -118,7 +127,7 @@ fun UploadVideoScreen(isLoggedIn: Boolean = false
                 Column(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(18.dp),
+                        .padding(top = 35.dp, start = 15.dp,end=15.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Title Text
@@ -161,9 +170,8 @@ fun UploadVideoScreen(isLoggedIn: Boolean = false
                     // Dynamic Action Button
                     Box(modifier = Modifier.padding(top = 16.dp)) {
                         DynamicActionButton(
-                            text = "Mulai upload karya",
+                            text = "Aktifkan Akun Creatormu Sekarang",
                             onClick = {
-                                !isLoggedIn
                                 login()
                             }
                         )

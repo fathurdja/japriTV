@@ -93,8 +93,8 @@ fun HomeScreen(
                             .fillMaxWidth()
                             .height(600.dp) // Sesuaikan tinggi sesuai kebutuhan
                     ) {
-                        ShowsGridSection(movies,onClick = {userId ->
-                            navController.navigate("nowPlaying/$userId")  })
+                        ShowsGridSection(movies,onClick = {Id ->
+                            navController.navigate("nowPlaying/$Id")  })
                     }
                 }
             }

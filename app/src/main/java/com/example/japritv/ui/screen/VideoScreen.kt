@@ -32,6 +32,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.SimpleExoPlayer
 import androidx.media3.ui.PlayerView
+import androidx.navigation.NavController
 import com.example.japritv.R
 import com.example.japritv.model.ResponseVideo
 import com.example.japritv.ui.components.video.ContainerEpisode
@@ -45,7 +46,7 @@ import kotlinx.coroutines.delay
 @kotlin.OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 
-fun VideoScreen(viewModel: VideoViewModel) {
+fun VideoScreen(viewModel: VideoViewModel,navController: NavController) {
     val videoList by viewModel.dataList.collectAsState() // ✅ Observasi data dari ViewModel
     val context = LocalContext.current
 
@@ -72,7 +73,7 @@ fun VideoScreen(viewModel: VideoViewModel) {
                     judul = videoList[page].title,
                     deskripsi = "",
                     url = videoList[page].poster,
-                    onClick = {  },
+                    onClick = { navController.navigate("nowPlaying/${videoList[page].id}") },
                     onEpisodeClick = { showSheet = true },
                     onLikeClick = {},
                     onBookmarkClick = {}

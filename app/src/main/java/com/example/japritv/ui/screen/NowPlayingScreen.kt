@@ -42,13 +42,13 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun VideoVerticalPagerScreen(viewModel: VideoViewModel, userId: String, onClickBack: () -> Unit) {
+fun VideoVerticalPagerScreen(viewModel: VideoViewModel, Id: String, onClickBack: () -> Unit) {
     val video by viewModel.selectedVideo.collectAsState()
     var showSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     var selectedEpisode by remember { mutableStateOf(1) }
-    LaunchedEffect(userId) {
-        viewModel.fetchVideoById(userId)
+    LaunchedEffect(Id) {
+        viewModel.fetchVideoById(Id)
 
     }
     LaunchedEffect(video) {

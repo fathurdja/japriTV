@@ -3,12 +3,18 @@ package com.example.japritv.Repository
 import android.util.Log
 import com.example.japritv.Repository.AuthRepository.sendTokenToServer
 import com.example.japritv.dao.AppDatabase
+import com.example.japritv.model.PaymentData
+import com.example.japritv.model.UploadVideoData
+import com.example.japritv.model.UploadVideoResponse
+import com.example.japritv.model.dataitems
 import com.example.japritv.model.subscriptionData
 import com.example.japritv.provider.GoogleAuthUiProvider
+import com.google.gson.Gson
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.io.FileNotFoundException
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -207,9 +213,9 @@ object ProfileRepository {
 
                 if (responseCode == 200) {
                     Log.d("ProfileRepository", "Response Body: $responseMessage")
-                    return@withContext getDataTransaction(
-                        db = db
-                    )
+//                    return@withContext getDataTransaction(
+//                        db = db
+//                    )
                 } else if (responseCode == 400) {
                     Log.d("ProfileRepository", "Response Body: $responseMessage")
                     Log.e("AuthRepo", "Token Expired")
@@ -228,54 +234,68 @@ object ProfileRepository {
         }
     }
 
-    suspend fun getDataTransaction(
-        db: AppDatabase
-    ): Boolean {
+    suspend fun getDataTransaction(db: AppDatabase): List<PaymentData> {
         return withContext(Dispatchers.IO) {
-
             try {
                 val authInfo = db.authTokenDao().getToken()
-                val token = authInfo?.token
-                val url = URL("https://japritv.vercel.app/api/transaction")
+                val token = authInfo?.token ?: return@withContext emptyList()
+                val url = URL("https://japritv-v2.vercel.app/api/transaction")
                 val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "POST"
+                connection.requestMethod = "GET"
                 connection.setRequestProperty("Authorization", token)
                 connection.setRequestProperty("Content-Type", "application/json")
-                connection.doOutput = true
-
+                connection.doOutput = false
 
                 val responseCode = connection.responseCode
                 val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
-                Log.d("GetDataProfileRepository", "Response Code: $responseCode")
-                Log.d("GetDataProfileRepository", "Response Body: $responseMessage")
+
+                Log.d("GetDataTransaction", "Response Code: $responseCode")
+                Log.d("GetDataTransaction", "Raw JSON Response: $responseMessage")
 
                 if (responseCode == 200) {
-//                    Log.d("ProfileRepository", "Response Body: $responseMessage")
-//                    val jsonResponse = JSONObject(responseMessage)
-//                    val data = jsonResponse.optJSONObject("data") ?: return@withContext null
+                    val jsonResponse = JSONObject(responseMessage)
+                    val dataArray = jsonResponse.optJSONArray("data") ?: return@withContext emptyList()
 
-//                    return@withContext subscriptionData(
-//                        _id = data.getString("_id"),
-//                        userId = data.getString("userId"),
-//                        level = data.getString("level"),
-//                        startDate = data.getString("startDate"),
-//                        endDate = data.getString("endDate"),
-//                        isPayed = data.getBoolean("isPayed"),
-//                        isExpired = data.getBoolean("isExpired")
-//                    )
-                } else if (responseCode == 400) {
-                    Log.d("ProfileRepository", "Response Body: $responseMessage")
-                    Log.e("AuthRepo", "Token Expired")
-//                    sendTokenToServer(idToken, db, nama, profile)
+                    val transactions = mutableListOf<PaymentData>()
+                    for (i in 0 until dataArray.length()) {
+                        val data = dataArray.getJSONObject(i)
+
+                        // ✅ Perbaiki Parsing items yang sekarang adalah Object, bukan Array
+                        val itemsObj = data.optJSONObject("items") ?: JSONObject()
+                        val itemsData = dataitems(
+                            _id = itemsObj.optString("_id", ""),
+                            totalEpisode = itemsObj.optInt("totalEpisode", 0)
+                        )
+
+                        transactions.add(
+                            PaymentData(
+                                _id = data.optString("_id", ""),
+                                isPayed = data.optBoolean("isPayed", false),
+                                user = data.optString("user", ""),
+                                items = itemsData, // ✅ Fix: Sekarang items adalah single object, bukan list
+                                amount = data.optInt("amount", 0),
+                                createdAt = data.optString("createdAt", ""),
+                                updatedAt = data.optString("updatedAt", ""),
+                                unique = data.optInt("unique", 0),
+                                serverFee = data.optInt("serverFee", 0),
+                                totalAmount = data.optInt("totalAmount", 0),
+                                __v = data.optInt("__v", 0)
+                            )
+                        )
+                    }
+                    return@withContext transactions
                 }
-                return@withContext false
+                return@withContext emptyList()
             } catch (e: Exception) {
-                Log.e("ProfileRepository", "Gagal membuat transaksi ", e)
-
-                return@withContext false
+                Log.e("GetDataTransaction", "Gagal mendapatkan transaksi", e)
+                return@withContext emptyList()
             }
         }
     }
+
+
+
+
 
     suspend fun updateSubscription(idToken: String, id: String): Boolean {
         return withContext(Dispatchers.IO) {
@@ -339,5 +359,86 @@ object ProfileRepository {
             }
         }
     }
+
+    suspend fun getVideoUploaded(db: AppDatabase): List<UploadVideoData> {
+        return withContext(Dispatchers.IO) {
+            try {
+
+
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: ""
+                Log.d("UploadVideoRepository", "Token: $token")
+                val url = URL("https://japritv-v2.vercel.app/api/upload")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Authorization", token)
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doOutput = false // karena ini GET request
+
+                val responseCode = connection.responseCode
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+
+                Log.d("UploadVideoRepository", "Response Code: $responseCode")
+                Log.d("UploadVideoRepository", "Response Body: $responseMessage")
+
+                if (responseCode == 200) {
+                    val gson = Gson()
+                    val videoResponse = gson.fromJson(responseMessage, UploadVideoResponse::class.java)
+
+                    // Filter video yang `isRelease == false`
+                    val unreleasedVideos = videoResponse.data.filter { !it.isRelease }
+                        .map { UploadVideoData(it._id, it.price, it.totalEpisode) }
+
+                    return@withContext unreleasedVideos
+                } else {
+                    Log.e("UploadVideoRepository", "Failed to fetch videos: $responseMessage")
+                    return@withContext emptyList()
+                }
+            } catch (e: FileNotFoundException) {
+                Log.e("UploadVideoRepository", "Endpoint not found! Check your API URL.", e)
+                return@withContext emptyList()
+            } catch (e: Exception) {
+                Log.e("UploadVideoRepository", "Error fetching videos", e)
+                return@withContext emptyList()
+            }
+        }
+    }
+
+    suspend fun updateTransaction(db: AppDatabase, id: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: ""
+                Log.d("UploadVideoRepository", "Token: $token")
+                val url = URL("https://japritv-v2.vercel.app/api/transaction/${id}")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Authorization", token)
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doOutput = true// karena ini GET request
+
+                val responseCode = connection.responseCode
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+
+                Log.d("UploadVideoRepository", "Response Code: $responseCode")
+                Log.d("UploadVideoRepository", "Response Body: $responseMessage")
+
+                if (responseCode == 200) {
+                    return@withContext true
+                } else {
+                    Log.e("UploadVideoRepository", "Failed pay video : $responseMessage")
+                    return@withContext false
+                }
+            } catch (e: FileNotFoundException) {
+                Log.e("UploadVideoRepository", "Endpoint not found! Check your API URL.", e)
+                return@withContext false
+            } catch (e: Exception) {
+                Log.e("UploadVideoRepository", "Error pay video", e)
+                return@withContext false
+            }
+        }
+    }
+
+
 
 }

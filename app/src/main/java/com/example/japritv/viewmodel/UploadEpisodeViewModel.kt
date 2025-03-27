@@ -14,9 +14,13 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.japritv.Repository.ProfileRepository
 import com.example.japritv.dao.AppDatabase
 import com.example.japritv.model.Episode
+import com.example.japritv.model.UploadVideoData
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import okhttp3.Call
 import okhttp3.Callback
@@ -61,6 +65,7 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
     }
 
 
+
     fun getFileFromUri(context: Context, uri: Uri): File? {
         val inputStream = context.contentResolver.openInputStream(uri) ?: return null
         val file = File(context.cacheDir, "${System.currentTimeMillis()}.mp4")
@@ -84,11 +89,9 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
     }
 
     fun uploadVideoToServer(
-        context: Context,
         title: String,
         episode: Int,
         videoFiles: List<File>, // Sekarang menerima List<File>
-
         onSuccess: (String) -> Unit,
         onFailure: (String) -> Unit
     ) {

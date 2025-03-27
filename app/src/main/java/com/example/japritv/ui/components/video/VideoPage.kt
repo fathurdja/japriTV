@@ -134,7 +134,7 @@ fun VideoPage(
                         modifier = Modifier.fillMaxHeight(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Tonton Sekarang", color = Color.White, fontSize = 12.sp)
+                        Text(text = "Tonton Sekarang", color = Color.White, fontSize = 12.sp, letterSpacing = 2.sp)
                         Spacer(modifier = Modifier.width(4.dp))
                         Image(
                             painter = painterResource(id = R.drawable.vector__11_),

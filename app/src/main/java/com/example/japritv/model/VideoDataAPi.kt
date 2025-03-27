@@ -6,18 +6,20 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class VideoDataApi(
-    @SerialName("_id") val id: String, // Gunakan id sebagai primary key
+    @SerialName("_id") val id: String,
     val title: String,
-    @SerialName("creator") val userId: String, // Menggunakan nama yang benar dari JSON
-    val totalView: Int,
-    val totalSearch: Int,
-    val totalSales: Int,
-    val releaseAt: String,
-    val isRelease: Boolean,
-    val video: List<Video>, // Gunakan "video" sesuai dengan JSON
-    val poster: String, // Tambahkan poster karena ada di JSON
-    val createdAt: String,
-    val updatedAt: String,
-    val price: Int,
-    val totalEpisode: Int
+    @SerialName("creator") val userId: String,
+    val totalView: Int = 0,
+    val totalSearch: Int = 0,
+    val totalSales: Int? = null,  // Ubah menjadi nullable
+    val totalSize: Int = 0,
+    val releaseAt: String? = null, // Ubah menjadi nullable
+    val isRelease: Boolean = false,
+    val video: List<Video> = emptyList(),
+    val poster: String = "",
+    val createdAt: String = "",
+    val updatedAt: String = "",
+    val price: Int = 0,
+    val totalEpisode: Int = 0
+
 )

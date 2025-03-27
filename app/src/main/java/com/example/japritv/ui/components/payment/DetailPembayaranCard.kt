@@ -41,9 +41,9 @@ import com.example.japritv.R
 import com.example.japritv.ui.theme.JapriTvTheme
 
 @Composable
-fun DetailPembayaranCard(jumlahEps:Int) {
+fun DetailPembayaranCard(jumlahEps:Int,biayaPerEpisode:Int) {
 
-    val biayaPerEpisode:Int = 150000
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -106,7 +106,7 @@ fun DetailPembayaranCard(jumlahEps:Int) {
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text("Biaya per episode", color = Color.Gray, fontSize = 14.sp)
-                        Text("Rp150.000", color = Color.Gray, fontSize = 14.sp)
+                        Text("Rp $biayaPerEpisode", color = Color.Gray, fontSize = 14.sp)
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -163,6 +163,6 @@ fun DashedDivider(
 @Composable
 private fun DetailPembayaranCardPreview() {
     JapriTvTheme {
-        DetailPembayaranCard(jumlahEps = 2)
+        DetailPembayaranCard(jumlahEps = 2, biayaPerEpisode = 150000)
     }
 }

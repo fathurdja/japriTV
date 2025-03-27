@@ -14,6 +14,7 @@ data class VideoData(
     val totalView: Int,
     val totalSearch: Int,
     val totalSales: Int,
+    val totalSize: Int,
     val releaseAt: String,
     val isRelease: Boolean,
     val poster: String,

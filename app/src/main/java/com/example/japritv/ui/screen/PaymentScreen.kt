@@ -9,15 +9,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.example.japritv.R
+import com.example.japritv.dao.AppDatabase
 import com.example.japritv.ui.components.Header
 import com.example.japritv.ui.components.HeaderRightWithIcon
 import com.example.japritv.ui.components.ScaffoldWithButton
@@ -25,28 +29,44 @@ import com.example.japritv.ui.components.ScaffoldWithButton
 import com.example.japritv.ui.components.payment.DetailPembayaranCard
 import com.example.japritv.ui.components.uploadvideo.WarningUpload
 import com.example.japritv.viewmodel.UploadEpisodeViewModel
+import com.example.japritv.viewmodel.UserViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun PaymentScreen(modifier: Modifier = Modifier,uploadEpisodeViewModel: UploadEpisodeViewModel) {
+fun PaymentScreen(
+    modifier: Modifier = Modifier,
+    userViewModel: UserViewModel,
+    db: AppDatabase
+) {
+    val video by userViewModel.unreleasedVideos.collectAsState()
+
     LaunchedEffect(Unit) {
-      val jumlahEps = uploadEpisodeViewModel.episodes.size
-        Log.e("jumlah EPS ","$jumlahEps")
+        userViewModel.getVideoUploaded(db = db)
     }
 
-       Box(modifier=Modifier.padding(horizontal = 24.dp, vertical = 50.dp)) {
-           Column(
-               modifier = modifier
-                   .fillMaxWidth()
-                   .padding() // Hindari overlap dengan topBar
-           ) {
+    // Hitung total jumlah episode dari semua video yang belum dirilis
+    val totalEpisode = video.sumOf { it.totalEpisode }
 
-                  WarningUpload(text = "Pastikan sudah sesuai sebelum melanjutkan")
-                  DetailPembayaranCard(jumlahEps = uploadEpisodeViewModel.episodes.size)
+    // Hitung total harga dari semua video yang belum dirilis
+    val totalHarga = video.sumOf { it.price }
 
-           }
-       }
+    Box(modifier = Modifier.padding(horizontal = 24.dp, vertical = 50.dp)) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding()
+        ) {
+            WarningUpload(text = "Pastikan sudah sesuai sebelum melanjutkan")
+            DetailPembayaranCard(
+                jumlahEps = totalEpisode,   // Total episode dari semua video
+                biayaPerEpisode = totalHarga // Total harga dari semua video
+            )
+        }
+    }
 
+    if (video.isEmpty()){
+        CircularProgressIndicator()
+    }
 }
 
 

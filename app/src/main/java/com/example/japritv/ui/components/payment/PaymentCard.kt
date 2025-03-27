@@ -66,7 +66,7 @@ fun PaymentCard(nominal:String) {
 
         Column(modifier = Modifier.padding(16.dp)) {
             PaymentInfoRow(label = "Nomor Virtual Account", value = "2370027689")
-            PaymentInfoRow(label = "Nominal pembelian", value = nominal)
+            PaymentInfoRow(label = "Nominal pembelian", value ="Rp. $nominal" )
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "BCA - Virtual Account", fontWeight = FontWeight.Bold, fontSize = 14.sp)

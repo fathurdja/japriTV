@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.example.japritv.R
 
 @Composable
-fun DetailPembayaranInteractive(color:Color) {
+fun DetailPembayaranInteractive(color:Color,jumlahEpisode:Int,Price:Int) {
     var isExpanded by remember { mutableStateOf(true) }
 
     Box(
@@ -85,7 +85,7 @@ fun DetailPembayaranInteractive(color:Color) {
                             color = Color.Gray
                         )
                         Text(
-                            text = "15 episode",
+                            text = "$jumlahEpisode episode",
                             color = Color.Gray
                         )
                     }
@@ -113,7 +113,7 @@ fun DetailPembayaranInteractive(color:Color) {
                             color = Color.Gray
                         )
                         Text(
-                            text = "Rp150.000",
+                            text = "Rp $Price",
                             color = Color.Gray
                         )
                     }
@@ -130,7 +130,7 @@ fun DetailPembayaranInteractive(color:Color) {
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Rp 2.250.000",
+                        text = "Rp ${jumlahEpisode*Price}",
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -144,5 +144,5 @@ fun DetailPembayaranInteractive(color:Color) {
 @Preview()
 @Composable
 fun PreviewPayNowUI() {
-    DetailPembayaranInteractive(color = Color.White)
+    DetailPembayaranInteractive(color = Color.White, jumlahEpisode = 2, Price = 10000)
 }

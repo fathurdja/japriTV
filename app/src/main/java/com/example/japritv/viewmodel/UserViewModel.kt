@@ -7,6 +7,7 @@ import com.example.japritv.Repository.AuthRepository
 import com.example.japritv.Repository.ProfileRepository
 import com.example.japritv.dao.AppDatabase
 import com.example.japritv.dao.LoginInfo
+import com.example.japritv.model.UploadVideoData
 import com.example.japritv.model.subscriptionData
 import com.example.japritv.provider.GoogleAuthUiProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,18 +27,20 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
     private val _nominalState = MutableStateFlow(0) // Gunakan non-nullable Int
     val nominal: StateFlow<Int> = _nominalState
     val newsubscriptionInfo = MutableStateFlow<subscriptionData?>(null)
+    private val _unreleasedVideos = MutableStateFlow<List<UploadVideoData>>(emptyList())
+    val unreleasedVideos: StateFlow<List<UploadVideoData>> = _unreleasedVideos
+
+    val isLoggedin = MutableStateFlow(false)
 
     init {
-
         loadUserInfo()
     }
 
-//    fun resetTokenUser(idToken: String) {
-//        viewModelScope.launch {
-//            val newToken = AuthRepository.resetToken(idToken)
-//            _userInfo.value?.tokenAuth = newToken // Perbarui nilai tokenAuth
-//        }
-//    }
+    fun updateLoginState() {
+        isLoggedin.value = _userInfo.value != null
+    }
+
+//
 
     fun loadSubscriptionInfo( db: AppDatabase,) {
         viewModelScope.launch {
@@ -46,12 +49,23 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
         }
     }
 
-    fun loadUserInfo() {
+
+    fun getVideoUploaded(db: AppDatabase) {
         viewModelScope.launch {
-            _userInfo.value = loginInfoDao.getLoginInfo()
-            println(_userInfo.value.toString())
+            val videos = ProfileRepository.getVideoUploaded(db = db)
+            _unreleasedVideos.value = videos
         }
     }
+
+
+    fun loadUserInfo() {
+            viewModelScope.launch {
+                _userInfo.value = loginInfoDao.getLoginInfo()
+                updateLoginState() // Perbarui status login setelah mengambil data user
+            }
+        }
+
+
 
 
     fun setNominal(nominal: Int) {
@@ -90,6 +104,8 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
         }
     }
 
+
+
     fun updateSubscriptionInfo(
         db: AppDatabase,
         id: String
@@ -105,5 +121,7 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
             }
         }
     }
+
+
 
 }

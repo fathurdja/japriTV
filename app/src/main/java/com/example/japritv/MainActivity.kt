@@ -25,6 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
 import com.example.japritv.Repository.VideoRepository
 import com.example.japritv.dao.AppDatabase
+import com.example.japritv.factory.PaymentViewModelFactory
 import com.example.japritv.factory.UploadEpisodeViewModelFactory
 import com.example.japritv.factory.UserViewModelfactory
 import com.example.japritv.factory.VideoViewModelFactory
@@ -61,13 +62,14 @@ class  MainActivity : ComponentActivity() {
             val userViewModel: UserViewModel = viewModel(factory = UserViewModelfactory(database))
             val videoViewModel: VideoViewModel = viewModel(factory = VideoViewModelFactory(videoRepository,database))
             val data: ShowItemViewModel = viewModel()
-
+            val paymentViewModel :PaymentViewModel = viewModel(factory = PaymentViewModelFactory(database))
             val uploadViewModel: UploadEpisodeViewModel = viewModel(factory = UploadEpisodeViewModelFactory(database))
                 MainScreen(
                     data = data,
                     videoViewModel = videoViewModel,
                     uploadEpisodeViewModel = uploadViewModel,
-                    userViewModel = userViewModel
+                    userViewModel = userViewModel,
+                    paymentViewModel = paymentViewModel
                 )
 
 

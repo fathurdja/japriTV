@@ -68,12 +68,14 @@ fun CardRating(
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            Text(
-                text = show.title,
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
+            show.title?.let {
+                Text(
+                    text = it,
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 

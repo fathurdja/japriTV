@@ -50,7 +50,8 @@ fun MainScreen(
     videoViewModel: VideoViewModel,
     data: ShowItemViewModel,
     uploadEpisodeViewModel: UploadEpisodeViewModel,
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    paymentViewModel: PaymentViewModel
 ) {
     val context = LocalContext.current
     val navController = rememberNavController()
@@ -59,20 +60,23 @@ fun MainScreen(
     var selectedItem by remember { mutableStateOf(0) }
     val categoryViewModel: CategoryViewModel = viewModel()
     val showItemViewModel: ShowItemViewModel = viewModel()
-    val paymentViewModel: PaymentViewModel = viewModel()
+
 
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
     val userInfo by userViewModel.userInfo.collectAsState()
     val subscriptionInfo by userViewModel.subscriptionInfo.collectAsState()
+    val transaction by paymentViewModel._transactionInfo.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
 
 
     LaunchedEffect(userInfo) {
+        userViewModel.loadUserInfo()
         userViewModel.loadSubscriptionInfo(
             db = db,
         )
+        paymentViewModel.getDataTransaction()
         val video = videoViewModel.fetchVideos()
         println(video)
     }
@@ -128,8 +132,8 @@ fun MainScreen(
         }
 
         // 🔥 Jika belum membayar, tampilkan InstruksiBayarScreen
-        if (subscriptionInfo != null && !subscriptionInfo!!.isPayed) {
-
+        // Jika ada transaksi atau belum membayar, tampilkan InstruksiBayarScreen
+        if (transaction.isNotEmpty() || (subscriptionInfo?.isPayed == false)) {
             ScaffoldWithoutButton(
                 containerColor = Color.White,
                 contentTop = {},
@@ -137,32 +141,42 @@ fun MainScreen(
                     InstruksiBayarScreen(
                         onClick = {
                             coroutineScope.launch {
-                                val newsubscriptionInfo = userViewModel.subscriptionInfo.value
-                                val googleSignInHelperag = GoogleSignInHelper(context)
-                                val googleAccount = googleSignInHelperag.getGoogleAccount()
-                                Log.e("MainScreen", "newsubscriptionInfo: $newsubscriptionInfo")
-                                Log.e("MainScreen", "token: ${googleAccount?.token}")
+                                val newSubscriptionInfo = userViewModel.subscriptionInfo.value
 
-                                if (newsubscriptionInfo != null && googleAccount != null) {
+                                if (transaction.isNotEmpty()) {
+                                    val dataTransaction = transaction.lastOrNull()
+                                    dataTransaction?.let {
+                                        val paymentSuccess = ProfileRepository.updateTransaction(db = db, id = it._id)
+                                        paymentViewModel.getDataTransaction()
 
+                                        if (paymentSuccess) {
+                                            navController.navigate("home") {
+                                                popUpTo(navController.graph.startDestinationId) {
+                                                    inclusive = true
+                                                }
+                                            }
+                                            Toast.makeText(context, "Pembayaran sukses", Toast.LENGTH_SHORT).show()
+                                            return@launch
+                                        }
+                                    }
+                                }
+
+                                if (newSubscriptionInfo != null) {
                                     val payment = ProfileRepository.updateDataSubscription(
-                                       id =newsubscriptionInfo._id,
+                                        id = newSubscriptionInfo._id,
                                         db = db
                                     )
                                     userViewModel.subscriptionInfo.value = payment
 
-                                    Toast.makeText(context, "Berhasil membayar", Toast.LENGTH_SHORT)
-                                        .show()
+                                    Toast.makeText(context, "Berhasil membayar", Toast.LENGTH_SHORT).show()
 
-                                    // 🔥 Hapus layar sebelumnya agar tidak kembali ke InstruksiBayarScreen
                                     navController.navigate("home") {
                                         popUpTo(navController.graph.startDestinationId) {
                                             inclusive = true
                                         }
                                     }
                                 } else {
-                                    Toast.makeText(context, "Gagal membayar", Toast.LENGTH_SHORT)
-                                        .show()
+                                    Toast.makeText(context, "Gagal membayar", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         },
@@ -170,15 +184,17 @@ fun MainScreen(
                         onClickBack = { navController.popBackStack() },
                         colortext = Color.Black,
                         colorButton = Color.Gray,
-                        dataPayment = subscriptionInfo!!,
+                        dataPayment = subscriptionInfo,
+                        paymentViewModel = paymentViewModel,
+                        db = db,
                         modifier = Modifier
                             .fillMaxSize()
                             .background(Color.White)
                     )
                 }
             )
-
         }
+
     }
 }
 

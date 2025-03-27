@@ -23,24 +23,27 @@ class VideoRepository(private val videoDao: VideoDao) {
     suspend fun saveVideoData(response: ResponseVideo) {
         val videoDataList = response.data.map { videoData ->
             VideoData(
-                id = videoData.id,
-                title = videoData.title,
-                userId = videoData.userId,
-                createdAt = videoData.createdAt,
-                updatedAt = videoData.updatedAt,
-                price = videoData.price,
-                totalEpisode = videoData.totalEpisode,
-                totalView = videoData.totalView,
-                totalSearch = videoData.totalSearch,
-                totalSales = videoData.totalSales,
-                releaseAt = videoData.releaseAt,
-                isRelease = videoData.isRelease,
-                poster = videoData.poster,
-                video = videoData.video,
+                id = videoData.id,  // ID tidak boleh null
+                title = videoData.title ?: "",
+                userId = videoData.userId ?: "",
+                createdAt = videoData.createdAt ?: "",
+                updatedAt = videoData.updatedAt ?: "",
+                price = videoData.price ?: 0,
+                totalEpisode = videoData.totalEpisode ?: 0,
+                totalView = videoData.totalView ?: 0,
+                totalSearch = videoData.totalSearch ?: 0,
+                totalSales = videoData.totalSales ?: 0,
+                releaseAt = videoData.releaseAt ?: "",
+                isRelease = videoData.isRelease ?: false,
+                poster = videoData.poster ?: "",
+                video = videoData.video ?: emptyList(),
+                totalSize = videoData.totalSize ?: 0
             )
         }
-        videoDataList.forEach { videoDao.insertVideoData(it) }
+
+        videoDao.insertVideoData(videoDataList)// Batch insert untuk performa lebih baik
     }
+
 
     suspend fun getAllVideos(): List<VideoData> {
         return videoDao.getAllVideoData()  // ✅ Langsung ambil data, tanpa decode manual
@@ -106,15 +109,16 @@ class VideoRepository(private val videoDao: VideoDao) {
                                 userId = videoJson.getString("creator"),
                                 totalView = videoJson.getInt("totalView"),
                                 totalSearch = videoJson.getInt("totalSearch"),
-                                totalSales = videoJson.getInt("totalSales"),
-                                releaseAt = videoJson.getString("releaseAt"),
+                                totalSales = 0,
+                                releaseAt = "",
                                 isRelease = videoJson.getBoolean("isRelease"),
                                 video = videoListItems,
                                 poster = videoJson.getString("poster"),
                                 createdAt = videoJson.getString("createdAt"),
                                 updatedAt = videoJson.getString("updatedAt"),
                                 price = videoJson.getInt("price"),
-                                totalEpisode = videoJson.getInt("totalEpisode")
+                                totalEpisode = videoJson.getInt("totalEpisode"),
+                                totalSize = videoJson.getInt("totalSize")
                             )
                         )
                     }
@@ -179,15 +183,16 @@ class VideoRepository(private val videoDao: VideoDao) {
                                 userId = videoJson.getString("creator"),
                                 totalView = videoJson.getInt("totalView"),
                                 totalSearch = videoJson.getInt("totalSearch"),
-                                totalSales = videoJson.getInt("totalSales"),
-                                releaseAt = videoJson.getString("releaseAt"),
+                                totalSales = 0,
+                                releaseAt = "",
                                 isRelease = videoJson.getBoolean("isRelease"),
                                 video = videoListItems,
                                 poster = videoJson.getString("poster"),
                                 createdAt = videoJson.getString("createdAt"),
                                 updatedAt = videoJson.getString("updatedAt"),
                                 price = videoJson.getInt("price"),
-                                totalEpisode = videoJson.getInt("totalEpisode")
+                                totalEpisode = videoJson.getInt("totalEpisode"),
+                                totalSize = videoJson.getInt("totalSize")
                             )
                         )
                     }
