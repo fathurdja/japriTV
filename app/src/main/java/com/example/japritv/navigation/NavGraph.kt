@@ -107,7 +107,7 @@ fun NavGraph(
                     onClickBack = { navController.popBackStack() })
             }
             composable("rating") {
-                RatingScreen(shows = data.shows, navController = navController)
+                RatingScreen(videoViewModel = video)
             }
             composable("segera_tayang") {
                 UpComingScreen(shows = data.shows, navController = navController)
@@ -118,7 +118,11 @@ fun NavGraph(
         composable("video") { VideoScreen(video) }
 
 
-        composable("upload") { UploadVideoScreen(navController = navController) }
+        composable("upload") {
+            UploadVideoScreen(
+                navController = navController,
+                login = { navController.navigate("login") })
+        }
         navigation(startDestination = "uploadEpisode", route = "uploadNavigation") {
             composable("uploadEpisode") {
                 ScaffoldWithButton(
@@ -187,13 +191,13 @@ fun NavGraph(
                     colorTextButton = Color.White,
                     modifier = Modifier,
                     onClick = {
-                   coroutineScope.launch {
-                       paymentViewModel.makeTransactionVideo(
-                           db = db,
-                           amount = 1,
-                           idCreator = "67e1c59fbde6e5bd487768ff"
-                       )
-                   }
+                        coroutineScope.launch {
+                            paymentViewModel.makeTransactionVideo(
+                                db = db,
+                                amount = 1,
+                                idCreator = "67e1c59fbde6e5bd487768ff"
+                            )
+                        }
 
 
                     }

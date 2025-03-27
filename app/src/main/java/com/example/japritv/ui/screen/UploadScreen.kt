@@ -48,7 +48,8 @@ import com.example.japritv.ui.theme.JapriTvTheme
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun UploadVideoScreen(isLoggedIn: Boolean = true,navController: NavController) {
+fun UploadVideoScreen(isLoggedIn: Boolean = false
+                      ,navController: NavController,login:()->Unit) {
     Scaffold(
         topBar = {
             Box(modifier = Modifier.padding(vertical = 30.dp)) {
@@ -161,7 +162,10 @@ fun UploadVideoScreen(isLoggedIn: Boolean = true,navController: NavController) {
                     Box(modifier = Modifier.padding(top = 16.dp)) {
                         DynamicActionButton(
                             text = "Mulai upload karya",
-                            onClick = {}
+                            onClick = {
+                                !isLoggedIn
+                                login()
+                            }
                         )
                     }
                 }

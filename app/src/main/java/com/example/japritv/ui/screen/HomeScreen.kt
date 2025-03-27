@@ -106,7 +106,8 @@ fun HomeScreen(
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
                 WidgetPlayer(
-                    text = "Money Heist: Korea. Joint Econ..."
+                    text = "Money Heist: Korea. Joint Econ...",
+                    onClose = { showPlayerWidget.value = false }
                 )
             }
         }

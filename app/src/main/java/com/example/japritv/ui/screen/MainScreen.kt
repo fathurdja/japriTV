@@ -87,7 +87,8 @@ fun MainScreen(
                         onSearchTextChanged = { newText -> searchText = newText },
                         navController = navController,
                         categoryViewModel = categoryViewModel,
-                        showItemViewModel = showItemViewModel
+                        showItemViewModel = showItemViewModel,
+                        videoViewModel = videoViewModel
                     )
                 }
             },

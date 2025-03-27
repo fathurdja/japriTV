@@ -1,12 +1,21 @@
 package com.example.japritv.Repository
 
+import android.util.Log
+import com.example.japritv.dao.AppDatabase
 import com.example.japritv.dao.VideoDao
 import com.example.japritv.dao.VideoData
 import com.example.japritv.model.ResponseVideo
 import com.example.japritv.model.Video
+import com.example.japritv.model.VideoDataApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import okhttp3.Dispatcher
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 
 class VideoRepository(private val videoDao: VideoDao) {
 
@@ -36,6 +45,7 @@ class VideoRepository(private val videoDao: VideoDao) {
     suspend fun getAllVideos(): List<VideoData> {
         return videoDao.getAllVideoData()  // ✅ Langsung ambil data, tanpa decode manual
     }
+
     suspend fun getVideoById(id: String): VideoData? {
         return videoDao.getVideoById(id)  // ✅ Ambil data dari Room
     }
@@ -47,6 +57,153 @@ class VideoRepository(private val videoDao: VideoDao) {
     suspend fun clearVideos() {
         return videoDao.clearVideos()
     }
+
+    suspend fun getMostViewedVideo(db: AppDatabase, ): ResponseVideo {
+        return withContext(Dispatchers.IO) {
+            try {
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token
+                val url = URL("https://japritv-v2.vercel.app/api/video/mostviewed") // ✅ Perbaiki URL API
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Authorization", token) // ✅ Tambahkan "Bearer"
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doInput = true
+
+                val responseCode = connection.responseCode
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+                Log.d("VideoRepository", "Response Code: $responseCode")
+                Log.d("VideoRepository", "Response Body: $responseMessage")
+
+                if (responseCode == 200) {
+                    val jsonObject = JSONObject(responseMessage)
+                    val dataArray = jsonObject.getJSONArray("data")
+
+                    // Parsing JSON menjadi daftar objek VideoDataApi
+                    val videoList = mutableListOf<VideoDataApi>()
+                    for (i in 0 until dataArray.length()) {
+                        val videoJson = dataArray.getJSONObject(i)
+                        val videoItems = videoJson.getJSONArray("video")
+
+                        val videoListItems = mutableListOf<Video>()
+                        for (j in 0 until videoItems.length()) {
+                            val videoItem = videoItems.getJSONObject(j)
+                            videoListItems.add(
+                                Video(
+                                    uuid = videoItem.getString("uuid"),
+                                    episode = videoItem.getInt("episode"),
+                                    url = videoItem.getString("url"),
+                                    size = videoItem.getLong("size"),
+                                    format = videoItem.getString("format")
+                                )
+                            )
+                        }
+
+                        videoList.add(
+                            VideoDataApi(
+                                id = videoJson.getString("_id"),
+                                title = videoJson.getString("title"),
+                                userId = videoJson.getString("creator"),
+                                totalView = videoJson.getInt("totalView"),
+                                totalSearch = videoJson.getInt("totalSearch"),
+                                totalSales = videoJson.getInt("totalSales"),
+                                releaseAt = videoJson.getString("releaseAt"),
+                                isRelease = videoJson.getBoolean("isRelease"),
+                                video = videoListItems,
+                                poster = videoJson.getString("poster"),
+                                createdAt = videoJson.getString("createdAt"),
+                                updatedAt = videoJson.getString("updatedAt"),
+                                price = videoJson.getInt("price"),
+                                totalEpisode = videoJson.getInt("totalEpisode")
+                            )
+                        )
+                    }
+
+                    return@withContext ResponseVideo(message = "Success fetching most viewed videos",data = videoList)
+                } else {
+                    Log.e("VideoRepository", "API Error: Response Code $responseCode")
+                    return@withContext ResponseVideo(message = "Failed fetching most viewed videos",data = emptyList())
+                }
+            } catch (e: Exception) {
+                Log.e("VideoRepository", "Error fetching most viewed videos", e)
+                return@withContext ResponseVideo(message = "Failed fetching most viewed videos",data = emptyList())
+            }
+        }
+    }
+
+    suspend fun getMostSearchVideo(db: AppDatabase, ): ResponseVideo {
+        return withContext(Dispatchers.IO) {
+            try {
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token
+                val url = URL("https://japritv-v2.vercel.app/api/video/mostsearch") // ✅ Perbaiki URL API
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Authorization", token) // ✅ Tambahkan "Bearer"
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doInput = true
+
+                val responseCode = connection.responseCode
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+                Log.d("VideoRepository", "Response Code: $responseCode")
+                Log.d("VideoRepository", "Response Body: $responseMessage")
+
+                if (responseCode == 200) {
+                    val jsonObject = JSONObject(responseMessage)
+                    val dataArray = jsonObject.getJSONArray("data")
+
+                    // Parsing JSON menjadi daftar objek VideoDataApi
+                    val videoList = mutableListOf<VideoDataApi>()
+                    for (i in 0 until dataArray.length()) {
+                        val videoJson = dataArray.getJSONObject(i)
+                        val videoItems = videoJson.getJSONArray("video")
+
+                        val videoListItems = mutableListOf<Video>()
+                        for (j in 0 until videoItems.length()) {
+                            val videoItem = videoItems.getJSONObject(j)
+                            videoListItems.add(
+                                Video(
+                                    uuid = videoItem.getString("uuid"),
+                                    episode = videoItem.getInt("episode"),
+                                    url = videoItem.getString("url"),
+                                    size = videoItem.getLong("size"),
+                                    format = videoItem.getString("format")
+                                )
+                            )
+                        }
+
+                        videoList.add(
+                            VideoDataApi(
+                                id = videoJson.getString("_id"),
+                                title = videoJson.getString("title"),
+                                userId = videoJson.getString("creator"),
+                                totalView = videoJson.getInt("totalView"),
+                                totalSearch = videoJson.getInt("totalSearch"),
+                                totalSales = videoJson.getInt("totalSales"),
+                                releaseAt = videoJson.getString("releaseAt"),
+                                isRelease = videoJson.getBoolean("isRelease"),
+                                video = videoListItems,
+                                poster = videoJson.getString("poster"),
+                                createdAt = videoJson.getString("createdAt"),
+                                updatedAt = videoJson.getString("updatedAt"),
+                                price = videoJson.getInt("price"),
+                                totalEpisode = videoJson.getInt("totalEpisode")
+                            )
+                        )
+                    }
+
+                    return@withContext ResponseVideo(message = "Success fetching most viewed videos",data = videoList)
+                } else {
+                    Log.e("VideoRepository", "API Error: Response Code $responseCode")
+                    return@withContext ResponseVideo(message = "Failed fetching most viewed videos",data = emptyList())
+                }
+            } catch (e: Exception) {
+                Log.e("VideoRepository", "Error fetching most viewed videos", e)
+                return@withContext ResponseVideo(message = "Failed fetching most viewed videos",data = emptyList())
+            }
+        }
+    }
+
 
     // Function to fetch all video data
 //    suspend fun getAllVideos(): List<VideoData> {

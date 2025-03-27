@@ -81,7 +81,7 @@ fun CustomSearchBox(
                     decorationBox = { innerTextField ->
                         if (searchText.isEmpty()) {
                             Text(
-                                text = "Crush landing on you",
+                                text = "Search",
                                 color = Color.Gray,
                                 fontSize = 14.sp
                             )

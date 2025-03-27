@@ -39,7 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun WidgetPlayer(text: String) {
+fun WidgetPlayer(text: String,onClose: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -98,7 +98,7 @@ fun WidgetPlayer(text: String) {
                         color = Color.White,
                         shape = RoundedCornerShape(18.dp)
                     )
-                    .clickable { /* TODO */ }
+                    .clickable {}
                     .padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -129,7 +129,7 @@ fun WidgetPlayer(text: String) {
                 tint = Color.White,
                 modifier = Modifier
                     .size(24.dp)
-                    .clickable { /* TODO */ }
+                    .clickable { onClose()  }
                     .padding(2.dp)
             )
         }
@@ -139,5 +139,6 @@ fun WidgetPlayer(text: String) {
 @Preview
 @Composable
 fun PreviewWidgetPlayer() {
-    WidgetPlayer("Money Heist: Korea. Joint Econ...")
+
+    WidgetPlayer("Money Heist: Korea. Joint Econ...", onClose = {})
 }

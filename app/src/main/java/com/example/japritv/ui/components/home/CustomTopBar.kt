@@ -19,6 +19,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.japritv.viewmodel.CategoryViewModel
 import com.example.japritv.viewmodel.ShowItemViewModel
+import com.example.japritv.viewmodel.VideoViewModel
 
 @Composable
 fun CustomTopBar(
@@ -26,7 +27,8 @@ fun CustomTopBar(
     onSearchTextChanged: (String) -> Unit,
     navController: NavController,
     categoryViewModel: CategoryViewModel,
-    showItemViewModel: ShowItemViewModel
+    showItemViewModel: ShowItemViewModel,
+    videoViewModel: VideoViewModel
 ) {
     // Use remember with categories to track state changes
     val categories by remember { mutableStateOf(categoryViewModel.categories) }
@@ -68,7 +70,9 @@ fun CustomTopBar(
             }
         }
         if (searchText.isNotEmpty()) {
-            SearchResultList(shows)
+            SearchResultList(
+                videoViewModel = videoViewModel
+            )
         }
     }
 }

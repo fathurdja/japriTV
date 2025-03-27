@@ -24,13 +24,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.japritv.R
 import com.example.japritv.model.Show
+import com.example.japritv.model.Video
+import com.example.japritv.model.VideoDataApi
 
 @Composable
 fun CardRating(
     rank: Int,
-    show: Show,
+    show: VideoDataApi, // ✅ Gunakan `VideoDataApi` langsung, hapus `Show`
     popularity: String
 ) {
     Row(
@@ -40,7 +43,7 @@ fun CardRating(
             .padding(20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Nomor Ranking
+        // 🔥 Nomor Ranking
         Text(
             text = rank.toString(),
             color = Color.White,
@@ -49,9 +52,9 @@ fun CardRating(
             modifier = Modifier.padding(end = 8.dp)
         )
 
-        // Gambar Poster
-        Image(
-            painter = painterResource(id = show.imageResId),
+        // 🎥 Gambar Poster (Gunakan Coil untuk URL)
+        AsyncImage(
+            model = show.poster, // ✅ Ambil dari API
             contentDescription = show.title,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -61,7 +64,7 @@ fun CardRating(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // Informasi Show
+        // 📌 Informasi Video
         Column(
             modifier = Modifier.weight(1f)
         ) {
@@ -74,31 +77,33 @@ fun CardRating(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Genre Tags
-            Row {
-                show.genres.forEach { genre ->
-                    Box(
-                        modifier = Modifier
-                            .background(Color.Gray, shape = RoundedCornerShape(22.dp))
-                            .padding(horizontal = 10.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = genre,
-                            color = Color.White,
-                            fontSize = 12.sp
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(4.dp))
-                }
-            }
+            // 🏷 Genre Tags
+//            if (!show.genres.isNullOrEmpty()) { // ✅ Pastikan genre tidak kosong
+//                Row {
+//                    show.genres.forEach { genre ->
+//                        Box(
+//                            modifier = Modifier
+//                                .background(Color.Gray, shape = RoundedCornerShape(22.dp))
+//                                .padding(horizontal = 10.dp, vertical = 2.dp)
+//                        ) {
+//                            Text(
+//                                text = genre,
+//                                color = Color.White,
+//                                fontSize = 12.sp
+//                            )
+//                        }
+//                        Spacer(modifier = Modifier.width(4.dp))
+//                    }
+//                }
+//            }
         }
 
-        // Popularity (🔥 17.8K)
+        // 🔥 Popularity
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.path_1), // Gunakan ikon API atau gambar
+                painter = painterResource(id = R.drawable.fire), // ✅ Pastikan ada gambar atau ganti dengan ikon bawaan
                 contentDescription = "Popularity",
                 tint = Color(0xFFFFA500),
                 modifier = Modifier.size(18.dp)
@@ -112,6 +117,7 @@ fun CardRating(
         }
     }
 }
+
 
 //@Preview
 //@Composable

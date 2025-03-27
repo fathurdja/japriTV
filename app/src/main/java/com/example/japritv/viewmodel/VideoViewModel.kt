@@ -40,6 +40,12 @@ class VideoViewModel(private val videoRepository: VideoRepository, private val d
     private val _selectedVideo = MutableStateFlow<VideoData?>(null)
     val selectedVideo: StateFlow<VideoData?> = _selectedVideo
 
+    private val _mostViewedVideos = MutableStateFlow<ResponseVideo?>(null)
+    val mostViewedVideos: StateFlow<ResponseVideo?> = _mostViewedVideos
+
+    private val _mostSearchVideos = MutableStateFlow<ResponseVideo?>(null)
+    val mostSearchVideos: StateFlow<ResponseVideo?> = _mostSearchVideos
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
@@ -56,6 +62,7 @@ class VideoViewModel(private val videoRepository: VideoRepository, private val d
         }
     }
 
+
     fun getPoster(id: String) {
         viewModelScope.launch {
             _poster.value = videoRepository.getPosterById(id) // ✅ Ambil hanya poster
@@ -65,6 +72,19 @@ class VideoViewModel(private val videoRepository: VideoRepository, private val d
         viewModelScope.launch {
             val video = videoRepository.getVideoById(id)
             _selectedVideo.value = video  // ✅ Simpan hasil ke StateFlow
+        }
+    }
+
+    fun fetchMostSearchVideos() {
+        viewModelScope.launch {
+            val response = videoRepository.getMostSearchVideo(db)
+            _mostSearchVideos.value = response // ✅ Simpan hasil response ke StateFlow
+        }
+    }
+    fun fetchMostViewedVideos() {
+        viewModelScope.launch {
+            val response = videoRepository.getMostViewedVideo(db)
+            _mostViewedVideos.value = response // ✅ Simpan hasil response ke StateFlow
         }
     }
     fun fetchVideos() {
