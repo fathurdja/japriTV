@@ -102,13 +102,13 @@ fun UserInfo(onLoginClick: () -> Unit, onCopyClick: () -> Unit,nameUser:String,p
             Box(
                 modifier = Modifier
                     .border(1.dp, Color.White, RoundedCornerShape(14.dp))
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
                     .clickable { onLoginClick() }
             ) {
                 Text(
                     text = "Login",
                     color = Color.White,
-                    fontSize = 14.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
             }

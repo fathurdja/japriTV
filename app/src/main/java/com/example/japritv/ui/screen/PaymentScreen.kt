@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -65,7 +66,9 @@ fun PaymentScreen(
     }
 
     if (video.isEmpty()){
-        CircularProgressIndicator()
+       Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+           CircularProgressIndicator()
+       }
     }
 }
 

@@ -41,50 +41,50 @@ fun MenuProfile(navController: NavController) {
             icon = com.example.japritv.R.drawable.theaters,
             text = "Riwayat Pembelian",
             onClick = {
-                navController.navigate("riwayat_pembelian")
+                navController.navigate("riwayatPembelian")
             })
         RowItem(
             icon = com.example.japritv.R.drawable.support,
             text = "Layanan Pelanggan",
             onClick = {
-                navController.navigate("layanan_pelanggan")
+
             })
         RowItem(icon = com.example.japritv.R.drawable.settings, text = "Pengaturan", onClick = {
-            navController.navigate("pengaturan")
+
         })
         RowItem(
             icon = com.example.japritv.R.drawable.info_outline,
             text = "Tentang Kami",
             onClick = {
-                navController.navigate("tentang_kami")
+
             })
         RowItem(
             icon = com.example.japritv.R.drawable.language,
-            text = "Pengaturan Bahasa",
-            extraText = "Indonesia",
+            text = "pengaturan bahasa",
+            extraText = "",
             extraTextColor = Color(0xFFFFA500),
             onClick = {
-                navController.navigate("pengaturan_bahasa")
+                navController.navigate("pengaturanbahasa")
             })
         RowItem(
             icon = com.example.japritv.R.drawable.vector__10_,
             text = "Kebijakan Privasi",
             onClick = {
-                navController.navigate("kebijakan_privasi")
+                navController.navigate("kebijakanPrivasi")
             })
         RowItem(
             icon = com.example.japritv.R.drawable.lightbulb,
             text = "Marketing Plan",
             onClick = {
-                navController.navigate("marketing_plan")
+
             })
         RowItemWithButton(
             icon = com.example.japritv.R.drawable.trash_outline,
             text = "Bersihkan cache",
-            extraText = "5.05 MB",
+            extraText = "",
             extraTextColor = Color(0xFFFFA500),
             onClick = {
-                navController.navigate("bersihkan_cache")
+
             })
     }
 }

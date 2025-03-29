@@ -42,6 +42,8 @@ import com.example.japritv.ui.components.Header
 import com.example.japritv.ui.components.HeaderRightWithIcon
 import com.example.japritv.ui.components.ScaffoldWithButton
 import com.example.japritv.ui.components.ScaffoldWithoutButton
+import com.example.japritv.ui.components.profile.LanguageSelectionScreen
+import com.example.japritv.ui.components.profile.TermsAndConditionsScreen
 
 import com.example.japritv.ui.screen.HomeScreen
 import com.example.japritv.ui.screen.InstruksiBayarScreen
@@ -50,6 +52,7 @@ import com.example.japritv.ui.screen.MetodeBayarScreen
 import com.example.japritv.ui.screen.PaymentScreen
 import com.example.japritv.ui.screen.ProfileScreen
 import com.example.japritv.ui.screen.RatingScreen
+import com.example.japritv.ui.screen.RiwayatPembelian
 import com.example.japritv.ui.screen.RiwayatScreen
 import com.example.japritv.ui.screen.SplashScreen
 import com.example.japritv.ui.screen.TokoJapriTV
@@ -490,6 +493,50 @@ fun NavGraph(
                     )
 
 
+            }
+            composable("riwayatPembelian") {
+                ScaffoldWithoutButton(
+                    content = { RiwayatPembelian(navController = navController) },
+                    contentTop = {
+                        HeaderRightWithIcon(
+                            title = "Riwayat Pembelian",
+                            color = Color.Black,
+                            textColor = Color.White,
+                            resId = R.drawable.arrowwhite,
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    },
+                    containerColor = Color.Black
+                )
+
+            }
+            composable("kebijakanPrivasi") {
+                ScaffoldWithoutButton(
+                    containerColor = Color.Black,
+                    content = { TermsAndConditionsScreen(updatedDate = "16 maret 2025") },
+                    contentTop = {
+                        HeaderRightWithIcon(
+                            title = "Kebijakan Privasi",
+                            color = Color.Black,
+                            textColor = Color.White,
+                            resId = R.drawable.arrowwhite,
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
+                )
+            }
+            composable("pengaturanbahasa") {
+                ScaffoldWithoutButton(
+                    content = { LanguageSelectionScreen() },
+                    contentTop = { HeaderRightWithIcon(
+                        title = "Pengaturan Bahasa",
+                        color = Color.Black,
+                        textColor = Color.White,
+                        resId = R.drawable.arrowwhite,
+                        onBackClick = { navController.popBackStack() }
+                    ) },
+                    containerColor = Color.Black
+                )
             }
         }
     }

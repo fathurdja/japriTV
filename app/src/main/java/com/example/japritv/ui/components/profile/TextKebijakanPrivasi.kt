@@ -15,19 +15,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-val termsList = List(3) { index ->
-    "Japri TV application Application is held by PT Japri Pay Nusantara, a lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-}
+
+
 @Composable
-fun TermsAndConditionsScreen(updatedDate:String,termList: List<String>) {
+fun TermsAndConditionsScreen(updatedDate: String ) {
 
-
-
+    val termsList = List(3) { index ->
+        "Japri TV application Application is held by PT Japri Pay Nusantara, a lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 30.dp)
     ) {
         Text(
             text = "Terakhir diperbarui: ${updatedDate}",
@@ -73,5 +73,5 @@ fun getRomanNumber(number: Int): String {
 @Preview
 @Composable
 fun PreviewTermsAndConditionsScreen() {
-    TermsAndConditionsScreen(updatedDate = "16 Maret 2025", termList = termsList)
+    TermsAndConditionsScreen(updatedDate = "16 Maret 2025",)
 }
