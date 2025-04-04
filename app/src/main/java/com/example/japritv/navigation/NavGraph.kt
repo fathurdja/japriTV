@@ -103,7 +103,6 @@ fun NavGraph(
             composable("terlaris") {
                 HomeScreen(navController = navController, videoViewModel = video)
             }
-
             composable("nowPlaying/{Id}") { backStackEntry ->
                 val Id = backStackEntry.arguments?.getString("Id") ?: return@composable
                 VideoVerticalPagerScreen(
