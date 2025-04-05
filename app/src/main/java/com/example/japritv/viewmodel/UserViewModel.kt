@@ -9,8 +9,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.japritv.Repository.AuthRepository
 import com.example.japritv.Repository.ProfileRepository
 import com.example.japritv.dao.AppDatabase
+import com.example.japritv.dao.FcmToken
 import com.example.japritv.dao.LoginInfo
-import com.example.japritv.dao.fcmToken
+
 import com.example.japritv.model.UploadVideoData
 import com.example.japritv.model.subscriptionData
 import com.example.japritv.provider.GoogleAuthUiProvider
@@ -146,7 +147,7 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
             val token = task.result
             _fcmToken.value = token
 
-            val dataTokenFcm = fcmToken(
+            val dataTokenFcm = FcmToken(
                 id = 1,
                 fcmtoken = token
             )

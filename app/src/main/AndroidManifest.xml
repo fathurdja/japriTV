@@ -5,7 +5,8 @@
     <!-- Tambahkan izin internet di sini -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/> <!-- Opsional, mencegah video berhenti saat layar mati -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" tools:node="remove"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
 
     <application
         android:allowBackup="true"

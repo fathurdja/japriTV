@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import com.example.japritv.converters.Converter
 
 @Database(
-    entities = [VideoData::class, AuthToken::class, LoginInfo::class, newAuthDao::class,FcmTokenDao::class],
+    entities = [VideoData::class, AuthToken::class, LoginInfo::class, newAuthDao::class,FcmToken::class],
     version = 12,
     exportSchema = false
 )

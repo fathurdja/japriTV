@@ -1,7 +1,9 @@
 package com.example.japritv.ui.screen
 
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -31,6 +33,7 @@ import com.example.japritv.model.Show
 import com.example.japritv.navigation.NavGraph
 import com.example.japritv.provider.GoogleSignInHelper
 import com.example.japritv.ui.components.*
+import com.example.japritv.ui.components.content.FirebaseMessagingNotificationPermissionDialog
 import com.example.japritv.ui.components.home.CardRating
 import com.example.japritv.ui.components.home.Category
 import com.example.japritv.ui.components.home.CustomSearchBox
@@ -42,9 +45,16 @@ import com.example.japritv.viewmodel.ShowItemViewModel
 import com.example.japritv.viewmodel.UploadEpisodeViewModel
 import com.example.japritv.viewmodel.UserViewModel
 import com.example.japritv.viewmodel.VideoViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.firebase.Firebase
+import com.google.firebase.messaging.messaging
+import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.launch
 
 
+@OptIn(ExperimentalPermissionsApi::class)
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun MainScreen(
     videoViewModel: VideoViewModel,
@@ -67,10 +77,28 @@ fun MainScreen(
     val userInfo by userViewModel.userInfo.collectAsState()
 
 
+    val showNotificationDialog = remember { mutableStateOf(false) }
+
+    // Android 13 Api 33 - runtime notification permission has been added
+    val notificationPermissionState = rememberPermissionState(
+        permission = android.Manifest.permission.POST_NOTIFICATIONS
+    )
+    if (showNotificationDialog.value) FirebaseMessagingNotificationPermissionDialog(
+        showNotificationDialog = showNotificationDialog,
+        notificationPermissionState = notificationPermissionState
+    )
+
+    LaunchedEffect(key1=Unit){
+        if (notificationPermissionState.status.isGranted ||
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+        ) {
+            Firebase.messaging.subscribeToTopic("Tutorial")
+        } else showNotificationDialog.value = true
+    }
 
 
     LaunchedEffect(userInfo) {
-        userViewModel.getFCMToken(db)
+//        userViewModel.getFCMToken(db)
         userViewModel.loadUserInfo()
         userViewModel.loadSubscriptionInfo(
             db = db,
@@ -131,6 +159,8 @@ fun MainScreen(
         }
     }
 }
+
+
 
 
 //@Preview

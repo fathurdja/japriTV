@@ -2,6 +2,8 @@ package com.example.japritv
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -39,6 +41,8 @@ import com.example.japritv.viewmodel.ShowItemViewModel
 import com.example.japritv.viewmodel.UploadEpisodeViewModel
 import com.example.japritv.viewmodel.UserViewModel
 import com.example.japritv.viewmodel.VideoViewModel
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
 
 class  MainActivity : ComponentActivity() {
@@ -48,7 +52,19 @@ class  MainActivity : ComponentActivity() {
     private lateinit var database: AppDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                return@OnCompleteListener
+            }
+            val token = task.result
+            // Log and toast
+            Log.d("FCM", token.toString())
+            Toast.makeText(baseContext, token.toString(), Toast.LENGTH_SHORT).show()
+        })
         super.onCreate(savedInstanceState)
+
+
 
         // ✅ Inisialisasi database hanya sekali
         database = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "video-db")

@@ -1,37 +1,50 @@
 package com.example.japritv.service
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import com.example.japritv.MainActivity
+import com.example.japritv.R
 import com.google.firebase.FirebaseException
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        // ...
 
-        // Check if message contains a data payload.
-        if (remoteMessage.data.isNotEmpty()) {
-            Log.d(TAG, "Message data payload: ${remoteMessage.data}")
+            super.onMessageReceived(remoteMessage)
 
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationId = 1
+            val requestCode = 1
 
-            val title = remoteMessage.data["title"]
-            val body = remoteMessage.data["body"]
+            val channelId = "Firebase Messaging ID"
+            val channelName = "Firebase Messaging"
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                notificationManager.createNotificationChannel(
+                    NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
+                )
+            }
 
-            // Show notification or perform other actions
-            showNotification(title, body)
-        }
+            val intent = Intent(this, MainActivity::class.java)
+            val pendingIntentFlag = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) 0 else PendingIntent.FLAG_IMMUTABLE
+            val pendingIntent = PendingIntent.getActivity(this, requestCode, intent, pendingIntentFlag)
 
-        // Check if message contains a notification payload.
-        remoteMessage.notification?.let {
-            Log.d(TAG, "Message Notification Body: ${it.body}")
+            val notification = NotificationCompat.Builder(this, channelId)
+                .setContentTitle(remoteMessage.notification?.title)
+                .setContentText(remoteMessage.notification?.body)
+                .setSmallIcon(R.drawable.japripay)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .build()
 
-            // Handle notification payload here
-            val title = it.title
-            val body = it.body
+            notificationManager.notify(notificationId, notification)
 
-            // Show notification or perform other actions
-            showNotification(title, body)
-        }
 
         // ...
     }
