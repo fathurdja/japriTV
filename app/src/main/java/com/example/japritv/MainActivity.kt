@@ -59,8 +59,8 @@ class  MainActivity : ComponentActivity() {
             }
             val token = task.result
             // Log and toast
-            Log.d("FCM", token.toString())
-            Toast.makeText(baseContext, token.toString(), Toast.LENGTH_SHORT).show()
+//            Log.d("FCM", token.toString())
+//            Toast.makeText(baseContext, token.toString(), Toast.LENGTH_SHORT).show()
         })
         super.onCreate(savedInstanceState)
 
