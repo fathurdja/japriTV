@@ -70,6 +70,7 @@ fun MainScreen(
 
 
     LaunchedEffect(userInfo) {
+        userViewModel.getFCMToken(db)
         userViewModel.loadUserInfo()
         userViewModel.loadSubscriptionInfo(
             db = db,

@@ -94,6 +94,7 @@ dependencies {
     implementation("androidx.compose.material:material:1.4.0")
     implementation("androidx.compose.ui:ui-tooling-preview:1.4.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
+    implementation("com.google.firebase:firebase-messaging-ktx:24.1.1")
 
 
 }
