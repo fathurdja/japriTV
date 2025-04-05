@@ -65,9 +65,7 @@ fun MainScreen(
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
     val userInfo by userViewModel.userInfo.collectAsState()
-    val subscriptionInfo by userViewModel.subscriptionInfo.collectAsState()
-    val transaction by paymentViewModel._transactionInfo.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
+
 
 
 
@@ -130,71 +128,6 @@ fun MainScreen(
                 paymentViewModel = paymentViewModel
             )
         }
-
-        // 🔥 Jika belum membayar, tampilkan InstruksiBayarScreen
-        // Jika ada transaksi atau belum membayar, tampilkan InstruksiBayarScreen
-        if (transaction.isNotEmpty() || (subscriptionInfo?.isPayed == false)) {
-            ScaffoldWithoutButton(
-                containerColor = Color.White,
-                contentTop = {},
-                content = {
-                    InstruksiBayarScreen(
-                        onClick = {
-                            coroutineScope.launch {
-                                val newSubscriptionInfo = userViewModel.subscriptionInfo.value
-
-                                if (transaction.isNotEmpty()) {
-                                    val dataTransaction = transaction.lastOrNull()
-                                    dataTransaction?.let {
-                                        val paymentSuccess = ProfileRepository.updateTransaction(db = db, id = it._id)
-                                        paymentViewModel.getDataTransaction()
-
-                                        if (paymentSuccess) {
-                                            navController.navigate("home") {
-                                                popUpTo(navController.graph.startDestinationId) {
-                                                    inclusive = true
-                                                }
-                                            }
-                                            Toast.makeText(context, "Pembayaran sukses", Toast.LENGTH_SHORT).show()
-                                            return@launch
-                                        }
-                                    }
-                                }
-
-                                if (newSubscriptionInfo != null) {
-                                    val payment = ProfileRepository.updateDataSubscription(
-                                        id = newSubscriptionInfo._id,
-                                        db = db
-                                    )
-                                    userViewModel.subscriptionInfo.value = payment
-
-                                    Toast.makeText(context, "Berhasil membayar", Toast.LENGTH_SHORT).show()
-
-                                    navController.navigate("home") {
-                                        popUpTo(navController.graph.startDestinationId) {
-                                            inclusive = true
-                                        }
-                                    }
-                                } else {
-                                    Toast.makeText(context, "Gagal membayar", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        },
-
-                        onClickBack = { navController.popBackStack() },
-                        colortext = Color.Black,
-                        colorButton = Color.Gray,
-                        dataPayment = subscriptionInfo,
-                        paymentViewModel = paymentViewModel,
-                        db = db,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.White)
-                    )
-                }
-            )
-        }
-
     }
 }
 
