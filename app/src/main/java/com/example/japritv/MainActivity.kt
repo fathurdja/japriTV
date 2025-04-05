@@ -1,29 +1,13 @@
 package com.example.japritv
 
-import android.content.Context
+
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
 import com.example.japritv.Repository.VideoRepository
 import com.example.japritv.dao.AppDatabase
@@ -31,11 +15,7 @@ import com.example.japritv.factory.PaymentViewModelFactory
 import com.example.japritv.factory.UploadEpisodeViewModelFactory
 import com.example.japritv.factory.UserViewModelfactory
 import com.example.japritv.factory.VideoViewModelFactory
-import com.example.japritv.navigation.NavGraph
-import com.example.japritv.ui.screen.InstruksiBayarScreen
 import com.example.japritv.ui.screen.MainScreen
-import com.example.japritv.ui.screen.SplashScreen
-import com.example.japritv.ui.theme.JapriTvTheme
 import com.example.japritv.viewmodel.PaymentViewModel
 import com.example.japritv.viewmodel.ShowItemViewModel
 import com.example.japritv.viewmodel.UploadEpisodeViewModel
@@ -51,6 +31,7 @@ class  MainActivity : ComponentActivity() {
     private lateinit var videoRepository: VideoRepository
     private lateinit var database: AppDatabase
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {

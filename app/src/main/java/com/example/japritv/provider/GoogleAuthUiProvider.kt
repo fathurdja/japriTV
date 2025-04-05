@@ -57,6 +57,7 @@ class GoogleAuthUiProvider(
                     displayName = googleIdTokenCredential.displayName ?: "",
                     profileImageUrl = googleIdTokenCredential.profilePictureUri?.toString()
                 )
+
             } catch (e: com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException) {
                 Log.e("GoogleAuthUiProvider", "Token parsing failed: ${e.message}")
                 null

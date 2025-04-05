@@ -19,7 +19,7 @@ object AuthRepository {
         return withContext(Dispatchers.IO) {
             try {
                 println(idToken)
-                val url = URL("https://japritv-v2.vercel.app/api/auth/google")
+                val url = URL("https://tv.japrime.id/api/auth/google")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.setRequestProperty("Authorization", idToken)
                 connection.requestMethod = "GET"
@@ -59,7 +59,7 @@ object AuthRepository {
         return withContext(Dispatchers.IO) {
             try {
                 Log.d("AuthRepository", "Nama user dari parameter: $namaUser")
-                val url = URL("https://japritv-v2.vercel.app/api/profile")
+                val url = URL("https://tv.japrime.id/user/profile")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 connection.setRequestProperty("Authorization", idToken)
