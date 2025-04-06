@@ -18,8 +18,7 @@ object AuthRepository {
     suspend fun sendTokenToServer(idToken: String, db: AppDatabase, nama: String, profile: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                println(idToken)
-                val url = URL("https://tv.japrime.id/api/auth/google")
+                val url = URL("https://tv.japrime.id/auth/google")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.setRequestProperty("Authorization", idToken)
                 connection.requestMethod = "GET"
@@ -75,6 +74,7 @@ object AuthRepository {
                     val jsonResponse = JSONObject(responseMessage)
                     val data = jsonResponse.getJSONObject("data")
                     val email = data.getString("email")
+                    val role = data.getString("role")
                     val userId = data.getString("_id")
                     val coins = data.getInt("__v")
                     val createdAt = data.getString("createdAt")
@@ -88,10 +88,11 @@ object AuthRepository {
                         infoRegistrasi = "Berhasil Login",
                         email = email,
                         userId = userId,
-                        coins = coins,
+                        saldo = coins,
                         createdAt = createdAt,
                         updatedAt = updatedAt,
-                        referral = referral
+                        referral = referral,
+                        role = role
                     )
 
 

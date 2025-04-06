@@ -5,10 +5,12 @@ import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -16,6 +18,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,6 +37,7 @@ import com.example.japritv.ui.components.payment.DetailPembayaranSubsOrCoin
 import com.example.japritv.ui.components.payment.PaymentCard
 import com.example.japritv.ui.theme.JapriTvTheme
 import com.example.japritv.viewmodel.PaymentViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun InstruksiBayarScreen(
@@ -41,79 +46,79 @@ fun InstruksiBayarScreen(
     onClickBack: () -> Unit,
     colortext: Color,
     colorButton: Color,
-    dataPayment: subscriptionData?,
     paymentViewModel: PaymentViewModel,
-    db: AppDatabase,
 ) {
-    val transactionData by paymentViewModel._transactionInfo.collectAsState()
+    val transactionData by paymentViewModel.transactionInfo.collectAsState()
+    val isLoading = transactionData == null
 
-
-    LaunchedEffect(transactionData) {
-        if (transactionData.isEmpty()) {
-            paymentViewModel.getDataTransaction()
-        }
+    LaunchedEffect(true) {
+        paymentViewModel.getDataTransaction()
     }
 
+    // Box utama harus full size agar bisa center-in loading
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = if (isLoading) Alignment.Center else Alignment.TopStart
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator()
+        } else {
+            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp)) {
+                if (transactionData != null) {
+                    val harga = transactionData!!.totalAmount
+                    val biayaTambahan =
+                        transactionData!!.serverFee + transactionData!!.admin + transactionData!!.unique
 
-    Log.e("InstruksiBayarScreen", "transactionData: $transactionData")
+                    PaymentCard(
+                        nominal = harga.toString(),
+                        bank = transactionData!!.bank,
+                        vaName = transactionData!!.vaName,
+                        vaNumber = transactionData!!.vaNumber,
+                    )
 
-    Box(modifier = Modifier
-        .padding(16.dp)
-        .fillMaxWidth()) {
-        Column(modifier = Modifier.padding(vertical = 20.dp)) {
-            val latestTransaction = transactionData.lastOrNull()
-            if (dataPayment != null) {
-                PaymentCard(dataPayment.price.toString())
-            }
-            if (latestTransaction!=null){
-                PaymentCard(latestTransaction.totalAmount.toString())
-            }
-            Spacer(modifier = Modifier.padding(vertical = 15.dp))
+                    Spacer(modifier = Modifier.padding(vertical = 15.dp))
 
-
-
-            when {
-                dataPayment != null && !dataPayment.isPayed -> {
                     DetailPembayaranSubsOrCoin(
                         color = Color.White,
-                        tipeSubs = dataPayment.level,
-                        Amount = dataPayment.price.toString()
+                        tipeSubs = "",
+                        Amount = transactionData!!.amount,
+                        biayaTambahan = biayaTambahan,
+                        jumlahKoin = transactionData!!.amount.toString(),
+                        typePayment = transactionData!!.name,
+                        totalPembayaran = harga
                     )
-                }
-                latestTransaction != null && !latestTransaction.isPayed -> {
-                    DetailPembayaranInteractive(
-                        color = Color.White,
-                        jumlahEpisode = latestTransaction.items.totalEpisode,
-                        Price = latestTransaction.amount
+
+                    Spacer(modifier = Modifier.height(25.dp))
+
+                    CustomBoxButton(
+                        title = "Kembali Ke JapriTV",
+                        onClick = { onClick() },
+                        colorBackground = Color(0XFFD22F26),
+                        colorText = Color.White,
+                        modifier = modifier
                     )
-                }
-                else -> {
-                    CircularProgressIndicator()
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    CustomBoxButtonBorder(
+                        title = "Batalkan Pembayaran",
+                        onClick = { onClickBack() },
+                        colorBackground = colorButton,
+                        colorText = colortext,
+                        modifier = modifier
+                    )
+                } else {
+                    Text("Data tidak ditemukan atau gagal memuat.")
                 }
             }
-
-
-
-            Spacer(modifier = Modifier.height(25.dp))
-            CustomBoxButton(
-                title = "Kembali Ke JapriTV",
-                onClick = { onClick() },
-                colorBackground = Color(0XFFD22F26),
-                colorText = Color.White,
-                modifier = modifier
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-            CustomBoxButtonBorder(
-                title = "Batalkan Pembayaran",
-                onClick = { onClickBack() },
-                colorBackground = colorButton,
-                colorText = colortext,
-                modifier = modifier
-            )
         }
-
     }
 }
+
+
+
 
 //@Preview
 //@Composable

@@ -48,10 +48,9 @@ fun CoinGrid(
 ) {
     // Data yang akan ditampilkan secara dinamis
     val coinData = listOf(
-        Pair("10 + 2", "Rp 19.000"),
-        Pair("20", "Rp 29.000"),
-        Pair("50 + 5", "Rp 89.000"),
-        Pair("100 + 15", "Rp 169.000")
+        Pair("15000", "Rp 15.000"),
+        Pair("20000", "Rp 20.000"),
+
     )
 
     // LazyGrid untuk menampilkan data secara dinamis dalam grid

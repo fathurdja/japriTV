@@ -222,7 +222,7 @@ fun NavGraph(
                     content = {
                         MetodeBayarScreen(
                             paymentViewModel,
-                            navigateTo = { navController.navigate("InstruksiBayar") })
+                            navigateTo = { type, bank -> navController.navigate("InstruksiBayar") })
                     },
 
                     )
@@ -247,11 +247,10 @@ fun NavGraph(
                             colorButton = Color.White,
                             onClick = { navController.navigate("home") },
                             onClickBack = { navController.popBackStack() },
-                            dataPayment = null,
-                            paymentViewModel = paymentViewModel,
-                            db = db
 
-                        )
+                            paymentViewModel = paymentViewModel,
+
+                            )
                     },
 
                     )
@@ -287,7 +286,7 @@ fun NavGraph(
                     content = {
                         MetodeBayarScreen(
                             viewModel,
-                            navigateTo = {
+                            navigateTo = { type, bank ->
                                 navController.navigate("InstruksiBayarBlack/$coin/$price")
                             })
                     },
@@ -314,10 +313,10 @@ fun NavGraph(
                             colorButton = Color.Black,
                             onClick = { navController.navigate("home") },
                             onClickBack = { navController.popBackStack() },
-                            dataPayment = null,
+
                             paymentViewModel = paymentViewModel,
-                            db = db
-                        )
+
+                            )
                     },
 
                     )
@@ -352,60 +351,12 @@ fun NavGraph(
                     colorTextButton = Color.White,
                     modifier = Modifier,
                     onClick = {
-
-                        coroutineScope.launch {
-
-
-//                                userViewModel.resetTokenUser(googleAccount.token)
-                            val level = userViewModel.selectedMembership.value
-
-
-                            val datasubscription = userViewModel.subscriptionInfo.value
-
-                            if (level != null) {
-                                userViewModel.makeSubscription(
-                                    level,
-                                    db,
-                                )
-                                Toast.makeText(
-                                    context,
-                                    "Berhasil Membeli Membership",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else if (
-                                datasubscription != null
-                            ) {
-                                userViewModel.setSubscriptionInfo(
-                                    subscription = datasubscription,
-                                    db = db
-                                )
-                                userViewModel.newsubscriptionInfo.value = datasubscription
-                                println(datasubscription.isPayed)
-                                Toast.makeText(
-                                    context,
-                                    "Berhasil Mengupdate Membership",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    "Gagal Membeli Membership",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-
-
-
-                            {
-                                Toast.makeText(
-                                    context,
-                                    "Gagal Membeli Membership",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-
-
-                        }
+                        val koin = userViewModel.selectedkoin.value
+                        Toast.makeText(
+                            context,
+                            koin.toString(),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
 
 
@@ -424,12 +375,71 @@ fun NavGraph(
                             onBackClick = { navController.popBackStack() })
                     },
                     content = {
-
                         MetodeBayarScreen(
                             paymentViewModel,
-                            navigateTo = {
-                                val data = userViewModel.newsubscriptionInfo.value
-                                println("data subscription ${data?.isPayed}")
+                            navigateTo = { type, bank ->
+                                coroutineScope.launch {
+                                    val level = userViewModel.selectedMembership.value
+                                    val datasubscription = userViewModel.subscriptionInfo.value
+                                    val koin = userViewModel.selectedkoin.value
+                                    if (level != null && koin == 0) {
+                                        userViewModel.makeSubscription(
+                                            level,
+                                            db,
+                                        )
+                                        Toast.makeText(
+                                            context,
+                                            "Berhasil Membeli Membership",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else if (
+                                        datasubscription != null
+                                    ) {
+                                        userViewModel.setSubscriptionInfo(
+                                            subscription = datasubscription,
+                                            db = db
+                                        )
+                                        userViewModel.newsubscriptionInfo.value = datasubscription
+                                        println(datasubscription.isPayed)
+                                        Toast.makeText(
+                                            context,
+                                            "Berhasil Mengupdate Membership",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else if (koin != 0 && level == null) {
+                                        paymentViewModel.topUpSaldoKoin(
+                                            type = type,
+                                            amount = koin,
+                                            db = db,
+                                            bank = bank,
+                                            onSuccess = {
+                                                navController.navigate("InstruksiBayarSubscriptionOrCoins")
+                                            },
+                                            onError = {
+                                                Toast.makeText(context, "Gagal Membeli Membership", Toast.LENGTH_SHORT).show()
+                                            }
+                                        )
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Gagal Membeli Membership",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+
+
+
+                                    {
+                                        Toast.makeText(
+                                            context,
+                                            "Gagal Membeli Membership",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+
+
+                                }
+
                                 navController.navigate("InstruksiBayarSubscriptionOrCoins")
                             }
 
@@ -453,43 +463,16 @@ fun NavGraph(
                             onBackClick = { navController.popBackStack() })
                     },
                     content = {
-
-                        val subscriptionInfo by userViewModel.newsubscriptionInfo.collectAsState()
-                        val data = userViewModel.userInfo.value
-                        LaunchedEffect(Unit) {
-                            val result = data?.tokenAuth?.let { it1 ->
-                                ProfileRepository.getDataSubscription(
-                                    db = db
-                                )
-                            }
-
-
-                        }
-
-                        if (subscriptionInfo != null) {
-                            InstruksiBayarScreen(
-                                colortext = Color(0XFFD22F26),
-                                colorButton = Color.White,
-                                onClick = { navController.navigate("home") },
-                                onClickBack = { navController.popBackStack() },
-                                dataPayment = subscriptionInfo!!,
-                                paymentViewModel = paymentViewModel,
-                                db = db
-                            )
-                        } else {
-                            // Tampilkan loading indicator jika data belum ada
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-
-
+                        paymentViewModel.getDataTransaction()
+                        InstruksiBayarScreen(
+                            colortext = Color(0XFFD22F26),
+                            colorButton = Color.White,
+                            onClick = { navController.navigate("home") },
+                            onClickBack = { navController.popBackStack() },
+                            paymentViewModel = paymentViewModel,
+                        )
                     },
-
-                    )
+                )
 
 
             }
@@ -527,13 +510,15 @@ fun NavGraph(
             composable("pengaturanbahasa") {
                 ScaffoldWithoutButton(
                     content = { LanguageSelectionScreen() },
-                    contentTop = { HeaderRightWithIcon(
-                        title = "Pengaturan Bahasa",
-                        color = Color.Black,
-                        textColor = Color.White,
-                        resId = R.drawable.arrowwhite,
-                        onBackClick = { navController.popBackStack() }
-                    ) },
+                    contentTop = {
+                        HeaderRightWithIcon(
+                            title = "Pengaturan Bahasa",
+                            color = Color.Black,
+                            textColor = Color.White,
+                            resId = R.drawable.arrowwhite,
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    },
                     containerColor = Color.Black
                 )
             }

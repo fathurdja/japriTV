@@ -33,11 +33,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.japritv.R
+import java.text.NumberFormat
+import java.util.Locale
 
 @Composable
-fun DetailPembayaranSubsOrCoin(color: Color, tipeSubs: String, Amount: String) {
+fun DetailPembayaranSubsOrCoin(color: Color, tipeSubs: String,totalPembayaran:Int, Amount: Int,typePayment:String,jumlahKoin:String,biayaTambahan:Int) {
     var isExpanded by remember { mutableStateOf(true) }
-
+    val formatter = NumberFormat.getInstance(Locale("in", "ID"))
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -90,14 +92,36 @@ fun DetailPembayaranSubsOrCoin(color: Color, tipeSubs: String, Amount: String) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        if (typePayment == "Subscription"){
+                            Text(
+                                text = "Anggota $tipeSubs",
+                                color = Color.Gray
+                            )
+                            Text(
+                                text = Amount.toString(),
+                                color = Color.Gray
+                            )
+                        }
+                        else if (typePayment == "coin"){
+                        Text(
+                            text = "$jumlahKoin Koin",
+                            color = Color.Gray
+                        )
+                        Text(
+                            text = "Rp. ${formatter.format(Amount)}",
+                            color = Color.Gray
+                        )
+                        }
+                        else{
                         Text(
                             text = "Anggota $tipeSubs",
                             color = Color.Gray
                         )
                         Text(
-                            text = Amount,
+                            text = Amount.toString(),
                             color = Color.Gray
                         )
+                    }
                     }
                 }
 
@@ -123,7 +147,7 @@ fun DetailPembayaranSubsOrCoin(color: Color, tipeSubs: String, Amount: String) {
                             color = Color.Gray
                         )
                         Text(
-                            text = "+ Rp 0",
+                            text = "Rp. ${formatter.format(biayaTambahan)}",
                             color = Color.Gray
                         )
                     }
@@ -136,11 +160,11 @@ fun DetailPembayaranSubsOrCoin(color: Color, tipeSubs: String, Amount: String) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Total Pembayaran",
+                        text = "Nominal Pembayaran",
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Rp $Amount",
+                        text = "Rp. ${formatter.format(totalPembayaran)}",
                         fontWeight = FontWeight.Bold
                     )
                 }

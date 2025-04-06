@@ -37,6 +37,8 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
     private val _unreleasedVideos = MutableStateFlow<List<UploadVideoData>>(emptyList())
     val unreleasedVideos: StateFlow<List<UploadVideoData>> = _unreleasedVideos
 
+    private val _selectedkoin = MutableStateFlow(0)
+    val selectedkoin: StateFlow<Int> = _selectedkoin
     val isLoggedin = MutableStateFlow(false)
 
     private val _fcmToken = MutableLiveData<String?>()
@@ -79,6 +81,9 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
 
 
 
+    fun setKoin(jumlahKoin: Int){
+        _selectedkoin.value = jumlahKoin
+    }
 
     fun setNominal(nominal: Int) {
         _nominalState.value = nominal // Perbarui nilai state
@@ -115,6 +120,7 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
             ProfileRepository.makeSubscription(level, db,)
         }
     }
+
 
 
 

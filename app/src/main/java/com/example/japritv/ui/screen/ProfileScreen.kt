@@ -101,9 +101,12 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Komponen Dompet
-                Wallet(
-                    onIsiUlangClick = { navController.navigate("TokoJapri") }
-                )
+                userInfo?.let { it1 ->
+                    Wallet(
+                        onIsiUlangClick = { navController.navigate("TokoJapri") },
+                        saldo = it1.saldo
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 

@@ -36,6 +36,7 @@ import com.example.japritv.viewmodel.UserViewModel
 fun TokoJapriTV(userViewModel: UserViewModel) {
     val selectedMembership by userViewModel.selectedMembership.collectAsState()
     val nominal by userViewModel.nominal.collectAsState()
+    val selectedCoin by userViewModel.selectedkoin.collectAsState()
 
 
     Column(
@@ -55,16 +56,16 @@ fun TokoJapriTV(userViewModel: UserViewModel) {
 
         // Coin Grid
         CoinGrid(
-            selectedCoin = selectedMembership ?: "",
+            selectedCoin = selectedCoin.toString() ?: "",
             onCoinSelected = { coin, price ->
-                userViewModel.setSelectedMembership(coin)
+                userViewModel.setKoin(coin.toInt())
                 userViewModel.setNominal(price.replace("Rp ", "").replace(".", "").toInt())
             }
         )
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        // Anggota Section
+
         Text(
             text = "Anggota",
             color = Color.White,

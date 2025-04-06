@@ -21,10 +21,9 @@ import kotlinx.coroutines.launch
 class PaymentViewModel(private val db: AppDatabase) : ViewModel() {
     private val _paymentMethods = MutableLiveData<List<PaymentCategory>>()
     val paymentMethods: LiveData<List<PaymentCategory>> = _paymentMethods
-    val _transactionInfo = MutableStateFlow<List<PaymentData?>>(emptyList())
+    private val _transactionInfo = MutableStateFlow<PaymentData?>(null)
+    val transactionInfo: StateFlow<PaymentData?> = _transactionInfo
 
-    val subscriptionInfo = MutableLiveData<subscriptionData?>()
-    val isSubscriptionUpdated = MutableLiveData<Boolean>()
 
     init {
         // Simulasi data dari API
@@ -32,60 +31,57 @@ class PaymentViewModel(private val db: AppDatabase) : ViewModel() {
             PaymentCategory(
                 title = "Pembayaran Instan / E-Wallet",
                 items = listOf(
-                    PaymentItem(R.drawable.gopay, "GoPay"),
-                    PaymentItem(R.drawable.gopay, "GoPay"),
-                    PaymentItem(R.drawable.gopay, "GoPay"),
-                    PaymentItem(R.drawable.gopay, "GoPay"),
-                    PaymentItem(R.drawable.gopay, "GoPay"),
+                    PaymentItem(R.drawable.gopay, "GoPay",""),
 
-                )
-            ),
-            PaymentCategory(
-                title = "Transfer Bank",
-                items = listOf(
-                    PaymentItem(R.drawable._09091_1, "Transfer Bank BCA"),
-                    PaymentItem(R.drawable._09091_1, "Transfer Bank BCA"),
-                    PaymentItem(R.drawable._09091_1, "Transfer Bank BCA"),
-                    PaymentItem(R.drawable._09091_1, "Transfer Bank BCA"),
-                    PaymentItem(R.drawable._09091_1, "Transfer Bank BCA"),
-
-
-                )
+                ),
+                type = "qr"
             ),
             PaymentCategory(
                 title = "Virtual Account",
-                items = emptyList() // Kosong dulu untuk simulasi
+                items = listOf(
+                    PaymentItem(R.drawable._09091_1, "Transfer Bank BCA","BCA"),
+
+                ),
+                type = "va"
+            ),
+            PaymentCategory(
+                title = "Transfer Bank",
+                items = emptyList(),
+                type = ""
             )
+
         )
-    }
-
-
-    suspend fun getDataSubscription( db: AppDatabase, ){
-        val response = ProfileRepository.getDataSubscription( db)
-        subscriptionInfo.value = response
-
-    }
-//
-     fun makeTransactionVideo(db: AppDatabase, amount: Int, idCreator: String){
-        viewModelScope.launch {
-            ProfileRepository.makeDataTransaction(db = db, amount = amount, idCreator = idCreator)
-        }
     }
 
     fun getDataTransaction() {
         viewModelScope.launch {
             val transactions = ProfileRepository.getDataTransaction(db = db)
             _transactionInfo.value = transactions
-            Log.d("PaymentViewModel", "Transaction Response: ${transactions.size} items")// Update StateFlow
+
         }
     }
+    fun deleteTransaction(){
+        viewModelScope.launch {
 
-
+        }
+    }
+    fun topUpSaldoKoin(type:String,db: AppDatabase,amount:Int,bank:String,onSuccess: () -> Unit,
+                       onError: () -> Unit){
+        viewModelScope.launch {
+            val result = ProfileRepository.topUpSaldo(type, amount, db, bank)
+            if (result != null) {
+                _transactionInfo.value = result
+                onSuccess()
+            } else {
+                onError()
+            }
+        }
+    }
 
 }
 
 
 
 // Data class untuk kategori dan item pembayaran
-data class PaymentCategory(val title: String, val items: List<PaymentItem>)
-data class PaymentItem(val iconRes: Int, val name: String)
+data class PaymentCategory(val title: String, val items: List<PaymentItem>,val type:String)
+data class PaymentItem(val iconRes: Int, val name: String, val value:String )

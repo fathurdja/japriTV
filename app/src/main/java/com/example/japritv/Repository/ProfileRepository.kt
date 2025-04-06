@@ -3,14 +3,13 @@ package com.example.japritv.Repository
 import android.util.Log
 import com.example.japritv.Repository.AuthRepository.sendTokenToServer
 import com.example.japritv.dao.AppDatabase
+
 import com.example.japritv.model.PaymentData
 import com.example.japritv.model.UploadVideoData
 import com.example.japritv.model.UploadVideoResponse
-import com.example.japritv.model.dataitems
+import com.example.japritv.model.koinData
 import com.example.japritv.model.subscriptionData
-import com.example.japritv.provider.GoogleAuthUiProvider
 import com.google.gson.Gson
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -234,64 +233,53 @@ object ProfileRepository {
         }
     }
 
-    suspend fun getDataTransaction(db: AppDatabase): List<PaymentData> {
+    suspend fun getDataTransaction(db: AppDatabase): PaymentData? {
         return withContext(Dispatchers.IO) {
             try {
                 val authInfo = db.authTokenDao().getToken()
-                val token = authInfo?.token ?: return@withContext emptyList()
-                val url = URL("https://japritv-v2.vercel.app/api/transaction")
+                val token = authInfo?.token ?: ""
+                val url = URL("https://tv.japrime.id/payment")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 connection.setRequestProperty("Authorization", token)
                 connection.setRequestProperty("Content-Type", "application/json")
-                connection.doOutput = false
 
-                val responseCode = connection.responseCode
                 val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+                Log.d("GetDataTransaction", "Raw response: $responseMessage")
 
-                Log.d("GetDataTransaction", "Response Code: $responseCode")
-                Log.d("GetDataTransaction", "Raw JSON Response: $responseMessage")
+                val jsonResponse = JSONObject(responseMessage)
+                val dataObject = jsonResponse.optJSONObject("data") ?: return@withContext null
+                val userObject = dataObject.optJSONObject("id_user") ?: JSONObject()
+                val invoiceObject = dataObject.optJSONObject("invoice") ?: JSONObject()
+                val detailObject = dataObject.optJSONObject("detail") ?: JSONObject()
 
-                if (responseCode == 200) {
-                    val jsonResponse = JSONObject(responseMessage)
-                    val dataArray = jsonResponse.optJSONArray("data") ?: return@withContext emptyList()
-
-                    val transactions = mutableListOf<PaymentData>()
-                    for (i in 0 until dataArray.length()) {
-                        val data = dataArray.getJSONObject(i)
-
-                        // ✅ Perbaiki Parsing items yang sekarang adalah Object, bukan Array
-                        val itemsObj = data.optJSONObject("items") ?: JSONObject()
-                        val itemsData = dataitems(
-                            _id = itemsObj.optString("_id", ""),
-                            totalEpisode = itemsObj.optInt("totalEpisode", 0)
-                        )
-
-                        transactions.add(
-                            PaymentData(
-                                _id = data.optString("_id", ""),
-                                isPayed = data.optBoolean("isPayed", false),
-                                user = data.optString("user", ""),
-                                items = itemsData, // ✅ Fix: Sekarang items adalah single object, bukan list
-                                amount = data.optInt("amount", 0),
-                                createdAt = data.optString("createdAt", ""),
-                                updatedAt = data.optString("updatedAt", ""),
-                                unique = data.optInt("unique", 0),
-                                serverFee = data.optInt("serverFee", 0),
-                                totalAmount = data.optInt("totalAmount", 0),
-                                __v = data.optInt("__v", 0)
-                            )
-                        )
-                    }
-                    return@withContext transactions
-                }
-                return@withContext emptyList()
+                return@withContext PaymentData(
+                    id = dataObject.optString("_id", ""),
+                    name = dataObject.optString("name", ""),
+                    type = dataObject.optString("type", ""),
+                    status = dataObject.optString("status", ""),
+                    createdAt = dataObject.optString("createdAt", ""),
+                    updatedAt = dataObject.optString("updatedAt", ""),
+                    userName = userObject.optString("name", ""),
+                    bank = detailObject.optString("bank", ""),
+                    amount = detailObject.optInt("amount", 0),
+                    unique = detailObject.optInt("unique", 0),
+                    serverFee = detailObject.optInt("server_fee", 0),
+                    admin = detailObject.optInt("admin", 0),
+                    totalAmount = detailObject.optInt("total_amount", 0),
+                    invoiceId = invoiceObject.optString("id", ""),
+                    vaNumber = invoiceObject.optString("va_number", ""),
+                    vaName = invoiceObject.optString("va_name", "")
+                )
             } catch (e: Exception) {
-                Log.e("GetDataTransaction", "Gagal mendapatkan transaksi", e)
-                return@withContext emptyList()
+                Log.e("GetDataTransaction", "Exception: ${e.message}", e)
+                return@withContext null
             }
         }
     }
+
+
+
 
 
 
@@ -439,6 +427,58 @@ object ProfileRepository {
         }
     }
 
+    suspend fun topUpSaldo(
+        type: String,
+        amount: Int,
+        db: AppDatabase,
+        bank: String
+    ): PaymentData? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: return@withContext null
+
+                val url = URL("https://tv.japrime.id/payment/coin")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Authorization", token)
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doOutput = true
+
+                val requestBody = JSONObject().apply {
+                    put("type", type)
+                    put("amount", amount)
+                    put("bank", bank)
+                }.toString()
+
+                Log.d("ProfileRepository", "Request Body: $requestBody")
+
+                connection.outputStream.use { outputStream ->
+                    outputStream.write(requestBody.toByteArray())
+                    outputStream.flush()
+                }
+
+                val responseCode = connection.responseCode
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+
+                Log.d("ProfileRepository", "Response Code: $responseCode")
+                Log.d("ProfileRepository", "Response Body: $responseMessage")
+
+                val jsonResponse = JSONObject(responseMessage)
+                val success = jsonResponse.optBoolean("success", false)
+
+                return@withContext if (success) {
+                    getDataTransaction(db)
+                } else {
+                    Log.e("ProfileRepository", "Top-up failed: ${jsonResponse.optString("message")}")
+                    null
+                }
+            } catch (e: Exception) {
+                Log.e("ProfileRepository", "Exception during topUpSaldo", e)
+                return@withContext null
+            }
+        }
+    }
 
 
 }

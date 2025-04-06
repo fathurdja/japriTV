@@ -34,12 +34,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.japritv.ui.theme.JapriTvTheme
 import com.example.japritv.viewmodel.PaymentCategory
-
+import com.example.japritv.viewmodel.PaymentItem
 
 
 // Main Composable function
 @Composable
-fun ExpandableList(category: PaymentCategory, isInitiallyExpanded: Boolean = false, onItemClicked: () -> Unit) {
+fun ExpandableList(category: PaymentCategory, isInitiallyExpanded: Boolean = false, onItemClicked: (PaymentItem) -> Unit) {
     var expanded by rememberSaveable { mutableStateOf(isInitiallyExpanded) }
 
     Column(
@@ -72,7 +72,7 @@ fun ExpandableList(category: PaymentCategory, isInitiallyExpanded: Boolean = fal
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {onItemClicked() }
+                            .clickable {onItemClicked(item) }
                             .padding(horizontal = 16.dp, vertical = 12.dp)
                             ,
 

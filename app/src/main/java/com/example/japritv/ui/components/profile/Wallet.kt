@@ -20,7 +20,7 @@ import com.example.japritv.R
 
 
 @Composable
-fun Wallet(onIsiUlangClick: () -> Unit) {
+fun Wallet(saldo:Int,onIsiUlangClick: () -> Unit) {
     val DoradoApprox100 = Color(0xFF565656) // Warna border dan garis pemisah
     val MineShaftApprox100 = Color(0xFF343434)
     // Container utama dengan border
@@ -93,7 +93,7 @@ fun Wallet(onIsiUlangClick: () -> Unit) {
                         }
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "0",
+                            text = saldo.toString(),
                             color = Color.White,
                             fontSize = 16.sp
                         )
@@ -122,6 +122,6 @@ fun Wallet(onIsiUlangClick: () -> Unit) {
 @Preview
 @Composable
 fun PreviewGroup214() {
-    Wallet(onIsiUlangClick = {})
+    Wallet(onIsiUlangClick = {}, saldo = 0)
 }
 

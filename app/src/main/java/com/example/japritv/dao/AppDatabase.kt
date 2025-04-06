@@ -9,7 +9,7 @@ import com.example.japritv.converters.Converter
 
 @Database(
     entities = [VideoData::class, AuthToken::class, LoginInfo::class, newAuthDao::class,FcmToken::class],
-    version = 12,
+    version = 13,
     exportSchema = false
 )
 @TypeConverters(Converter::class)
