@@ -19,5 +19,8 @@ data class PaymentData(
     val invoiceId: String,
     val vaNumber: String,
     val vaName: String,
-    val level:String?
+    val level:String?,
+    val idVideo: String? = null,
+    val totalEpisode: Int? = null
+
 )

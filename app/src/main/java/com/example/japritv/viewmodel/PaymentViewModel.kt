@@ -65,6 +65,19 @@ class PaymentViewModel(private val db: AppDatabase) : ViewModel() {
 
         }
     }
+    fun makePaymentVideo(type:String,db: AppDatabase,idVideo:String,bank:String,onSuccess: () -> Unit,
+                               onError: () -> Unit){
+        viewModelScope.launch {
+            val result = ProfileRepository.makeDataTransactionVideo(type,idVideo,bank,db)
+            if (result != null) {
+                _transactionInfo.value = result
+                onSuccess()
+            } else {
+                onError()
+            }
+        }
+    }
+
     fun topUpSaldoSubscription(type:String,db: AppDatabase,level:String,bank:String,onSuccess: () -> Unit,
                        onError: () -> Unit){
         viewModelScope.launch {

@@ -158,7 +158,10 @@ object ProfileRepository {
                 return@withContext if (success) {
                     getDataTransaction(db)
                 } else {
-                    Log.e("ProfileRepository", "Top-up failed: ${jsonResponse.optString("message")}")
+                    Log.e(
+                        "ProfileRepository",
+                        "Top-up failed: ${jsonResponse.optString("message")}"
+                    )
                     null
                 }
             } catch (e: Exception) {
@@ -169,18 +172,17 @@ object ProfileRepository {
         }
     }
 
-    suspend fun makeDataTransaction(
-        amount: Int,
-        idCreator: String,
+    suspend fun makeDataTransactionVideo(
+        type: String,
+        idVideo: String,
+        bank: String,
         db: AppDatabase,
-
-        ): Boolean {
+        ): PaymentData? {
         return withContext(Dispatchers.IO) {
-
             try {
                 val authInfo = db.authTokenDao().getToken()
                 val token = authInfo?.token ?: ""
-                val url = URL("https://japritv-v2.vercel.app/api/transaction")
+                val url = URL("https://tv.japrime.id/payment/video")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
                 connection.setRequestProperty("Authorization", token)
@@ -188,8 +190,9 @@ object ProfileRepository {
                 connection.doOutput = true
 
                 val requestBody = JSONObject().apply {
-                    put("videoId", idCreator)  // Replace with actual creatorId
-                    put("amount", amount)  // Replace with actual amount if needed
+                    put("type", type)  // Replace with actual creatorId
+                    put("id_video", idVideo)
+                    put("bank", bank)// Replace with actual amount if needed
                 }.toString()
 
                 Log.d("ProfileRepository", "Request Body: $requestBody")
@@ -205,9 +208,9 @@ object ProfileRepository {
 
                 if (responseCode == 200) {
                     Log.d("ProfileRepository", "Response Body: $responseMessage")
-//                    return@withContext getDataTransaction(
-//                        db = db
-//                    )
+                    return@withContext getDataTransaction(
+                        db = db
+                    )
                 } else if (responseCode == 400) {
                     Log.d("ProfileRepository", "Response Body: $responseMessage")
                     Log.e("AuthRepo", "Token Expired")
@@ -216,12 +219,12 @@ object ProfileRepository {
                     Log.e("ProfileRepository", "Request failed with error: $responseMessage")
 
                 }
-                return@withContext false
+                return@withContext null
             } catch (e: Exception) {
                 Log.e("ProfileRepository", "Gagal membuat transaksi ", e)
 
 
-                return@withContext false
+                return@withContext null
             }
         }
     }
@@ -246,9 +249,11 @@ object ProfileRepository {
                 val invoiceObject = dataObject.optJSONObject("invoice") ?: JSONObject()
                 val detailObject = dataObject.optJSONObject("detail") ?: JSONObject()
 
+                val name = dataObject.optString("name", "")
+
                 return@withContext PaymentData(
                     id = dataObject.optString("_id", ""),
-                    name = dataObject.optString("name", ""),
+                    name = name,
                     type = dataObject.optString("type", ""),
                     status = dataObject.optString("status", ""),
                     createdAt = dataObject.optString("createdAt", ""),
@@ -256,14 +261,16 @@ object ProfileRepository {
                     userName = userObject.optString("name", ""),
                     bank = detailObject.optString("bank", ""),
                     amount = detailObject.optInt("amount", 0),
-                    unique = if (dataObject.optString("name") == "coin") detailObject.optInt("unique", 0) else 0,
-                    serverFee = if (dataObject.optString("name") == "coin") detailObject.optInt("server_fee", 0) else 0,
+                    unique = if (name == "coin") detailObject.optInt("unique", 0) else 0,
+                    serverFee = if (name == "coin") detailObject.optInt("server_fee", 0) else 0,
                     admin = detailObject.optInt("admin", 0),
                     totalAmount = detailObject.optInt("total_amount", 0),
                     invoiceId = invoiceObject.optString("id", ""),
                     vaNumber = invoiceObject.optString("va_number", ""),
                     vaName = invoiceObject.optString("va_name", ""),
-                    level = if (dataObject.optString("name") == "subscription") detailObject.optString("level", "") else null
+                    level = if (name == "subscription") detailObject.optString("level", "") else null,
+                    idVideo = if (name == "video") detailObject.optString("id_video", "") else null,
+                    totalEpisode = if (name == "video") detailObject.optInt("total_episode", 0) else null
                 )
             } catch (e: Exception) {
                 Log.e("GetDataTransaction", "Exception: ${e.message}", e)
@@ -271,11 +278,6 @@ object ProfileRepository {
             }
         }
     }
-
-
-
-
-
 
 
 
@@ -457,7 +459,10 @@ object ProfileRepository {
                 return@withContext if (success) {
                     getDataTransaction(db)
                 } else {
-                    Log.e("ProfileRepository", "Top-up failed: ${jsonResponse.optString("message")}")
+                    Log.e(
+                        "ProfileRepository",
+                        "Top-up failed: ${jsonResponse.optString("message")}"
+                    )
                     null
                 }
             } catch (e: Exception) {

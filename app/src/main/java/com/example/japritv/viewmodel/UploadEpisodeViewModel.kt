@@ -77,7 +77,7 @@ class UploadEpisodeViewModel( db: AppDatabase) : ViewModel()  {
     fun uploadVideoToServer(
         title: String,
         videoFiles: List<File>,
-        onSuccess: (String) -> Unit,
+        onSuccess: (String,String) -> Unit,
         onFailure: (String) -> Unit
     ) {
         viewModelScope.launch {
@@ -140,7 +140,20 @@ class UploadEpisodeViewModel( db: AppDatabase) : ViewModel()  {
                         if (it.isSuccessful) {
                             val responseBody = it.body?.string() ?: ""
                             Log.d("Upload", "Upload Success: $responseBody")
-                            onSuccess(responseBody)
+
+                            try {
+                                val json = JSONObject(responseBody)
+                                val data = json.optJSONObject("data")
+                                val videoId = data?.optString("_id") ?: ""
+                                val totalEpisode = data?.optInt("total_episode") ?: ""
+
+
+                                Log.d("Upload", "Video ID: $videoId")
+                                onSuccess(videoId,totalEpisode.toString())
+                            } catch (e: Exception) {
+                                Log.e("Upload", "Failed to parse _id: ${e.message}")
+                                onFailure("Failed to parse _id")
+                            }
                         } else {
                             val errorBody = it.body?.string() ?: "Unknown error"
                             Log.e("Upload", "Upload Error: $errorBody")
@@ -148,6 +161,7 @@ class UploadEpisodeViewModel( db: AppDatabase) : ViewModel()  {
                         }
                     }
                 }
+
             })
         }
     }

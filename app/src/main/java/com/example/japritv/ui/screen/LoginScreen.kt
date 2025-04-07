@@ -36,6 +36,7 @@ import com.example.japritv.Repository.AuthRepository
 import com.example.japritv.dao.AppDatabase
 import com.example.japritv.dao.AuthToken
 import com.example.japritv.provider.GoogleAuthUiProvider
+import com.example.japritv.provider.GoogleSignInHelper
 import com.example.japritv.ui.components.Login.ButtonLogin
 import com.example.japritv.ui.components.Login.Footer
 import kotlinx.coroutines.Dispatchers
@@ -106,7 +107,8 @@ fun LoginScreen(onClick: () -> Unit) {
                         ButtonLogin(
                             onClick = {
                                 coroutineScope.launch {
-                                    val googleAccount = googleAuthUiProvider?.signIn()
+                                    val googleAccount = googleAuthUiProvider?.signIn() ?: GoogleSignInHelper(context).getGoogleAccount()
+
                                     if (googleAccount != null) {
                                         withContext(Dispatchers.IO) {
                                             authTokenDao.saveToken(AuthToken(token = googleAccount.token))

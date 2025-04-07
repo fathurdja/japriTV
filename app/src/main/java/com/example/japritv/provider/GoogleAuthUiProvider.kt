@@ -80,7 +80,7 @@ class GoogleAuthUiProvider(
 
     private fun getGoogleIdOption(): GetGoogleIdOption =
      GetGoogleIdOption.Builder()
-            .setFilterByAuthorizedAccounts(false)
+            .setFilterByAuthorizedAccounts(true)
             .setServerClientId("635195907142-ml4hd7eo14u3okb22lqqc6o4b0tcfhhk.apps.googleusercontent.com") // ganti dengan WEB_CLIENT_ID
             .setAutoSelectEnabled(false)
             .build()

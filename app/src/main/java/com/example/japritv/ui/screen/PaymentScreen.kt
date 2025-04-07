@@ -2,6 +2,7 @@ package com.example.japritv.ui.screen
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -64,7 +65,7 @@ fun PaymentScreen(
     }
 
     if (video.isEmpty()){
-       Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+       Box(modifier = Modifier.fillMaxSize().background(Color.White), contentAlignment = Alignment.Center, ) {
            CircularProgressIndicator()
        }
     }

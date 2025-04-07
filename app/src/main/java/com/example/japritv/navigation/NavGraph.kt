@@ -31,6 +31,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import com.example.japritv.R
+import com.example.japritv.Repository.AuthRepository
 import com.example.japritv.Repository.ProfileRepository
 import com.example.japritv.dao.AppDatabase
 import com.example.japritv.model.GoogleAccount
@@ -132,10 +133,14 @@ fun NavGraph(
                             navController.navigate("home")
                         },
                         onError = {
-                            Toast.makeText(context, "Gagal mendapatkan peran pengguna minimum saldo 250.000", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Gagal mendapatkan peran pengguna minimum saldo 250.000",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     )
-                        },
+                },
                 navController = navController,
                 db = db
             )
@@ -169,9 +174,13 @@ fun NavGraph(
                             uploadEpisodeViewModel.uploadVideoToServer(
                                 title = episode.movieTitle,
                                 videoFiles = listOf(episode.fileName),
-                                onSuccess = { url ->
-                                    Log.d("Upload", "Video Uploaded Successfully: $url")
-                                    userViewModel.getVideoUploaded(db = db)
+                                onSuccess = { videoId, totalEpisode ->
+                                    Log.d("Upload", "Video Uploaded Successfully id : $videoId")
+                                    Log.d(
+                                        "Upload",
+                                        "Video Uploaded Successfully total episode : $totalEpisode"
+                                    )
+
                                 },
                                 onFailure = { error ->
                                     Log.e("Upload", "Upload Failed: $error")
@@ -210,7 +219,7 @@ fun NavGraph(
                     modifier = Modifier,
                     onClick = {
                         coroutineScope.launch {
-                            paymentViewModel.getDataTransaction()
+                            userViewModel.getVideoUploaded(db = db)
                         }
                     }
                 )
@@ -231,7 +240,34 @@ fun NavGraph(
                     content = {
                         MetodeBayarScreen(
                             paymentViewModel,
-                            navigateTo = { type, bank -> navController.navigate("InstruksiBayar") })
+                            navigateTo = { type, bank ->
+                                val videosUploaded = userViewModel.unreleasedVideos.value
+                                val videoId = videosUploaded.firstOrNull()?._id
+                                paymentViewModel.makePaymentVideo(
+                                    type = type,
+                                    db = db,
+                                    idVideo = videoId!!,
+                                    bank = bank,
+                                    onSuccess = {
+                                        Toast.makeText(
+                                            context,
+                                            "payment data added",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        navController.navigate("InstruksiBayar")
+                                    },
+                                    onError = {
+                                        Toast.makeText(
+                                            context,
+                                            "failed make payment",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                )
+
+
+                            }
+                        )
                     },
 
                     )
@@ -250,24 +286,18 @@ fun NavGraph(
                             onBackClick = { navController.popBackStack() })
                     },
                     content = {
-
                         InstruksiBayarScreen(
                             colortext = Color(0XFFD22F26),
                             colorButton = Color.White,
                             onClick = { navController.navigate("home") },
                             onClickBack = { navController.popBackStack() },
-
-                            paymentViewModel = paymentViewModel,
-
-                            )
+                            paymentViewModel = paymentViewModel)
                     },
 
                     )
 
 
             }
-
-
         }
         composable("history") {
             RiwayatScreen(
@@ -334,7 +364,6 @@ fun NavGraph(
             }
 
         }
-
         composable("profile") { ProfileScreen(navController, db) }
         navigation(startDestination = "riwayatPembelian", route = "profileScreen") {
             composable("login") {
@@ -394,18 +423,22 @@ fun NavGraph(
                                     val datasubscription = userViewModel.subscriptionInfo.value
                                     val koin = userViewModel.selectedkoin.value
                                     if (level != null && koin == 0) {
-                                       paymentViewModel.topUpSaldoSubscription(
-                                           type =type ,
-                                           db = db,
-                                           level =level ,
-                                           bank = bank,
-                                           onSuccess = {
-                                               navController.navigate("InstruksiBayarSubscriptionOrCoins")
-                                           },
-                                           onError = {
-                                               Toast.makeText(context, "Gagal Membeli Membership", Toast.LENGTH_SHORT).show()
-                                           }
-                                       )
+                                        paymentViewModel.topUpSaldoSubscription(
+                                            type = type,
+                                            db = db,
+                                            level = level,
+                                            bank = bank,
+                                            onSuccess = {
+                                                navController.navigate("InstruksiBayarSubscriptionOrCoins")
+                                            },
+                                            onError = {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Gagal Membeli Membership",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        )
                                         Toast.makeText(
                                             context,
                                             "Berhasil Membeli Membership",
@@ -435,7 +468,11 @@ fun NavGraph(
                                                 navController.navigate("InstruksiBayarSubscriptionOrCoins")
                                             },
                                             onError = {
-                                                Toast.makeText(context, "Gagal top up saldo", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(
+                                                    context,
+                                                    "Gagal top up saldo",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                             }
                                         )
                                     } else {
