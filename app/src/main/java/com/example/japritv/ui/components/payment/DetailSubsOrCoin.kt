@@ -37,140 +37,147 @@ import java.text.NumberFormat
 import java.util.Locale
 
 @Composable
-fun DetailPembayaranSubsOrCoin(color: Color, tipeSubs: String,totalPembayaran:Int, Amount: Int,typePayment:String,jumlahKoin:String,biayaTambahan:Int) {
+fun DetailPembayaranSubsOrCoin(
+    color: Color,
+    tipeSubs: String,
+    totalEpisode: Int,
+    totalPembayaran: Int,
+    biayaPerEpisode: Int,
+    Amount: Int,
+    typePayment: String,
+    jumlahKoin: String,
+    biayaTambahan: Int
+) {
     var isExpanded by remember { mutableStateOf(true) }
     val formatter = NumberFormat.getInstance(Locale("in", "ID"))
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .border(1.dp, Color(0xFFE6E6E8), RoundedCornerShape(8.dp))
-            .background(color)// Add border here
+            .background(color)
             .padding(12.dp)
-
     ) {
-        // Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { isExpanded = !isExpanded }, // Toggle expansion
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "Detail Pembayaran",
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-            Icon(
-                imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                contentDescription = "Toggle Details"
-            )
-        }
+        Column {
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { isExpanded = !isExpanded },
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Detail Pembayaran",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+                Icon(
+                    imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = "Toggle Details"
+                )
+            }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Show Details if expanded
-        if (isExpanded) {
-            Column(modifier = Modifier.padding(vertical = 25.dp)
-                , horizontalAlignment = Alignment.End,) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+            if (isExpanded) {
+                Column(
+                    modifier = Modifier.padding(vertical = 15.dp),
+                    horizontalAlignment = Alignment.End
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.theaters),
-                        tint = Color.Gray,
-                        modifier = Modifier
-                            .padding(end = 12.dp)
-                            .size(24.dp),
-                        contentDescription = null
-                    )
+
+                    // Rincian Utama
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 10.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (typePayment == "Subscription"){
-                            Text(
-                                text = "Anggota $tipeSubs",
-                                color = Color.Gray
-                            )
-                            Text(
-                                text = "Rp. ${formatter.format(Amount)}",
-                                color = Color.Gray
-                            )
-                        }
-                        else if (typePayment == "coin"){
-                        Text(
-                            text = "$jumlahKoin Koin",
-                            color = Color.Gray
+                        Icon(
+                            painter = painterResource(id = R.drawable.theaters),
+                            tint = Color.Gray,
+                            modifier = Modifier
+                                .padding(end = 12.dp)
+                                .size(24.dp),
+                            contentDescription = null
                         )
-                        Text(
-                            text = "Rp. ${formatter.format(Amount)}",
-                            color = Color.Gray
-                        )
-                        }
-                        else{
-                        Text(
-                            text = "Anggota $tipeSubs",
-                            color = Color.Gray
-                        )
-                        Text(
-                            text ="Rp. ${formatter.format(Amount)}",
-                            color = Color.Gray
-                        )
-                    }
-                    }
-                }
 
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            when (typePayment) {
+                                "Subscription" -> {
+                                    Text("Anggota $tipeSubs", color = Color.Gray)
+                                    Text("Rp. ${formatter.format(Amount)}", color = Color.Gray)
+                                }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.iconamoon_discount),
-                        tint = Color.Gray,
+                                "coin" -> {
+                                    Text("$jumlahKoin Koin", color = Color.Gray)
+                                    Text("Rp. ${formatter.format(Amount)}", color = Color.Gray)
+                                }
+
+                                else -> {
+                                    Text("Total Episode di Upload $totalEpisode", color = Color.Gray)
+                                    Text("$totalEpisode", color = Color.Gray)
+                                }
+                            }
+                        }
+                    }
+
+                    // Biaya & Pajak
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.iconamoon_discount),
+                            tint = Color.Gray,
+                            modifier = Modifier
+                                .padding(end = 12.dp)
+                                .size(24.dp),
+                            contentDescription = null
+                        )
+
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            if (typePayment == "video") {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("Biaya per Episode", color = Color.Gray)
+                                    Text("Rp. ${formatter.format(biayaPerEpisode)}", color = Color.Gray)
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Pajak & biaya Lainnya", color = Color.Gray)
+                                Text("Rp. $biayaTambahan", color = Color.Gray)
+                            }
+                        }
+                    }
+
+                    // Garis pemisah
+                    Divider(
                         modifier = Modifier
-                            .padding(end = 12.dp)
-                            .size(24.dp),
-                        contentDescription = null
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp)
                     )
+
+                    // Total
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = "Pajak & biaya Lainnya",
-                            color = Color.Gray
-                        )
-                        Text(
-                            text = "Rp. ${formatter.format(biayaTambahan)}",
-                            color = Color.Gray
-                        )
+                        Text("Nominal Pembayaran", fontWeight = FontWeight.Bold)
+                        Text("Rp. ${formatter.format(totalPembayaran)}", fontWeight = FontWeight.Bold)
                     }
-                }
-
-                Divider(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp))
-                // Total Payment
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Nominal Pembayaran",
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Rp. ${formatter.format(totalPembayaran)}",
-                        fontWeight = FontWeight.Bold
-                    )
                 }
             }
         }
-
-
     }
 }

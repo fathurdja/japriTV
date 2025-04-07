@@ -68,8 +68,12 @@ fun InstruksiBayarScreen(
             Column(modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp)) {
                 if (transactionData != null) {
                     val harga = transactionData!!.totalAmount
-                    val biayaTambahan =
-                        transactionData!!.serverFee + transactionData!!.admin + transactionData!!.unique
+                    val biayaTambahan = listOfNotNull(
+                        transactionData?.serverFee,
+                        transactionData?.admin,
+                        transactionData?.unique
+                    ).sum()
+
 
                     PaymentCard(
                         nominal = harga.toString(),
@@ -87,7 +91,9 @@ fun InstruksiBayarScreen(
                         biayaTambahan = biayaTambahan,
                         jumlahKoin = transactionData!!.amount.toString(),
                         typePayment = transactionData!!.name,
-                        totalPembayaran = harga
+                        totalPembayaran = harga,
+                        biayaPerEpisode = transactionData!!.amount ?: 0,
+                        totalEpisode = transactionData!!.totalEpisode ?: 0
                     )
 
                     Spacer(modifier = Modifier.height(25.dp))

@@ -180,7 +180,7 @@ fun NavGraph(
                                         "Upload",
                                         "Video Uploaded Successfully total episode : $totalEpisode"
                                     )
-
+                                    userViewModel.getVideoUploaded(db)
                                 },
                                 onFailure = { error ->
                                     Log.e("Upload", "Upload Failed: $error")
