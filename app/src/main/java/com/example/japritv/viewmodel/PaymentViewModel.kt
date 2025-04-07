@@ -65,6 +65,18 @@ class PaymentViewModel(private val db: AppDatabase) : ViewModel() {
 
         }
     }
+    fun topUpSaldoSubscription(type:String,db: AppDatabase,level:String,bank:String,onSuccess: () -> Unit,
+                       onError: () -> Unit){
+        viewModelScope.launch {
+            val result = ProfileRepository.makeSubscription(level,db,type,bank)
+            if (result != null) {
+                _transactionInfo.value = result
+                onSuccess()
+            } else {
+                onError()
+            }
+        }
+    }
     fun topUpSaldoKoin(type:String,db: AppDatabase,amount:Int,bank:String,onSuccess: () -> Unit,
                        onError: () -> Unit){
         viewModelScope.launch {

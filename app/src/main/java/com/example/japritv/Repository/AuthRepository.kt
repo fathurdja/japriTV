@@ -15,7 +15,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 object AuthRepository {
-    suspend fun sendTokenToServer(idToken: String, db: AppDatabase, nama: String, profile: String): Boolean {
+    suspend fun sendTokenToServer(idToken: String, db: AppDatabase): Boolean {
         return withContext(Dispatchers.IO) {
             try {
                 val url = URL("https://tv.japrime.id/auth/google")
@@ -40,7 +40,7 @@ object AuthRepository {
                 )
 
                 if (responseCode == 200) {
-                    val success = getDataLogin(db, tokenAcces, nama, profile)
+                    val success = getDataLogin(db)
                     // Menunggu hasil sebelum menyimpan
                     if (success) {
                         return@withContext true
@@ -54,10 +54,11 @@ object AuthRepository {
         }
     }
 
-    suspend fun getDataLogin(db: AppDatabase, idToken: String, namaUser: String, profile: String): Boolean {
+    suspend fun getDataLogin(db: AppDatabase): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                Log.d("AuthRepository", "Nama user dari parameter: $namaUser")
+                val authInfo = db.authTokenDao().getToken()
+                val idToken = authInfo?.token
                 val url = URL("https://tv.japrime.id/user/profile")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
@@ -65,26 +66,32 @@ object AuthRepository {
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doInput = true
 
-                val responseCode = connection.responseCode
                 val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
-                Log.d("AuthRepository", "Response Code: $responseCode")
-                Log.d("AuthRepository", "Response Body: $responseMessage")
+                val jsonResponse = JSONObject(responseMessage)
 
-                if (responseCode == 200) {
-                    val jsonResponse = JSONObject(responseMessage)
+                val isSuccess = jsonResponse.optBoolean("success", false)
+                if (isSuccess) {
                     val data = jsonResponse.getJSONObject("data")
-                    val email = data.getString("email")
-                    val role = data.getString("role")
-                    val userId = data.getString("_id")
-                    val coins = data.getInt("__v")
-                    val createdAt = data.getString("createdAt")
-                    val updatedAt = data.getString("updatedAt")
-                    val referral = data.getString("referral")
-                    Log.d("AuthRepository", "Saving login info: $namaUser")
+
+                    val email = data.optString("email")
+                    val role = data.optString("role")
+                    val userId = data.optString("_id")
+                    val coins = data.optInt("saldo")
+                    val createdAt = data.optString("createdAt")
+                    val updatedAt = data.optString("updatedAt")
+                    val referral = data.optString("referral")
+                    val nama = data.optString("name")
+                    val picture = data.optString("picture")
+
+                    val subscriptionJson = data.optJSONObject("subscription")
+                    val subscriptionLevel = subscriptionJson?.optString("level")
+                    val subscriptionStartDate = subscriptionJson?.optString("start_date")
+                    val subscriptionEndDate = subscriptionJson?.optString("end_date")
+
                     val loginInfo = LoginInfo(
-                        tokenAuth = idToken,
-                        name = namaUser,
-                        urlPicture = profile,
+                        tokenAuth = idToken ?: "",
+                        name = nama,
+                        urlPicture = picture,
                         infoRegistrasi = "Berhasil Login",
                         email = email,
                         userId = userId,
@@ -92,23 +99,25 @@ object AuthRepository {
                         createdAt = createdAt,
                         updatedAt = updatedAt,
                         referral = referral,
-                        role = role
+                        role = role,
+                        subscriptionLevel = subscriptionLevel,
+                        subscriptionStartDate = subscriptionStartDate,
+                        subscriptionEndDate = subscriptionEndDate
                     )
-
 
                     db.loginInfoDao().saveLoginInfo(loginInfo)
                     return@withContext true
-                } else if (responseCode == 400) {
-                    Log.d("AuthRepository", "Token expired, refreshing token")
-                    sendTokenToServer(idToken, db, namaUser, profile) // Refresh token dan coba lagi
+                } else {
+                    Log.w("AuthRepository", "Login gagal: success = false")
+                    return@withContext false
                 }
-                return@withContext false
             } catch (e: Exception) {
                 Log.e("AuthRepository", "Gagal mendapatkan data login", e)
                 return@withContext false
             }
         }
     }
+
 
     suspend fun resetToken(idToken: String, db: AppDatabase): String {
         return withContext(Dispatchers.IO) {

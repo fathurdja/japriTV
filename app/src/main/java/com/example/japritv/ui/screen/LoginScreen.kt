@@ -117,8 +117,6 @@ fun LoginScreen(onClick: () -> Unit) {
                                             AuthRepository.sendTokenToServer(
                                                 idToken = googleAccount.token,
                                                 db = db,
-                                                nama = googleAccount.displayName ?: "",
-                                                profile = googleAccount.profileImageUrl ?: ""
                                             )
                                         }
 

@@ -352,9 +352,11 @@ fun NavGraph(
                     modifier = Modifier,
                     onClick = {
                         val koin = userViewModel.selectedkoin.value
+                        val selectedMember = userViewModel.selectedMembership.value
+                        val nominal = userViewModel.nominal.value
                         Toast.makeText(
                             context,
-                            koin.toString(),
+                            "$koin $selectedMember $nominal ",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -383,10 +385,18 @@ fun NavGraph(
                                     val datasubscription = userViewModel.subscriptionInfo.value
                                     val koin = userViewModel.selectedkoin.value
                                     if (level != null && koin == 0) {
-                                        userViewModel.makeSubscription(
-                                            level,
-                                            db,
-                                        )
+                                       paymentViewModel.topUpSaldoSubscription(
+                                           type =type ,
+                                           db = db,
+                                           level =level ,
+                                           bank = bank,
+                                           onSuccess = {
+                                               navController.navigate("InstruksiBayarSubscriptionOrCoins")
+                                           },
+                                           onError = {
+                                               Toast.makeText(context, "Gagal Membeli Membership", Toast.LENGTH_SHORT).show()
+                                           }
+                                       )
                                         Toast.makeText(
                                             context,
                                             "Berhasil Membeli Membership",
@@ -416,13 +426,13 @@ fun NavGraph(
                                                 navController.navigate("InstruksiBayarSubscriptionOrCoins")
                                             },
                                             onError = {
-                                                Toast.makeText(context, "Gagal Membeli Membership", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, "Gagal top up saldo", Toast.LENGTH_SHORT).show()
                                             }
                                         )
                                     } else {
                                         Toast.makeText(
                                             context,
-                                            "Gagal Membeli Membership",
+                                            "Gagal bertransaksi",
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }

@@ -102,11 +102,11 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
                     db = db
                 )
             }
-            val newsubscription = ProfileRepository.makeSubscription(
-                level = subscription.level,
-                db = db,
-            )
-            newsubscriptionInfo.value = newsubscription
+//            val newsubscription = ProfileRepository.makeSubscription(
+//                level = subscription.level,
+//                db = db,
+//            )
+//            newsubscriptionInfo.value = newsubscription
         }
 
 
@@ -115,9 +115,10 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
     fun makeSubscription(
         level: String,
         db: AppDatabase,
+
     ) {
         viewModelScope.launch {
-            ProfileRepository.makeSubscription(level, db,)
+//            ProfileRepository.makeSubscription(level, db,type )
         }
     }
 

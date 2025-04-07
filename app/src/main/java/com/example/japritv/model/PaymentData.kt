@@ -18,5 +18,6 @@ data class PaymentData(
     val totalAmount: Int,
     val invoiceId: String,
     val vaNumber: String,
-    val vaName: String
+    val vaName: String,
+    val level:String?
 )

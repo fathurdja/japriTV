@@ -98,7 +98,7 @@ fun DetailPembayaranSubsOrCoin(color: Color, tipeSubs: String,totalPembayaran:In
                                 color = Color.Gray
                             )
                             Text(
-                                text = Amount.toString(),
+                                text = "Rp. ${formatter.format(Amount)}",
                                 color = Color.Gray
                             )
                         }
@@ -118,7 +118,7 @@ fun DetailPembayaranSubsOrCoin(color: Color, tipeSubs: String,totalPembayaran:In
                             color = Color.Gray
                         )
                         Text(
-                            text = Amount.toString(),
+                            text ="Rp. ${formatter.format(Amount)}",
                             color = Color.Gray
                         )
                     }

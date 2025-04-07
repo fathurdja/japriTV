@@ -82,7 +82,7 @@ fun InstruksiBayarScreen(
 
                     DetailPembayaranSubsOrCoin(
                         color = Color.White,
-                        tipeSubs = "",
+                        tipeSubs = transactionData!!.level ?:"",
                         Amount = transactionData!!.amount,
                         biayaTambahan = biayaTambahan,
                         jumlahKoin = transactionData!!.amount.toString(),

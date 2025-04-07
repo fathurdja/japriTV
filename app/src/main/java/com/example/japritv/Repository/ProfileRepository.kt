@@ -119,15 +119,16 @@ object ProfileRepository {
     suspend fun makeSubscription(
         level: String,
         db: AppDatabase,
-    ): subscriptionData? {
+        type: String,
+        bank: String
+    ): PaymentData? {
         return withContext(Dispatchers.IO) {
-
             try {
                 val authInfo = db.authTokenDao().getToken()
                 val token = authInfo?.token ?: ""
                 Log.e("ProfileRepository", "Token: $token")
 //                sendTokenToServer(idToken, db, nama, profile)
-                val url = URL("https://japritv-v2.vercel.app/api/subscription")
+                val url = URL("https://tv.japrime.id/payment/subscription")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
                 connection.setRequestProperty("Authorization", token)
@@ -135,7 +136,9 @@ object ProfileRepository {
                 connection.doOutput = true
 
                 val requestBody = JSONObject().apply {
+                    put("type", type)
                     put("level", level)
+                    put("bank", bank)
                 }.toString()
                 Log.d("ProfileRepository", "Request Body: $requestBody")
                 connection.outputStream.use { outputStream ->
@@ -148,26 +151,16 @@ object ProfileRepository {
                 Log.d("ProfileRepository", "Response Code: $responseCode")
                 Log.d("ProfileRepository", "Response Body: $responseMessage")
 
-                if (responseCode == 200) {
-                    val jsonResponse = JSONObject(responseMessage)
-                    val data = jsonResponse.optJSONObject("data") ?: return@withContext null
+                val jsonResponse = JSONObject(responseMessage)
+                val success = jsonResponse.optBoolean("success", false)
 
-                    return@withContext subscriptionData(
-                        _id = data.getString("_id"),
-                        userId = data.getString("user"),
-                        level = data.getString("level"),
-                        startDate = data.getString("startDate"),
-                        endDate = data.getString("endDate"),
-                        isPayed = data.getBoolean("isPayed"),
-                        isExpired = data.getBoolean("isExpired"),
-                        price = data.getInt("price")
-                    )
 
-                } else if (responseCode == 400) {
-                    Log.e("AuthRepo", "Token Expired")
-
+                return@withContext if (success) {
+                    getDataTransaction(db)
+                } else {
+                    Log.e("ProfileRepository", "Top-up failed: ${jsonResponse.optString("message")}")
+                    null
                 }
-                return@withContext null
             } catch (e: Exception) {
                 Log.e("ProfileRepository", "Gagal membuat subscription", e)
 
@@ -263,13 +256,14 @@ object ProfileRepository {
                     userName = userObject.optString("name", ""),
                     bank = detailObject.optString("bank", ""),
                     amount = detailObject.optInt("amount", 0),
-                    unique = detailObject.optInt("unique", 0),
-                    serverFee = detailObject.optInt("server_fee", 0),
+                    unique = if (dataObject.optString("name") == "coin") detailObject.optInt("unique", 0) else 0,
+                    serverFee = if (dataObject.optString("name") == "coin") detailObject.optInt("server_fee", 0) else 0,
                     admin = detailObject.optInt("admin", 0),
                     totalAmount = detailObject.optInt("total_amount", 0),
                     invoiceId = invoiceObject.optString("id", ""),
                     vaNumber = invoiceObject.optString("va_number", ""),
-                    vaName = invoiceObject.optString("va_name", "")
+                    vaName = invoiceObject.optString("va_name", ""),
+                    level = if (dataObject.optString("name") == "subscription") detailObject.optString("level", "") else null
                 )
             } catch (e: Exception) {
                 Log.e("GetDataTransaction", "Exception: ${e.message}", e)

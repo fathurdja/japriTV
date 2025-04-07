@@ -77,9 +77,8 @@ fun TokoJapriTV(userViewModel: UserViewModel) {
         MembershipOptions(
             selectedMembership = selectedMembership ?: "",
             nominal = nominal ?: 0,// Pastikan selectedMembership tidak null
-            onSelect = { userViewModel.setSelectedMembership(it)
-                        userViewModel.setNominal(nominal)},
-            harga = { userViewModel.setNominal(nominal) } // Pastikan fungsi harga menerima nilai
+            onSelect = { userViewModel.setSelectedMembership(it)},
+            harga = { userViewModel.setNominal(it) } // Pastikan fungsi harga menerima nilai
         )
 
         // Membership Cards
@@ -112,7 +111,7 @@ fun MembershipOptions(selectedMembership: String, nominal:Int,onSelect: (String)
             isSelected = selectedMembership == "mingguan",
             onClick = {
                 onSelect("mingguan")
-
+                harga(100000)
             },
             setharga = nominal == 100000,
             setHarga = {harga(100000)}
@@ -124,7 +123,9 @@ fun MembershipOptions(selectedMembership: String, nominal:Int,onSelect: (String)
             hargaLama = "Rp 500.000",
             benefits = "Semua episode bisa ditonton gratis",
             isSelected = selectedMembership == "bulanan",
-            onClick = { onSelect("bulanan") },
+            onClick = {
+                onSelect("bulanan")
+                harga(250000)},
             setharga = nominal == 250000,
              setHarga = {harga(250000)}
         )

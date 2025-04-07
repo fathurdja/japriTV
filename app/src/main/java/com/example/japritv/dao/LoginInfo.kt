@@ -18,4 +18,7 @@ data class LoginInfo(
     val createdAt: String,
     val updatedAt: String,
     val referral: String,
+    val subscriptionLevel: String?,
+    val subscriptionStartDate: String?,
+    val subscriptionEndDate: String?
 )

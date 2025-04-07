@@ -35,23 +35,24 @@ import java.util.Locale
 fun ProfileScreen(navController: NavController, db: AppDatabase) {
     val viewModel: UserViewModel = remember { UserViewModel(db) }
     val userInfo by viewModel.userInfo.collectAsState()
-    val subscriptionInfo by viewModel.subscriptionInfo.collectAsState()
+    val subscription = userInfo?.subscriptionLevel
+    LaunchedEffect(Unit) {
+        viewModel.loadUserInfo()
+    }
 
-    LaunchedEffect(userInfo) {
-        userInfo?.let { user ->
-            Log.e("profile", "$user")
-            viewModel.loadSubscriptionInfo (db)
+    fun formatDate(rawDate: String): String {
+        return try {
+            val inputFormat = SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss 'GMT'Z (zzzz)", Locale.ENGLISH)
+            val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val date: Date = inputFormat.parse(rawDate)!!
+            outputFormat.format(date)
+        } catch (e: Exception) {
+            Log.e("formatDate", "Error parsing date: ${e.message}")
+            "Invalid Date"
         }
     }
-    fun formatDate(isoDate: String): String {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-        val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
-        val date: Date? = inputFormat.parse(isoDate)
-        return date?.let { outputFormat.format(it) } ?: "Invalid Date"
-    }
-
-    // Background hitam untuk tampilan profil
+    val date = userInfo?.subscriptionEndDate?.let { formatDate(it) }
     Scaffold(
         containerColor = Color.Black
     ) {
@@ -77,15 +78,19 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
                         onClick = { navController.navigate("login") }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    if (subscriptionInfo != null && subscriptionInfo?.isPayed == true) {
-                        val date = formatDate(subscriptionInfo!!.endDate)
+                    if (userInfo?.subscriptionLevel != null) {
                         MembershipCard(
-                            level = subscriptionInfo!!.level,
-                            endDate = date,
+                            level = subscription!!,
+                            endDate = date!!,
                             totalVideosWatched = 0,
                             totalVideosAvailable = 0
                         )
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Wallet(
+                        onIsiUlangClick = { navController.navigate("TokoJapri") },
+                        saldo = userInfo!!.saldo
+                    )
 
                 } else {
                     UserInfo(
@@ -94,20 +99,12 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
                         onLoginClick = { navController.navigate("login") },
                         onCopyClick = { /* Handle Copy ID */ }
                     )
-                }
-
-
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Komponen Dompet
-                userInfo?.let { it1 ->
+                    Spacer(modifier = Modifier.height(16.dp))
                     Wallet(
                         onIsiUlangClick = { navController.navigate("TokoJapri") },
-                        saldo = it1.saldo
+                        saldo = 0
                     )
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Tambahan menu lainnya (contoh)
