@@ -42,7 +42,7 @@ import java.io.IOException
 
 import okhttp3.RequestBody.Companion.asRequestBody
 
-class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
+class UploadEpisodeViewModel( db: AppDatabase) : ViewModel()  {
 
     private val loginInfoDao = db.loginInfoDao()
 
@@ -74,24 +74,9 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
         }
         return file
     }
-    fun saveBitmapToFile(context: Context, bitmap: Bitmap, title: String): File? {
-        val file = File(context.cacheDir, "$title-thumbnail.png")
-        return try {
-            val outputStream = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-            outputStream.flush()
-            outputStream.close()
-            file
-        } catch (e: IOException) {
-            e.printStackTrace()
-            null
-        }
-    }
-
     fun uploadVideoToServer(
         title: String,
-        episode: Int,
-        videoFiles: List<File>, // Sekarang menerima List<File>
+        videoFiles: List<File>,
         onSuccess: (String) -> Unit,
         onFailure: (String) -> Unit
     ) {
@@ -119,17 +104,10 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
 
             // Tambahkan field lain dengan RequestBody
             val titlePart = title.toRequestBody("text/plain".toMediaTypeOrNull())
-            val episodePart = episode.toString().toRequestBody("text/plain".toMediaTypeOrNull())
-
-
-
-
-
             // Bangun MultipartBody
             val requestBodyBuilder = MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("title", null, titlePart)
-                .addFormDataPart("episode", null, episodePart)
 
 
             // Tambahkan video dan poster
@@ -146,7 +124,7 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
             Log.d("Upload", "Request Body:\n$requestBodyDebug")
             // Buat request ke server
             val request = Request.Builder()
-                .url("https://japritv-v2.vercel.app/api/upload")
+                .url("https://tv.japrime.id/creator/upload")
                 .post(requestBody)
                 .addHeader("Authorization", token)
                 .build()
@@ -173,12 +151,6 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
             })
         }
     }
-
-
-
-
-
-
     fun uploadFile(episodeIndex: Int, file: File, fileSize: String, poster: File) {
         val episode = _episodes[episodeIndex]
         _episodes[episodeIndex] = episode.copy(
@@ -203,24 +175,9 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
             )
         }
     }
-
-
-    // Update the progress of an episode
-    fun updateEpisodeProgress(index: Int, progress: Float) {
-        val episode = _episodes.getOrNull(index) ?: return
-        _episodes[index] = episode.copy(progress = progress)
-    }
     fun updateMovieTitle(index: Int, newTitle: String) {
         _episodes[index] = _episodes[index].copy(movieTitle = newTitle)
     }
-
-    // Example function to reset all episodes to 0% progress
-    fun resetAllEpisodesProgress() {
-        _episodes.forEachIndexed { index, episode ->
-            _episodes[index] = episode.copy(progress = 0f)
-        }
-    }
-
     fun addEpisode() {
         _episodes.add(Episode(
             episodeTitle = "Episode ${_episodes.size + 1}",
@@ -232,7 +189,6 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
 
             ))
     }
-
     fun getVideoThumbnailFromFile(videoFile: File): File? {
         return try {
             val retriever = MediaMetadataRetriever()
@@ -258,37 +214,6 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
             null
         }
     }
-
-
-
-    fun getPathFromUri(context: Context, uri: Uri): String? {
-        var filePath: String? = null
-        val projection = arrayOf(MediaStore.Video.Media.DATA)
-
-        context.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
-            val columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
-            if (cursor.moveToFirst()) {
-                filePath = cursor.getString(columnIndex)
-            }
-        }
-        return filePath
-    }
-
-    /**
-     * 🔥 Jika path tidak ditemukan, simpan ke internal storage
-     */
-    fun saveVideoToInternalStorage(context: Context, uri: Uri): String {
-        val inputStream = context.contentResolver.openInputStream(uri) ?: return ""
-        val file = File(context.filesDir, "uploaded_video.mp4")
-        FileOutputStream(file).use { outputStream ->
-            inputStream.copyTo(outputStream)
-        }
-        return file.absolutePath
-    }
-
-    /**
-     * 🔥 Mendapatkan ukuran file video
-     */
     fun getFileSize(context: Context, uri: Uri): String {
         val cursor = context.contentResolver.query(uri, null, null, null, null)
         return if (cursor != null && cursor.moveToFirst()) {
@@ -300,7 +225,6 @@ class UploadEpisodeViewModel(db: AppDatabase) : ViewModel()  {
             "0 MB"
         }
     }
-
     fun deleteUploadedFile(episodeIndex: Int) {
         val episode = _episodes.getOrNull(episodeIndex) ?: return
 

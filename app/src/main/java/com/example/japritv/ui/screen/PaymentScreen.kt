@@ -45,11 +45,9 @@ fun PaymentScreen(
         userViewModel.getVideoUploaded(db = db)
     }
 
-    // Hitung total jumlah episode dari semua video yang belum dirilis
-    val totalEpisode = video.sumOf { it.totalEpisode }
+    val totalEpisode = video.firstOrNull()?.total_episode ?: 0
+    val totalHarga = video.firstOrNull()?.price ?: 0
 
-    // Hitung total harga dari semua video yang belum dirilis
-    val totalHarga = video.sumOf { it.price }
 
     Box(modifier = Modifier.padding(horizontal = 24.dp, vertical = 50.dp)) {
         Column(

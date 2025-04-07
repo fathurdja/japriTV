@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.japritv.R
+import com.example.japritv.dao.AppDatabase
 import com.example.japritv.ui.components.DynamicActionButton
 import com.example.japritv.ui.components.Header
 import com.example.japritv.ui.components.uploadvideo.RequirementsWithLogin
@@ -52,12 +53,12 @@ import com.example.japritv.viewmodel.UserViewModel
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun UploadVideoScreen(
+    db: AppDatabase,
     userViewModel: UserViewModel, navController: NavController, login: () -> Unit
 ) {
-    val isLoggedIn by userViewModel.isLoggedin.collectAsState()
-
+   val roleAccount by userViewModel.roleAccount.collectAsState()
     LaunchedEffect(Unit) {
-        userViewModel.loadUserInfo()
+        userViewModel.getRole(db)
     }
     Scaffold(
         topBar = {
@@ -73,12 +74,11 @@ fun UploadVideoScreen(
                 .background(Color.Black) // Set the background color here
                 .padding(top = 30.dp) // Adjust the padding for the content
         ) {
-            if (isLoggedIn) {
+            if (roleAccount == "creator") {
                 Column(
                     modifier = Modifier.align(Alignment.TopCenter), // Align content at the top
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Title Text
                     Box(modifier = Modifier.padding(16.dp)) {
                         Text(
                             text = "Saatnya Upload Karyamu!",
@@ -173,6 +173,7 @@ fun UploadVideoScreen(
                             text = "Aktifkan Akun Creatormu Sekarang",
                             onClick = {
                                 login()
+
                             }
                         )
                     }

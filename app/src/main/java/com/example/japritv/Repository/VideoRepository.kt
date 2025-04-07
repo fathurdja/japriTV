@@ -60,7 +60,6 @@ class VideoRepository(private val videoDao: VideoDao) {
     suspend fun clearVideos() {
         return videoDao.clearVideos()
     }
-
     suspend fun getMostViewedVideo(db: AppDatabase, ): ResponseVideo {
         return withContext(Dispatchers.IO) {
             try {
@@ -134,7 +133,6 @@ class VideoRepository(private val videoDao: VideoDao) {
             }
         }
     }
-
     suspend fun getMostSearchVideo(db: AppDatabase, ): ResponseVideo {
         return withContext(Dispatchers.IO) {
             try {

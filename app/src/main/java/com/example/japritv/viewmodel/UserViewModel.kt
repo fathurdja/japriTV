@@ -25,7 +25,7 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
 
     private val loginInfoDao = db.loginInfoDao()
 
-    // StateFlow untuk menyimpan data LoginInfo
+
     private val _userInfo = MutableStateFlow<LoginInfo?>(null)
     val userInfo: StateFlow<LoginInfo?> = _userInfo
     val subscriptionInfo = MutableStateFlow<subscriptionData?>(null)
@@ -36,16 +36,12 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
     val newsubscriptionInfo = MutableStateFlow<subscriptionData?>(null)
     private val _unreleasedVideos = MutableStateFlow<List<UploadVideoData>>(emptyList())
     val unreleasedVideos: StateFlow<List<UploadVideoData>> = _unreleasedVideos
-
+    private val _roleAccount= MutableStateFlow<String?>(null)
+    val roleAccount: StateFlow<String?> = _roleAccount
     private val _selectedkoin = MutableStateFlow(0)
     val selectedkoin: StateFlow<Int> = _selectedkoin
     val isLoggedin = MutableStateFlow(false)
 
-    private val _fcmToken = MutableLiveData<String?>()
-    val fcmToken: LiveData<String?> = _fcmToken
-
-    private val _errorMessage = MutableLiveData<String?>()
-    val errorMessage: LiveData<String?> = _errorMessage
     init {
         loadUserInfo()
     }
@@ -53,47 +49,51 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
     fun updateLoginState() {
         isLoggedin.value = _userInfo.value != null
     }
-
-//
-
     fun loadSubscriptionInfo( db: AppDatabase,) {
         viewModelScope.launch {
             val subscription = ProfileRepository.getDataSubscription(db = db)
             subscriptionInfo.value = subscription
         }
     }
-
-
     fun getVideoUploaded(db: AppDatabase) {
         viewModelScope.launch {
             val videos = ProfileRepository.getVideoUploaded(db = db)
             _unreleasedVideos.value = videos
         }
     }
-
-
     fun loadUserInfo() {
             viewModelScope.launch {
                 _userInfo.value = loginInfoDao.getLoginInfo()
                 updateLoginState() // Perbarui status login setelah mengambil data user
             }
         }
+    fun getRole(db: AppDatabase){
+        viewModelScope.launch {
+            _roleAccount.value = db.loginInfoDao().getRoleAccount()
+        }
+    }
+    fun getUserRole(db: AppDatabase,onSuccess: () -> Unit,
+                    onError: () -> Unit){
+        viewModelScope.launch {
+            val result = AuthRepository.registerCreator(db = db)
+            if (result){
+                loadUserInfo()
+                onSuccess()
+            }else{
+                onError()
+            }
 
-
-
+        }
+    }
     fun setKoin(jumlahKoin: Int){
         _selectedkoin.value = jumlahKoin
     }
-
     fun setNominal(nominal: Int) {
         _nominalState.value = nominal // Perbarui nilai state
     }
-
-
     fun setSelectedMembership(membership: String) {
         _selectedMembership.value = membership
     }
-
     fun setSubscriptionInfo(subscription: subscriptionData, db: AppDatabase) {
         viewModelScope.launch {
             subscriptionInfo.value?.let {
@@ -112,63 +112,5 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
 
     }
 
-    fun makeSubscription(
-        level: String,
-        db: AppDatabase,
-
-    ) {
-        viewModelScope.launch {
-//            ProfileRepository.makeSubscription(level, db,type )
-        }
-    }
-
-
-
-
-    fun updateSubscriptionInfo(
-        db: AppDatabase,
-        id: String
-    ) {
-        viewModelScope.launch {
-            val success = ProfileRepository.updateDataSubscription(id, db, )
-            if (success != null) {
-                subscriptionInfo.value = success
-
-            } else {
-                subscriptionInfo.value = null
-                Log.e("UserViewModel", "Failed to update subscription info")
-            }
-        }
-    }
-
-    fun getFCMToken(db: AppDatabase) {
-
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
-                _errorMessage.value = "Fetching FCM registration token failed: ${task.exception?.message}"
-                return@addOnCompleteListener
-            }
-
-            // Get new FCM registration token
-            val token = task.result
-            _fcmToken.value = token
-
-            val dataTokenFcm = FcmToken(
-                id = 1,
-                fcmtoken = token
-            )
-            viewModelScope.launch {
-                db.fcmToken().saveToken(dataTokenFcm)
-            }
-
-            // Log the token
-            Log.d(TAG, "FCM Registration Token: $token")
-        }
-    }
-
-    companion object {
-        private const val TAG = "FCMTokenViewModel"
-    }
 
 }

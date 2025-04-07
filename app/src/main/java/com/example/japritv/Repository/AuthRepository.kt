@@ -7,6 +7,7 @@ import com.example.japritv.dao.LoginInfo
 import com.example.japritv.model.ApiResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONException
@@ -53,7 +54,6 @@ object AuthRepository {
             }
         }
     }
-
     suspend fun getDataLogin(db: AppDatabase): Boolean {
         return withContext(Dispatchers.IO) {
             try {
@@ -117,47 +117,40 @@ object AuthRepository {
             }
         }
     }
-
-
-    suspend fun resetToken(idToken: String, db: AppDatabase): String {
+    suspend fun registerCreator(db: AppDatabase): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                val url = URL("https://japritv.vercel.app/api/auth/google")
+                val authInfo = db.authTokenDao().getToken()
+                val idToken = authInfo?.token
+                val url = URL("https://tv.japrime.id/creator")
                 val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "GET"
-                connection.setRequestProperty("Authorization", "Bearer $idToken")
+                connection.setRequestProperty("Authorization", idToken)
+                connection.requestMethod = "POST"
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doInput = true
 
                 val responseCode = connection.responseCode
                 val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+
                 Log.d("AuthRepository", "Response Code: $responseCode")
                 Log.d("AuthRepository", "Response Body: $responseMessage")
 
-                if (responseCode == 200) {
-                    val newToken = idToken
-                    db.authTokenDao().saveToken(authToken = AuthToken(id = 1, token = newToken))
-                    Log.d("reset Token", "Berhasil reset")
-                    return@withContext idToken
-                } else {
-                    Log.e("reset Token", "Gagal reset, Response Code: $responseCode, Message: $responseMessage")
-                    return@withContext ""
+                val jsonObject = JSONObject(responseMessage)
+                val success = jsonObject.optBoolean("success", false)
+
+                if (success) {
+                    Log.d("AuthRepository", "Response Body: $responseMessage")
+                    return@withContext true
+
+                }else{
+                    Log.d("AuthRepository", "Response Body: $responseMessage")
+                    return@withContext false
                 }
+
             } catch (e: Exception) {
-                Log.e("reset Token", "Gagal reset, Exception: ${e.message}", e)
-                return@withContext ""
+                Log.e("AuthRepository", "Gagal mengirim token ke server", e)
+                return@withContext false
             }
-        }
-    }
-
-
-    fun extractToken(response: String): String {
-        return try {
-            val jsonObject = JSONObject(response)
-            jsonObject.getString("token") // Pastikan key `"token"` sesuai dengan respons API
-        } catch (e: JSONException) {
-            Log.e("extractToken", "Gagal parsing JSON: ${e.message}")
-            ""
         }
     }
 

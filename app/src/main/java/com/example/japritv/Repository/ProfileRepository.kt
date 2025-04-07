@@ -345,46 +345,39 @@ object ProfileRepository {
     suspend fun getVideoUploaded(db: AppDatabase): List<UploadVideoData> {
         return withContext(Dispatchers.IO) {
             try {
-
-
                 val authInfo = db.authTokenDao().getToken()
                 val token = authInfo?.token ?: ""
                 Log.d("UploadVideoRepository", "Token: $token")
-                val url = URL("https://japritv-v2.vercel.app/api/upload")
+
+                val url = URL("https://tv.japrime.id/creator/upload")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 connection.setRequestProperty("Authorization", token)
                 connection.setRequestProperty("Content-Type", "application/json")
-                connection.doOutput = false // karena ini GET request
+                connection.doOutput = false
 
-                val responseCode = connection.responseCode
                 val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
-
-                Log.d("UploadVideoRepository", "Response Code: $responseCode")
                 Log.d("UploadVideoRepository", "Response Body: $responseMessage")
 
-                if (responseCode == 200) {
-                    val gson = Gson()
-                    val videoResponse = gson.fromJson(responseMessage, UploadVideoResponse::class.java)
+                val gson = Gson()
+                val videoResponse = gson.fromJson(responseMessage, UploadVideoResponse::class.java)
 
-                    // Filter video yang `isRelease == false`
-                    val unreleasedVideos = videoResponse.data.filter { !it.isRelease }
-                        .map { UploadVideoData(it._id, it.price, it.totalEpisode) }
-
-                    return@withContext unreleasedVideos
+                return@withContext if (videoResponse.success) {
+                    videoResponse.data.filter { !it.release }
                 } else {
-                    Log.e("UploadVideoRepository", "Failed to fetch videos: $responseMessage")
-                    return@withContext emptyList()
+                    Log.e("UploadVideoRepository", "API returned success = false")
+                    emptyList()
                 }
             } catch (e: FileNotFoundException) {
                 Log.e("UploadVideoRepository", "Endpoint not found! Check your API URL.", e)
-                return@withContext emptyList()
+                emptyList()
             } catch (e: Exception) {
                 Log.e("UploadVideoRepository", "Error fetching videos", e)
-                return@withContext emptyList()
+                emptyList()
             }
         }
     }
+
 
     suspend fun updateTransaction(db: AppDatabase, id: String): Boolean {
         return withContext(Dispatchers.IO) {

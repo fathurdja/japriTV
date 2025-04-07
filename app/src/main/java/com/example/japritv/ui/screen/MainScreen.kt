@@ -96,12 +96,15 @@ fun MainScreen(
         } else showNotificationDialog.value = true
     }
 
+LaunchedEffect(Unit) {
+    AuthRepository.getDataLogin(
+        db = db,
+    )
+    userViewModel.loadUserInfo()
+}
 
     LaunchedEffect(userInfo) {
-//        userViewModel.getFCMToken(db)
-        AuthRepository.getDataLogin(
-            db = db,
-        )
+
         userViewModel.loadUserInfo()
         userViewModel.loadSubscriptionInfo(
             db = db,

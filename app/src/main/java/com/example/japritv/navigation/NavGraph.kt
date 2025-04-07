@@ -125,8 +125,19 @@ fun NavGraph(
         composable("upload") {
             UploadVideoScreen(
                 userViewModel = userViewModel,
-                login = { navController.navigate("login") },
-                navController = navController
+                login = {
+                    userViewModel.getUserRole(
+                        db = db,
+                        onSuccess = {
+                            navController.navigate("home")
+                        },
+                        onError = {
+                            Toast.makeText(context, "Gagal mendapatkan peran pengguna minimum saldo 250.000", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                        },
+                navController = navController,
+                db = db
             )
         }
         navigation(startDestination = "uploadEpisode", route = "uploadNavigation") {
@@ -158,8 +169,6 @@ fun NavGraph(
                             uploadEpisodeViewModel.uploadVideoToServer(
                                 title = episode.movieTitle,
                                 videoFiles = listOf(episode.fileName),
-                                episode = uploadEpisodeViewModel.episodes.indexOf(episode) + 1, // Urutan episode
-                                // Gunakan thumbnail sebagai poster
                                 onSuccess = { url ->
                                     Log.d("Upload", "Video Uploaded Successfully: $url")
                                     userViewModel.getVideoUploaded(db = db)

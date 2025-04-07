@@ -18,4 +18,7 @@ interface LoginInfoDao {
 
     @Query("DELETE FROM login_info")
     suspend fun clearLoginInfo()
+
+    @Query("SELECT role FROM login_info WHERE id = 1")
+    suspend fun getRoleAccount(): String?
 }
