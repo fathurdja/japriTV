@@ -2,7 +2,11 @@ package com.example.japritv.ui.screen
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Activity.RESULT_OK
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -37,8 +41,11 @@ import com.example.japritv.dao.AppDatabase
 import com.example.japritv.dao.AuthToken
 import com.example.japritv.provider.GoogleAuthUiProvider
 import com.example.japritv.provider.GoogleSignInHelper
+import com.example.japritv.provider.SignInGoogleFirebase
 import com.example.japritv.ui.components.Login.ButtonLogin
 import com.example.japritv.ui.components.Login.Footer
+import com.example.japritv.viewmodel.UserViewModel
+import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -47,7 +54,9 @@ import kotlinx.coroutines.withContext
     "RememberReturnType"
 )
 @Composable
-fun LoginScreen(onClick: () -> Unit) {
+fun LoginScreen(onClick: () -> Unit,userViewModel: UserViewModel) {
+
+
     val context = LocalContext.current
     val activity = LocalContext.current as? Activity
     val credentialManager: CredentialManager = remember { CredentialManager.create(context) }
@@ -55,6 +64,27 @@ fun LoginScreen(onClick: () -> Unit) {
     val googleAuthUiProvider = remember { activity?.let { GoogleAuthUiProvider(it, credentialManager) } }
     val db = remember { AppDatabase.getDatabase(context) } // Hindari pemanggilan berulang
     val authTokenDao = remember { db.authTokenDao() }
+    val googleAuthFirebase by lazy {
+        SignInGoogleFirebase(
+            context = context,
+            oneTapClient = Identity.getSignInClient(context)
+        )
+    }
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult(),
+        onResult = { result ->
+            if(result.resultCode == RESULT_OK) {
+                coroutineScope.launch {
+                    val signInResult = googleAuthFirebase.signInWithIntent(
+                        intent = result.data ?: return@launch
+                    )
+                    Log.d("Auth", signInResult.toString())
+                    userViewModel.onSignInResult(signInResult, db)
+                    onClick()
+                }
+            }
+        }
+    )
     Scaffold(
         containerColor = Color.Black,
         bottomBar = {
@@ -107,29 +137,34 @@ fun LoginScreen(onClick: () -> Unit) {
                         ButtonLogin(
                             onClick = {
                                 coroutineScope.launch {
-                                    val googleAccount = googleAuthUiProvider?.signIn() ?: GoogleSignInHelper(context).getGoogleAccount()
-
-                                    if (googleAccount != null) {
-                                        withContext(Dispatchers.IO) {
-                                            authTokenDao.saveToken(AuthToken(token = googleAccount.token))
-                                            println(googleAccount.token)
-                                        }
-
-                                        val success = withContext(Dispatchers.IO) {
-                                            AuthRepository.sendTokenToServer(
-                                                idToken = googleAccount.token,
-                                                db = db,
-                                            )
-                                        }
-
-                                        if (success) {
-                                            onClick()
-                                        } else {
-                                            Log.e("LoginScreen", "Gagal mengautentikasi token di server")
-                                        }
-                                    } else {
-                                        Log.e("LoginScreen", "Google Sign-In failed")
-                                    }
+//                                    val googleAccount = googleAuthUiProvider?.signIn() ?: GoogleSignInHelper(context).getGoogleAccount()
+                                    val signInIntentSender = googleAuthFirebase.signIn()
+                                    launcher.launch(
+                                        IntentSenderRequest.Builder(
+                                            signInIntentSender ?: return@launch
+                                        ).build()
+                                    )
+//                                    if (googleAccount != null) {
+//                                        withContext(Dispatchers.IO) {
+//                                            authTokenDao.saveToken(AuthToken(token = googleAccount.token))
+//                                            println(googleAccount.token)
+//                                        }
+//
+//                                        val success = withContext(Dispatchers.IO) {
+//                                            AuthRepository.sendTokenToServer(
+//                                                idToken = googleAccount.token,
+//                                                db = db,
+//                                            )
+//                                        }
+//
+//                                        if (success) {
+//                                            onClick()
+//                                        } else {
+//                                            Log.e("LoginScreen", "Gagal mengautentikasi token di server")
+//                                        }
+//                                    } else {
+//                                        Log.e("LoginScreen", "Google Sign-In failed")
+//                                    }
                                 }
                             },
                             text = "Login dengan Google",
@@ -144,8 +179,8 @@ fun LoginScreen(onClick: () -> Unit) {
     }
 }
 
-@Preview
-@Composable
-private fun LoginScreenPreview() {
-    LoginScreen(onClick = {})
-}
+//@Preview
+//@Composable
+//private fun LoginScreenPreview() {
+//    LoginScreen(onClick = {},)
+//}

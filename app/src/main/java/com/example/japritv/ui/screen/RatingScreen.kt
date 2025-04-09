@@ -45,48 +45,54 @@ fun RatingScreen(videoViewModel: VideoViewModel,) {
         LazyColumn(
             modifier = Modifier.fillMaxWidth()
         ) {
-            mostViewedVideos?.data?.let { videoList ->
-                items(videoList.size) { index ->
-                    val show = videoList[index] // ✅ Ambil data dengan aman
+            if (!mostViewedVideos?.message.isNullOrBlank() && mostViewedVideos?.data!!.isNotEmpty()) {
+                mostViewedVideos?.data.let { videoList ->
+                    items(videoList!!.size) { index ->
+                        val show = videoList[index]
 
-                    if (show != null) { // ✅ Pastikan show tidak null sebelum digunakan
-                        Box(
-                            modifier = Modifier
-                                .padding(end = 4.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .padding(2.dp)
-                        ) {
-                            CardRating(
-                                rank = index+1,
-                                show = show,
-                                popularity = show.totalSales.toString(),
-
-                            )
+                        if (show.isRelease) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(end = 4.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .padding(2.dp)
+                            ) {
+                                CardRating(
+                                    rank = index + 1,
+                                    show = show,
+                                    popularity = show.totalSales.toString(),
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
-            } ?: item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize(), // 🔥 Memastikan Box mengambil seluruh ukuran layar
-                    contentAlignment = Alignment.Center // 🔥 Menengahkan kontennya
-                ) {
-                    Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                        Image(
-                            painter = painterResource(id = R.drawable.video_slash_icon_1),
-                            contentDescription = "Not Found",
-                            modifier = Modifier.fillMaxWidth(0.6f) // 🔥 Atur ukuran gambar agar lebih proporsional
-                        )
-                        Text(
-                            text = "konten tidak ditemukan",
-                            color = Color.White
-                        )
+            } else {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.video_slash_icon_1),
+                                contentDescription = "Not Found",
+                                modifier = Modifier.fillMaxWidth(0.6f)
+                            )
+                            Text(
+                                text = "konten tidak ditemukan",
+                                color = Color.White
+                            )
+                        }
                     }
-
                 }
             }
         }
+
     }
 }
 

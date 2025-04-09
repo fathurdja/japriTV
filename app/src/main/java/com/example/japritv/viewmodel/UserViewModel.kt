@@ -9,8 +9,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.japritv.Repository.AuthRepository
 import com.example.japritv.Repository.ProfileRepository
 import com.example.japritv.dao.AppDatabase
+import com.example.japritv.dao.AuthToken
 import com.example.japritv.dao.FcmToken
 import com.example.japritv.dao.LoginInfo
+import com.example.japritv.model.SignInResult
 
 import com.example.japritv.model.UploadVideoData
 import com.example.japritv.model.subscriptionData
@@ -111,6 +113,16 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
 
 
     }
+    suspend fun onSignInResult(result: SignInResult, db: AppDatabase) {
+        val data = result.data
+        val token = data?.idToken
+        if (token != null){
+//            db.authTokenDao().saveToken(AuthToken(token = token))
+            AuthRepository.sendTokenToServer(token,db)
+        }else{
+            Log.e("UserViewModel", "Token is null")
+        }
 
+    }
 
 }

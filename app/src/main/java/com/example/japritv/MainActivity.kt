@@ -7,10 +7,12 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.Room
 import com.example.japritv.Repository.VideoRepository
 import com.example.japritv.dao.AppDatabase
+import com.example.japritv.dao.FcmToken
 import com.example.japritv.factory.PaymentViewModelFactory
 import com.example.japritv.factory.UploadEpisodeViewModelFactory
 import com.example.japritv.factory.UserViewModelfactory
@@ -33,17 +35,8 @@ class  MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
-                return@OnCompleteListener
-            }
-            val token = task.result
-            // Log and toast
-//            Log.d("FCM", token.toString())
-//            Toast.makeText(baseContext, token.toString(), Toast.LENGTH_SHORT).show()
-        })
-        super.onCreate(savedInstanceState)
+
+
 
 
 
@@ -55,6 +48,34 @@ class  MainActivity : ComponentActivity() {
         val videoDao = database.videoDao()
         videoRepository = VideoRepository(videoDao)
 
+
+        val fcmTokenDao = database.fcmToken()
+
+        // Jalankan dalam coroutine karena akses Room bersifat suspend
+        lifecycleScope.launch {
+            val existingToken = fcmTokenDao.getToken()
+            if (existingToken == null) {
+                // Token belum ada, ambil dari Firebase
+                FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                    if (!task.isSuccessful) {
+                        Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                        return@addOnCompleteListener
+                    }
+
+                    val token = task.result
+                    Log.d("FCM", "Fetched token: $token")
+
+                    // Simpan ke database
+                    lifecycleScope.launch {
+                        fcmTokenDao.saveToken(FcmToken(fcmtoken = token))
+                    }
+                }
+            } else {
+                Log.d("FCM", "Token from DB: ${existingToken.fcmtoken}")
+            }
+        }
+
+        super.onCreate(savedInstanceState)
         setContent {
             val userViewModel: UserViewModel = viewModel(factory = UserViewModelfactory(database))
             val videoViewModel: VideoViewModel = viewModel(factory = VideoViewModelFactory(videoRepository,database))

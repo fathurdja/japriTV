@@ -5,9 +5,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Video(
-    val uuid: String,
+    val id: String,
     val episode: Int,
     val url: String,
     val size: Long,
-    val format: String // Tambahkan format karena ada di JSON
+    val duration: Double, // ✅ tambahkan
+    val format: String = "" // opsional, kosong kalau tidak ada
 )

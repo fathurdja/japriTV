@@ -102,7 +102,7 @@ class VideoViewModel(private val videoRepository: VideoRepository, private val d
                 val authInfo = db.authTokenDao().getToken()
                 val token = authInfo?.token ?: ""
 
-                val url = URL("https://japritv-v2.vercel.app/api/video")
+                val url = URL("https://tv.japrime.id/video")
                 val connection = url.openConnection() as HttpURLConnection
 
                 connection.requestMethod = "GET"

@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ResponseVideo(
-    val message: String,
+    val message: String = "",
     val data: List<VideoDataApi>
 )
 

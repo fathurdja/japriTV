@@ -367,7 +367,7 @@ fun NavGraph(
         composable("profile") { ProfileScreen(navController, db) }
         navigation(startDestination = "riwayatPembelian", route = "profileScreen") {
             composable("login") {
-                LoginScreen(onClick = { navController.navigate("home") })
+                LoginScreen(onClick = { navController.navigate("home") }, userViewModel = userViewModel)
             }
             composable("TokoJapri") {
                 ScaffoldWithButton(
@@ -534,7 +534,7 @@ fun NavGraph(
             }
             composable("riwayatPembelian") {
                 ScaffoldWithoutButton(
-                    content = { RiwayatPembelian(navController = navController) },
+                    content = { RiwayatPembelian(navController = navController, paymentViewModel = paymentViewModel)},
                     contentTop = {
                         HeaderRightWithIcon(
                             title = "Riwayat Pembelian",

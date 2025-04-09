@@ -18,59 +18,6 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 object ProfileRepository {
-    suspend fun updateDataSubscription(
-        id: String,
-
-        db: AppDatabase,
-
-        ): subscriptionData? {
-        return withContext(Dispatchers.IO) {
-            try {
-
-                val authInfo = db.authTokenDao().getToken()
-                val token = authInfo?.token
-                val url = URL("https://japritv-v2.vercel.app/api/subscription/$id")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "POST"
-                connection.setRequestProperty("Authorization", token)
-                connection.setRequestProperty("Content-Type", "application/json")
-                connection.doInput = true
-
-                val responseCode = connection.responseCode
-
-                val responseMessage = try {
-                    connection.inputStream.bufferedReader().use { it.readText() }
-                } catch (e: Exception) {
-                    connection.errorStream?.bufferedReader()?.use { it.readText() }
-                        ?: "No response body"
-                }
-
-                Log.d("GetDataProfileRepository", "Response Code: $responseCode")
-                Log.d("GetDataProfileRepository", "Response Body: $responseMessage")
-
-                if (responseCode == 200) {
-                    val jsonResponse = JSONObject(responseMessage)
-                    val data = jsonResponse.optJSONObject("message") ?: return@withContext null
-                    Log.e("Profile Repository", "$data")
-
-                } else if (responseCode == 400) {
-                    Log.e("AuthRepo", "Token Expired: $responseMessage")
-
-                } else {
-                    Log.e(
-                        "ProfileRepository",
-                        "Unexpected Response: $responseCode - $responseMessage"
-                    )
-                }
-
-                return@withContext null
-            } catch (e: Exception) {
-                Log.e("ProfileRepository", "Error dalam getDataSubscription", e)
-                return@withContext null
-            }
-        }
-    }
-
     suspend fun getDataSubscription(
         db: AppDatabase,
     ): subscriptionData? {
@@ -115,7 +62,6 @@ object ProfileRepository {
             }
         }
     }
-
     suspend fun makeSubscription(
         level: String,
         db: AppDatabase,
@@ -171,7 +117,6 @@ object ProfileRepository {
             }
         }
     }
-
     suspend fun makeDataTransactionVideo(
         type: String,
         idVideo: String,
@@ -278,38 +223,6 @@ object ProfileRepository {
             }
         }
     }
-
-
-
-    suspend fun updateSubscription(idToken: String, id: String): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                val url = URL("https://japritv.vercel.app/api/user/subscription/${id}")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "POST"
-                connection.setRequestProperty("Authorization", "Bearer $idToken")
-                connection.setRequestProperty("Content-Type", "application/json")
-                connection.doOutput = true
-
-                val responseCode = connection.responseCode
-                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
-                Log.d("GetDataProfileRepository", "Response Code: $responseCode")
-                Log.d("GetDataProfileRepository", "Response Body: $responseMessage")
-
-                if (responseCode == 200) {
-                    return@withContext true
-                    Log.d("ProfileRepository", "Response Body: $responseMessage")
-                } else {
-
-                    Log.d("ProfileRepository", "Response Body: $responseMessage")
-                }
-                return@withContext false
-            } catch (e: Exception) {
-                return@withContext false
-            }
-        }
-    }
-
     suspend fun deleteSubscription(id: String, db: AppDatabase): Boolean {
         return withContext(Dispatchers.IO) {
             try {
@@ -343,7 +256,6 @@ object ProfileRepository {
             }
         }
     }
-
     suspend fun getVideoUploaded(db: AppDatabase): List<UploadVideoData> {
         return withContext(Dispatchers.IO) {
             try {
@@ -379,43 +291,6 @@ object ProfileRepository {
             }
         }
     }
-
-
-    suspend fun updateTransaction(db: AppDatabase, id: String): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                val authInfo = db.authTokenDao().getToken()
-                val token = authInfo?.token ?: ""
-                Log.d("UploadVideoRepository", "Token: $token")
-                val url = URL("https://japritv-v2.vercel.app/api/transaction/${id}")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "POST"
-                connection.setRequestProperty("Authorization", token)
-                connection.setRequestProperty("Content-Type", "application/json")
-                connection.doOutput = true// karena ini GET request
-
-                val responseCode = connection.responseCode
-                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
-
-                Log.d("UploadVideoRepository", "Response Code: $responseCode")
-                Log.d("UploadVideoRepository", "Response Body: $responseMessage")
-
-                if (responseCode == 200) {
-                    return@withContext true
-                } else {
-                    Log.e("UploadVideoRepository", "Failed pay video : $responseMessage")
-                    return@withContext false
-                }
-            } catch (e: FileNotFoundException) {
-                Log.e("UploadVideoRepository", "Endpoint not found! Check your API URL.", e)
-                return@withContext false
-            } catch (e: Exception) {
-                Log.e("UploadVideoRepository", "Error pay video", e)
-                return@withContext false
-            }
-        }
-    }
-
     suspend fun topUpSaldo(
         type: String,
         amount: Int,
@@ -471,6 +346,179 @@ object ProfileRepository {
             }
         }
     }
+    suspend fun getHistoryTransactionVideo(db: AppDatabase): List<PaymentData> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: ""
+                val url = URL("https://tv.japrime.id/payment/video")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Authorization", token)
+                connection.setRequestProperty("Content-Type", "application/json")
 
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+                Log.d("GetDataTransaction", "Raw response: $responseMessage")
+
+                val jsonResponse = JSONObject(responseMessage)
+
+                val dataArray = jsonResponse.optJSONArray("data") ?: return@withContext emptyList()
+
+                val paymentList = mutableListOf<PaymentData>()
+
+                for (i in 0 until dataArray.length()) {
+                    val dataObject = dataArray.getJSONObject(i)
+                    val userObject = dataObject.optJSONObject("id_user") ?: JSONObject()
+                    val invoiceObject = dataObject.optJSONObject("invoice") ?: JSONObject()
+                    val detailObject = dataObject.optJSONObject("detail") ?: JSONObject()
+                    val name = dataObject.optString("name", "")
+
+                    val paymentData = PaymentData(
+                        id = dataObject.optString("_id", ""),
+                        name = name,
+                        type = dataObject.optString("type", ""),
+                        status = dataObject.optString("status", ""),
+                        createdAt = dataObject.optString("createdAt", ""),
+                        updatedAt = dataObject.optString("updatedAt", ""),
+                        userName = userObject.optString("name", ""),
+                        bank = detailObject.optString("bank", ""),
+                        amount = detailObject.optInt("amount", 0),
+                        unique = if (name == "coin") detailObject.optInt("unique", 0) else 0,
+                        serverFee = if (name == "coin") detailObject.optInt("server_fee", 0) else 0,
+                        admin = detailObject.optInt("admin", 0),
+                        totalAmount = detailObject.optInt("total_amount", 0),
+                        invoiceId = invoiceObject.optString("id", ""),
+                        vaNumber = invoiceObject.optString("va_number", ""),
+                        vaName = invoiceObject.optString("va_name", ""),
+                        level = if (name == "subscription") detailObject.optString("level", "") else null,
+                        idVideo = if (name == "video") detailObject.optString("id_video", "") else null,
+                        totalEpisode = if (name == "video") detailObject.optInt("total_episode", 0) else null
+                    )
+                    paymentList.add(paymentData)
+                }
+
+                return@withContext paymentList
+            } catch (e: Exception) {
+                Log.e("GetDataTransaction", "Exception: ${e.message}", e)
+                return@withContext emptyList()
+            }
+        }
+    }
+    suspend fun getHistoryTransactionSubs(db: AppDatabase): List<PaymentData> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: ""
+                val url = URL("https://tv.japrime.id/payment/subscription")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Authorization", token)
+                connection.setRequestProperty("Content-Type", "application/json")
+
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+                Log.d("GetDataTransaction", "Raw response: $responseMessage")
+
+                val jsonResponse = JSONObject(responseMessage)
+
+                val dataArray = jsonResponse.optJSONArray("data") ?: return@withContext emptyList()
+
+                val paymentList = mutableListOf<PaymentData>()
+
+                for (i in 0 until dataArray.length()) {
+                    val dataObject = dataArray.getJSONObject(i)
+                    val userObject = dataObject.optJSONObject("id_user") ?: JSONObject()
+                    val invoiceObject = dataObject.optJSONObject("invoice") ?: JSONObject()
+                    val detailObject = dataObject.optJSONObject("detail") ?: JSONObject()
+                    val name = dataObject.optString("name", "")
+
+                    val paymentData = PaymentData(
+                        id = dataObject.optString("_id", ""),
+                        name = name,
+                        type = dataObject.optString("type", ""),
+                        status = dataObject.optString("status", ""),
+                        createdAt = dataObject.optString("createdAt", ""),
+                        updatedAt = dataObject.optString("updatedAt", ""),
+                        userName = userObject.optString("name", ""),
+                        bank = detailObject.optString("bank", ""),
+                        amount = detailObject.optInt("amount", 0),
+                        unique = if (name == "coin") detailObject.optInt("unique", 0) else 0,
+                        serverFee = if (name == "coin") detailObject.optInt("server_fee", 0) else 0,
+                        admin = detailObject.optInt("admin", 0),
+                        totalAmount = detailObject.optInt("total_amount", 0),
+                        invoiceId = invoiceObject.optString("id", ""),
+                        vaNumber = invoiceObject.optString("va_number", ""),
+                        vaName = invoiceObject.optString("va_name", ""),
+                        level = if (name == "subscription") detailObject.optString("level", "") else null,
+                        idVideo = if (name == "video") detailObject.optString("id_video", "") else null,
+                        totalEpisode = if (name == "video") detailObject.optInt("total_episode", 0) else null
+                    )
+                    paymentList.add(paymentData)
+                }
+
+                return@withContext paymentList
+            } catch (e: Exception) {
+                Log.e("GetDataTransaction", "Exception: ${e.message}", e)
+                return@withContext emptyList()
+            }
+        }
+    }
+    suspend fun getHistoryTransactionCoin(db: AppDatabase): List<PaymentData> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: ""
+                val url = URL("https://tv.japrime.id/payment/coin")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Authorization", token)
+                connection.setRequestProperty("Content-Type", "application/json")
+
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+                Log.d("GetDataTransaction", "Raw response: $responseMessage")
+
+                val jsonResponse = JSONObject(responseMessage)
+
+                val dataArray = jsonResponse.optJSONArray("data") ?: return@withContext emptyList()
+
+                val paymentList = mutableListOf<PaymentData>()
+
+                for (i in 0 until dataArray.length()) {
+                    val dataObject = dataArray.getJSONObject(i)
+                    val userObject = dataObject.optJSONObject("id_user") ?: JSONObject()
+                    val invoiceObject = dataObject.optJSONObject("invoice") ?: JSONObject()
+                    val detailObject = dataObject.optJSONObject("detail") ?: JSONObject()
+                    val name = dataObject.optString("name", "")
+
+                    val paymentData = PaymentData(
+                        id = dataObject.optString("_id", ""),
+                        name = name,
+                        type = dataObject.optString("type", ""),
+                        status = dataObject.optString("status", ""),
+                        createdAt = dataObject.optString("createdAt", ""),
+                        updatedAt = dataObject.optString("updatedAt", ""),
+                        userName = userObject.optString("name", ""),
+                        bank = detailObject.optString("bank", ""),
+                        amount = detailObject.optInt("amount", 0),
+                        unique = if (name == "coin") detailObject.optInt("unique", 0) else 0,
+                        serverFee = if (name == "coin") detailObject.optInt("server_fee", 0) else 0,
+                        admin = detailObject.optInt("admin", 0),
+                        totalAmount = detailObject.optInt("total_amount", 0),
+                        invoiceId = invoiceObject.optString("id", ""),
+                        vaNumber = invoiceObject.optString("va_number", ""),
+                        vaName = invoiceObject.optString("va_name", ""),
+                        level = if (name == "subscription") detailObject.optString("level", "") else null,
+                        idVideo = if (name == "video") detailObject.optString("id_video", "") else null,
+                        totalEpisode = if (name == "video") detailObject.optInt("total_episode", 0) else null
+                    )
+                    paymentList.add(paymentData)
+                }
+
+                return@withContext paymentList
+            } catch (e: Exception) {
+                Log.e("GetDataTransaction", "Exception: ${e.message}", e)
+                return@withContext emptyList()
+            }
+        }
+    }
 
 }

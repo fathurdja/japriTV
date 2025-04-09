@@ -23,7 +23,12 @@ class PaymentViewModel(private val db: AppDatabase) : ViewModel() {
     val paymentMethods: LiveData<List<PaymentCategory>> = _paymentMethods
     private val _transactionInfo = MutableStateFlow<PaymentData?>(null)
     val transactionInfo: StateFlow<PaymentData?> = _transactionInfo
-
+    private val _historyTransVideo = MutableStateFlow<List<PaymentData>?>(null)
+    val historyTransVideo: StateFlow<List<PaymentData>?> = _historyTransVideo
+    private  val _historyTransSubscription = MutableStateFlow<List<PaymentData>?>(null)
+    val  historyTransSubscription: StateFlow<List<PaymentData>?> = _historyTransSubscription
+    private  val _historyTransCoin = MutableStateFlow<List<PaymentData>?>(null)
+    val  historyTransCoin: StateFlow<List<PaymentData>?> = _historyTransSubscription
 
     init {
         // Simulasi data dari API
@@ -60,6 +65,26 @@ class PaymentViewModel(private val db: AppDatabase) : ViewModel() {
 
         }
     }
+    fun getHistoryTransactionSubscription() {
+        viewModelScope.launch {
+            val transactionSubs = ProfileRepository.getHistoryTransactionSubs(db = db)
+            _historyTransSubscription.value = transactionSubs
+        }
+    }
+    fun getHistoryTransactionCoin() {
+        viewModelScope.launch {
+            val transactionSubs = ProfileRepository.getHistoryTransactionCoin(db)
+            _historyTransCoin.value = transactionSubs
+        }
+    }
+
+
+    fun getHistoryTransactionVideo() {
+        viewModelScope.launch {
+            val transactionsVideo = ProfileRepository.getHistoryTransactionVideo(db)
+            _historyTransVideo.value = transactionsVideo
+        }
+    }
     fun deleteTransaction(){
         viewModelScope.launch {
 
@@ -77,7 +102,6 @@ class PaymentViewModel(private val db: AppDatabase) : ViewModel() {
             }
         }
     }
-
     fun topUpSaldoSubscription(type:String,db: AppDatabase,level:String,bank:String,onSuccess: () -> Unit,
                        onError: () -> Unit){
         viewModelScope.launch {

@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.japritv.dao.AppDatabase
 import com.example.japritv.dao.VideoDao
 import com.example.japritv.dao.VideoData
+import com.example.japritv.model.PosterImg
 import com.example.japritv.model.ResponseVideo
 import com.example.japritv.model.Video
 import com.example.japritv.model.VideoDataApi
@@ -35,7 +36,7 @@ class VideoRepository(private val videoDao: VideoDao) {
                 totalSales = videoData.totalSales ?: 0,
                 releaseAt = videoData.releaseAt ?: "",
                 isRelease = videoData.isRelease ?: false,
-                poster = videoData.poster ?: "",
+                poster = videoData.poster?.url ?: "",
                 video = videoData.video ?: emptyList(),
                 totalSize = videoData.totalSize ?: 0
             )
@@ -86,17 +87,23 @@ class VideoRepository(private val videoDao: VideoDao) {
                     for (i in 0 until dataArray.length()) {
                         val videoJson = dataArray.getJSONObject(i)
                         val videoItems = videoJson.getJSONArray("video")
+                        val posterData = videoJson.getJSONObject("poster")
+                        val posterImage = PosterImg(
+                            id = posterData.getString("id"),
+                            url = posterData.getString("url")
+                        )
 
                         val videoListItems = mutableListOf<Video>()
                         for (j in 0 until videoItems.length()) {
                             val videoItem = videoItems.getJSONObject(j)
                             videoListItems.add(
                                 Video(
-                                    uuid = videoItem.getString("uuid"),
+                                    id = videoItem.getString("id"),
                                     episode = videoItem.getInt("episode"),
                                     url = videoItem.getString("url"),
                                     size = videoItem.getLong("size"),
-                                    format = videoItem.getString("format")
+                                    format = videoItem.getString("format"),
+                                    duration = videoItem.getDouble("duration")
                                 )
                             )
                         }
@@ -112,7 +119,7 @@ class VideoRepository(private val videoDao: VideoDao) {
                                 releaseAt = "",
                                 isRelease = videoJson.getBoolean("isRelease"),
                                 video = videoListItems,
-                                poster = videoJson.getString("poster"),
+                                poster = posterImage,
                                 createdAt = videoJson.getString("createdAt"),
                                 updatedAt = videoJson.getString("updatedAt"),
                                 price = videoJson.getInt("price"),
@@ -159,17 +166,22 @@ class VideoRepository(private val videoDao: VideoDao) {
                     for (i in 0 until dataArray.length()) {
                         val videoJson = dataArray.getJSONObject(i)
                         val videoItems = videoJson.getJSONArray("video")
-
+                        val posterData = videoJson.getJSONObject("poster")
+                        val posterImage = PosterImg(
+                            id = posterData.getString("id"),
+                            url = posterData.getString("url")
+                        )
                         val videoListItems = mutableListOf<Video>()
                         for (j in 0 until videoItems.length()) {
                             val videoItem = videoItems.getJSONObject(j)
                             videoListItems.add(
                                 Video(
-                                    uuid = videoItem.getString("uuid"),
+                                    id = videoItem.getString("id"),
                                     episode = videoItem.getInt("episode"),
                                     url = videoItem.getString("url"),
                                     size = videoItem.getLong("size"),
-                                    format = videoItem.getString("format")
+                                    format = videoItem.getString("format"),
+                                    duration = videoItem.getDouble("duration")
                                 )
                             )
                         }
@@ -185,7 +197,7 @@ class VideoRepository(private val videoDao: VideoDao) {
                                 releaseAt = "",
                                 isRelease = videoJson.getBoolean("isRelease"),
                                 video = videoListItems,
-                                poster = videoJson.getString("poster"),
+                                poster = posterImage,
                                 createdAt = videoJson.getString("createdAt"),
                                 updatedAt = videoJson.getString("updatedAt"),
                                 price = videoJson.getInt("price"),

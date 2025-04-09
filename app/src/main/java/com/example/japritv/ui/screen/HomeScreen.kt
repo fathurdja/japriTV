@@ -66,7 +66,7 @@ fun HomeScreen(
     val shows by remember { mutableStateOf(homeViewModel.shows) }
     val movies by videoViewModel.dataList.collectAsState()
 
-    val showPlayerWidget = remember { mutableStateOf(true) }
+    val showPlayerWidget = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         videoViewModel.fetchVideos() // ✅ Fetch video saat layar dibuka

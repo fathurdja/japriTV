@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -26,10 +28,11 @@ import com.example.japritv.R
 
 
 @Composable
-fun UserInfoCard(movieName: String, date: String,harga: String, image: Int) {
+fun RiwayatCard(movieName: String, date: String,harga: String, image: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
             .background(Color(0xFF333333))
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -77,5 +80,5 @@ fun UserInfoCard(movieName: String, date: String,harga: String, image: Int) {
 @Preview
 @Composable
 fun PreviewUserInfoCard() {
-    UserInfoCard(movieName = "movie", date = "21 Mei 2025, 12:15 PM ", harga = "Rp.100,000", image = R.drawable.theaters)
+    RiwayatCard(movieName = "movie", date = "21 Mei 2025, 12:15 PM ", harga = "Rp.100,000", image = R.drawable.theaters)
 }
