@@ -8,8 +8,8 @@ import androidx.room.TypeConverters
 import com.example.japritv.converters.Converter
 
 @Database(
-    entities = [VideoData::class, AuthToken::class, LoginInfo::class, newAuthDao::class,FcmToken::class],
-    version = 14,
+    entities = [VideoData::class, AuthToken::class, LoginInfo::class, newAuthDao::class,FcmToken::class,PaymentDataEntity::class],
+    version = 17,
     exportSchema = false
 )
 @TypeConverters(Converter::class)
@@ -19,7 +19,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun loginInfoDao(): LoginInfoDao
     abstract fun NewauthTokenDao(): newInterfaceAuth
     abstract fun fcmToken(): FcmTokenDao
-
+    abstract fun temporaryPayment(): PaymentDataDao
 
     companion object {
         @Volatile

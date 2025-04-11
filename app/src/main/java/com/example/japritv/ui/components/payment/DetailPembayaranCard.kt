@@ -39,11 +39,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.japritv.R
 import com.example.japritv.ui.theme.JapriTvTheme
+import java.text.NumberFormat
+import java.util.Locale
 
 @Composable
 fun DetailPembayaranCard(jumlahEps:Int,biayaPerEpisode:Int) {
 
-
+    val formatter = NumberFormat.getInstance(Locale("in", "ID"))
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -106,7 +108,7 @@ fun DetailPembayaranCard(jumlahEps:Int,biayaPerEpisode:Int) {
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text("Biaya per episode", color = Color.Gray, fontSize = 14.sp)
-                        Text("Rp $biayaPerEpisode", color = Color.Gray, fontSize = 14.sp)
+                        Text("Rp ${formatter.format(biayaPerEpisode)}", color = Color.Gray, fontSize = 14.sp)
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -118,7 +120,7 @@ fun DetailPembayaranCard(jumlahEps:Int,biayaPerEpisode:Int) {
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text("Total pembayaran", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        Text("Rp ${jumlahEps  * biayaPerEpisode}", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("Rp ${formatter.format(jumlahEps  * biayaPerEpisode)}", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     }
                 }
             }

@@ -52,7 +52,7 @@ fun InstruksiBayarScreen(
     val isLoading = transactionData == null
 
     LaunchedEffect(true) {
-        paymentViewModel.getDataTransaction()
+//        paymentViewModel.getDataTransaction()
     }
 
     // Box utama harus full size agar bisa center-in loading
@@ -90,7 +90,7 @@ fun InstruksiBayarScreen(
                         Amount = transactionData!!.amount,
                         biayaTambahan = biayaTambahan,
                         jumlahKoin = transactionData!!.amount.toString(),
-                        typePayment = transactionData!!.name,
+                        typePayment = transactionData!!.type,
                         totalPembayaran = harga,
                         biayaPerEpisode = transactionData!!.amount ?: 0,
                         totalEpisode = transactionData!!.totalEpisode ?: 0
@@ -100,7 +100,8 @@ fun InstruksiBayarScreen(
 
                     CustomBoxButton(
                         title = "Kembali Ke JapriTV",
-                        onClick = { onClick() },
+                        onClick = {
+                            onClick() },
                         colorBackground = Color(0XFFD22F26),
                         colorText = Color.White,
                         modifier = modifier

@@ -32,6 +32,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import org.json.JSONObject
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -73,23 +80,28 @@ class VideoViewModel(private val videoRepository: VideoRepository, private val d
     }
     fun fetchVideoById(id: String) {
         viewModelScope.launch {
-            val video = videoRepository.getVideoById(id)
+            val video = videoRepository.getVideoByGroupId(id)
             _selectedVideo.value = video  // ✅ Simpan hasil ke StateFlow
         }
     }
+    // Di VideoViewModel.kt
 
-    fun fetchMostSearchVideos() {
-        viewModelScope.launch {
-            val response = videoRepository.getMostSearchVideo(db)
-            _mostSearchVideos.value = response // ✅ Simpan hasil response ke StateFlow
-        }
-    }
-    fun fetchMostViewedVideos() {
-        viewModelScope.launch {
-            val response = videoRepository.getMostViewedVideo(db)
-            _mostViewedVideos.value = response // ✅ Simpan hasil response ke StateFlow
-        }
-    }
+
+//    fun fetchMostSearchVideos() {
+//        viewModelScope.launch {
+//            val response = videoRepository.getMostSearchVideo(db)
+//            _mostSearchVideos.value = response // ✅ Simpan hasil response ke StateFlow
+//        }
+//    }
+//    fun fetchMostViewedVideos() {
+//        viewModelScope.launch {
+//            val response = videoRepository.getMostViewedVideo(db)
+//            _mostViewedVideos.value = response // ✅ Simpan hasil response ke StateFlow
+//        }
+//    }
+
+
+
     fun fetchVideos() {
         viewModelScope.launch(Dispatchers.IO) {
             _isLoading.value = true
@@ -99,14 +111,10 @@ class VideoViewModel(private val videoRepository: VideoRepository, private val d
             _dataList.value = videosFromRoom
 
             try {
-                val authInfo = db.authTokenDao().getToken()
-                val token = authInfo?.token ?: ""
-
                 val url = URL("https://tv.japrime.id/video")
                 val connection = url.openConnection() as HttpURLConnection
 
                 connection.requestMethod = "GET"
-                connection.setRequestProperty("Authorization", token)
                 connection.setRequestProperty("Accept", "application/json")
                 connection.connectTimeout = 10000
                 connection.readTimeout = 10000
@@ -122,7 +130,7 @@ class VideoViewModel(private val videoRepository: VideoRepository, private val d
 
                         val isDifferent = videosFromRoom.size != response.data.size ||
                                 videosFromRoom.zip(response.data).any { (roomVideo, apiVideo) ->
-                                    roomVideo.id != apiVideo.id || roomVideo.updatedAt != apiVideo.updatedAt
+                                    roomVideo.groupid != apiVideo.idgroup || roomVideo.title != apiVideo.title
                                 }
 
                         if (isDifferent) {

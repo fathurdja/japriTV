@@ -54,7 +54,7 @@ fun CardRating(
 
         // 🎥 Gambar Poster (Gunakan Coil untuk URL)
         AsyncImage(
-            model = show.poster, // ✅ Ambil dari API
+            model = "https://tv.japrime.id/video/poster/${show.idposter}", // ✅ Ambil dari API
             contentDescription = show.title,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -68,14 +68,12 @@ fun CardRating(
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            show.title?.let {
-                Text(
-                    text = it,
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            Text(
+                text = show.title,
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 

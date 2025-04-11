@@ -1,30 +1,26 @@
 package com.example.japritv.model
 
 data class UploadVideoResponse(
-    val code: Int = 0,
-    val success: Boolean = false,
-    val data: List<UploadVideoData> = emptyList()
+    val code: Int? = 0,
+    val success: Boolean? = false,
+    val data: UploadVideoGroupData? = null
+)
+
+data class UploadVideoGroupData(
+    val id_group: String? = null,
+    val id_poster: String? = null,
+    val title: String? = null,
+    val video: List<UploadVideoData>? = emptyList()
 )
 
 data class UploadVideoData(
-    val _id: String = "",
-    val title: String = "",
-    val poster: Poster? = null,
-    val video: List<Video>? = emptyList(),
-    val total_size: Int = 0,
-    val total_episode: Int = 0,
-    val release: Boolean = false,
-    val createdAt: String? = null,
-    val updatedAt: String? = null,
-    val __v: Int = 0,
-
-    // Optional field kalau suatu saat muncul di response
-    val price: Int = 0
+    val id_video: String? = null,
+    val episode: Int? = 0,
+    val duration: Double? = 0.0,
+    val view: Int? = 0,
+    val like: Int? = 0
 )
 
-data class Poster(
-    val id: String = "",
-    val url: String = ""
-)
+
 
 

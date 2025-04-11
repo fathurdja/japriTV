@@ -30,24 +30,22 @@ import com.example.japritv.ui.components.ScaffoldWithButton
 
 import com.example.japritv.ui.components.payment.DetailPembayaranCard
 import com.example.japritv.ui.components.uploadvideo.WarningUpload
+import com.example.japritv.viewmodel.PaymentViewModel
 import com.example.japritv.viewmodel.UploadEpisodeViewModel
 import com.example.japritv.viewmodel.UserViewModel
+import java.text.NumberFormat
+import java.util.Locale
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun PaymentScreen(
     modifier: Modifier = Modifier,
-    userViewModel: UserViewModel,
-    db: AppDatabase
+    uploadEpisodeViewModel: UploadEpisodeViewModel,
 ) {
-    val video by userViewModel.unreleasedVideos.collectAsState()
 
-    LaunchedEffect(Unit) {
-        userViewModel.getVideoUploaded(db = db)
-    }
+    val video = uploadEpisodeViewModel.episodes
+    val harga = 50000
 
-    val totalEpisode = video.firstOrNull()?.total_episode ?: 0
-    val totalHarga = video.firstOrNull()?.price ?: 0
 
 
     Box(modifier = Modifier.padding(horizontal = 24.dp, vertical = 50.dp)) {
@@ -58,16 +56,21 @@ fun PaymentScreen(
         ) {
             WarningUpload(text = "Pastikan sudah sesuai sebelum melanjutkan")
             DetailPembayaranCard(
-                jumlahEps = totalEpisode,   // Total episode dari semua video
-                biayaPerEpisode = totalHarga // Total harga dari semua video
+                jumlahEps = video.size,   // Total episode dari semua video
+                biayaPerEpisode = harga // Total harga dari semua video
             )
         }
     }
 
-    if (video.isEmpty()){
-       Box(modifier = Modifier.fillMaxSize().background(Color.White), contentAlignment = Alignment.Center, ) {
-           CircularProgressIndicator()
-       }
+    if (video.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
+        }
     }
 }
 

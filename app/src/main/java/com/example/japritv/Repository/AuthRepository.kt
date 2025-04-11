@@ -19,9 +19,12 @@ object AuthRepository {
     suspend fun sendTokenToServer(idToken: String, db: AppDatabase): Boolean {
         return withContext(Dispatchers.IO) {
             try {
+                val fcmInfo = db.fcmToken().getToken()
+                val fcmToken = fcmInfo?.fcmtoken ?: ""
                 val url = URL("https://tv.japrime.id/auth/google")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.setRequestProperty("Authorization", idToken)
+                connection.setRequestProperty("Token", fcmToken)
                 connection.requestMethod = "GET"
 
                 connection.setRequestProperty("Content-Type", "application/json")
@@ -76,7 +79,7 @@ object AuthRepository {
                     val email = data.optString("email")
                     val role = data.optString("role")
                     val userId = data.optString("_id")
-                    val coins = data.optInt("saldo")
+                    val coins = data.optInt("coin")
                     val createdAt = data.optString("createdAt")
                     val updatedAt = data.optString("updatedAt")
                     val referral = data.optString("referral")
@@ -106,6 +109,7 @@ object AuthRepository {
                     )
 
                     db.loginInfoDao().saveLoginInfo(loginInfo)
+                    Log.w("AuthRepository", "Login success = true")
                     return@withContext true
                 } else {
                     Log.w("AuthRepository", "Login gagal: success = false")

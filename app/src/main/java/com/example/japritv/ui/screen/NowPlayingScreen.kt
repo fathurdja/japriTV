@@ -1,9 +1,8 @@
-
-
 package com.example.japritv.ui.screen
 
 import android.content.Context
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.PagerState
@@ -27,11 +26,14 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
 import coil.compose.rememberAsyncImagePainter
 import com.example.japritv.R
+import com.example.japritv.dao.AppDatabase
+import com.example.japritv.model.Video
 import com.example.japritv.ui.components.HeaderRightWithIcon
 import com.example.japritv.ui.components.video.ActionButtons
 import com.example.japritv.ui.components.video.ContainerEpisode
@@ -39,23 +41,36 @@ import com.example.japritv.ui.components.video.ModalityContainer
 import com.example.japritv.viewmodel.VideoViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.example.japritv.utils.downloadVideoToCache
+import com.example.japritv.utils.shareVideo
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun VideoVerticalPagerScreen(viewModel: VideoViewModel, Id: String, onClickBack: () -> Unit) {
+fun VideoVerticalPagerScreen(
+    viewModel: VideoViewModel,
+    Id: String,
+    db: AppDatabase,
+    onClickBack: () -> Unit
+) {
     val video by viewModel.selectedVideo.collectAsState()
     var showSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     var selectedEpisode by remember { mutableStateOf(1) }
+    var isSheetEnabled by remember { mutableStateOf(false) } // ✅ sheet state
+
+
     LaunchedEffect(Id) {
         viewModel.fetchVideoById(Id)
-
     }
+
     LaunchedEffect(video) {
-        video?.let { viewModel.getPoster(it.id) }
+        video?.let { viewModel.getPoster(it.groupid) }
     }
 
-    val poster by viewModel.poster.collectAsState()
+    val poster = "https://tv.japrime.id/video/poster/${video?.idPoster}"
     val context = LocalContext.current
 
     val pagerState = rememberPagerState(
@@ -77,14 +92,20 @@ fun VideoVerticalPagerScreen(viewModel: VideoViewModel, Id: String, onClickBack:
                 Box(modifier = Modifier.fillMaxSize()) {
                     VideoPlayer(
                         context = context,
-                        videoUrl = videoItem.url,
+                        videoUrl = "https://tv.japrime.id/video/watch/${videoItem.id}",
                         thumbnailUrl = poster ?: "",
                         pagerState = pagerState,
-                        onClickEpisode = {showSheet=true}
-
+                        db = db,
+                        onClickEpisode = { showSheet = true },
+                        likes = videoItem.like,
+                        onStartShare = {
+                            isSheetEnabled = true
+                        },
+                        onFinishShare = {
+                            isSheetEnabled = true
+                        }
                     )
 
-                    // Header di bagian atas
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -96,69 +117,94 @@ fun VideoVerticalPagerScreen(viewModel: VideoViewModel, Id: String, onClickBack:
                             color = Color.Transparent,
                             textColor = Color.White,
                             resId = R.drawable.arrowwhite,
-                            onBackClick = {onClickBack()}
+                            onBackClick = { onClickBack() }
                         )
                     }
                 }
             }
         }
     }
-    if (showSheet){
+
+    if (showSheet) {
         ModalBottomSheet(
             containerColor = Color.Black,
             modifier = Modifier.fillMaxHeight(),
             sheetState = sheetState,
-            onDismissRequest = { showSheet = false },
+            onDismissRequest = { showSheet = false }
+        ) {
+            if (video == null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color.White)
+                }
+            } else {
+                video?.video?.let { episodes ->
+                    ContainerEpisode(
+                        onEpisodeSelected = { episode ->
+                            selectedEpisode = episode
+                            showSheet = false
+                        },
+                        selectedEpisode = selectedEpisode,
+                        totalEpisodes = episodes.size,
+                        title = video!!.title,
+                        poster = poster
+                    )
+                }
 
-            ) {
-            video?.totalEpisode?.let {
-                ContainerEpisode(
-                    onEpisodeSelected = { episode ->
-                        selectedEpisode = episode
-                        showSheet = false // ✅ Tutup sheet setelah memilih episode
-                    },
-                    selectedEpisode = selectedEpisode,
-                    totalEpisodes = it,
-                    title = video!!.title,
-                    poster = poster ?: ""
-                )
             }
-
-
-
-            // Tambahkan jarak bawah untuk swipe-to-dismiss
-
-
         }
     }
 }
 
+
+@androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VideoPlayer(
     videoUrl: String,
     thumbnailUrl: String,
     context: Context,
-    pagerState: PagerState
-    ,onClickEpisode: () -> Unit
+    pagerState: PagerState,
+    db: AppDatabase,
+    onClickEpisode: () -> Unit,
+    likes: Int,
+    onStartShare: () -> Unit,
+    onFinishShare: () -> Unit
 ) {
     val image = rememberAsyncImagePainter(model = thumbnailUrl)
     var isPlaying by remember { mutableStateOf(true) }
     var isBuffering by remember { mutableStateOf(true) }
+    var isVideoReady by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
     var showControls by remember { mutableStateOf(false) }
-
     val coroutineScope = rememberCoroutineScope()
 
-    val exoPlayer = remember {
-        ExoPlayer.Builder(context)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(context)) // Tambahkan ini
+    var exoPlayer by remember { mutableStateOf<ExoPlayer?>(null) }
+
+    // Init player
+    LaunchedEffect(videoUrl) {
+        val token = db.authTokenDao().getToken()?.token ?: return@LaunchedEffect
+
+        exoPlayer?.run {
+            stop()
+            release()
+        }
+
+        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+            .setAllowCrossProtocolRedirects(true)
+            .setDefaultRequestProperties(mapOf("Authorization" to token))
+
+        val player = ExoPlayer.Builder(context)
+            .setMediaSourceFactory(DefaultMediaSourceFactory(httpDataSourceFactory))
             .build().apply {
                 val mediaItem = MediaItem.Builder()
                     .setUri(videoUrl)
-                    .setMimeType(MimeTypes.APPLICATION_M3U8) // ✅ Pastikan MIME type sesuai
+                    .setMimeType(MimeTypes.VIDEO_MP4)
                     .build()
-
                 setMediaItem(mediaItem)
                 prepare()
                 playWhenReady = true
@@ -166,114 +212,158 @@ fun VideoPlayer(
                 addListener(object : Player.Listener {
                     override fun onPlaybackStateChanged(state: Int) {
                         isBuffering = state == Player.STATE_BUFFERING || state == Player.STATE_IDLE
+                        isVideoReady = state == Player.STATE_READY
                     }
                 })
             }
+
+        exoPlayer = player
+        isPlaying = true
     }
 
-
+    // Release on dispose
     DisposableEffect(Unit) {
         onDispose {
-            exoPlayer.release()
+            exoPlayer?.run {
+                stop()
+                release()
+            }
         }
     }
 
-    LaunchedEffect(isPlaying, pagerState.currentPage) {
-        println("LaunchedEffect triggered: isPlaying=$isPlaying, currentPage=${pagerState.currentPage}")
-        if (isPlaying) {
+    // Track progress
+    LaunchedEffect(exoPlayer) {
+        while (true) {
             delay(1000)
+            exoPlayer?.let { player ->
+                if (player.duration > 0) {
+                    progress = (player.currentPosition.toFloat() / player.duration.toFloat()).coerceIn(0f, 1f)
+                }
+            }
+        }
+    }
+
+    // Auto-hide controls
+    LaunchedEffect(isPlaying, pagerState.currentPage) {
+        if (isPlaying) {
+            delay(1500)
             showControls = false
         }
     }
 
-    LaunchedEffect(exoPlayer) {
-        while (true) {
-            delay(1000)
-            if (exoPlayer.duration > 0) {
-                progress = (exoPlayer.currentPosition.toFloat() / exoPlayer.duration.toFloat()).coerceIn(0f, 1f)
-            }
-        }
-    }
-
+    // UI
     Box(
         modifier = Modifier
             .fillMaxSize()
+
             .clickable {
-                if (exoPlayer.isPlaying) {
-                    exoPlayer.pause()
-                    isPlaying = false
-                } else {
-                    exoPlayer.play()
-                    isPlaying = true
+                exoPlayer?.let {
+                    if (it.isPlaying) {
+                        it.pause()
+                        isPlaying = false
+                    } else {
+                        it.play()
+                        isPlaying = true
+                    }
                 }
                 showControls = true
-             }
+            }
     ) {
-
-        if (!isPlaying || isBuffering) {
+        // Thumbnail hanya saat buffering
+        if (isBuffering) {
             Image(
                 painter = image,
                 contentDescription = "Thumbnail",
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .zIndex(0f)
             )
         }
 
-        // Video Player
-        AndroidView(
-            factory = { ctx ->
-                PlayerView(ctx).apply {
-                    player = exoPlayer
-                    useController = false
-                }
-            },
-            modifier = Modifier.fillMaxSize()
-        )
+        // PlayerView hanya tampil jika video siap
+        if (isVideoReady) {
+            AndroidView(
+                factory = { ctx ->
+                    PlayerView(ctx).apply {
+                        this.player = exoPlayer
+                        useController = false
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(1f)
+            )
+        }
 
-        // Thumbnail sebelum video mulai
+        // Kontrol Play/Pause
         if (showControls) {
             IconButton(
                 onClick = {
-                    if (exoPlayer.isPlaying) {
-                        exoPlayer.pause()
-                        isPlaying = false
-                    } else {
-                        exoPlayer.play()
-                        isPlaying = true
+                    exoPlayer?.let {
+                        if (it.isPlaying) {
+                            it.pause()
+                            isPlaying = false
+                        } else {
+                            it.play()
+                            isPlaying = true
+                        }
                     }
                 },
-                modifier = Modifier.align(Alignment.Center)
+                modifier = Modifier.align(Alignment.Center).zIndex(2f)
             ) {
                 Icon(
-                    painter = painterResource(id = if (exoPlayer.isPlaying) R.drawable.pause_circle else R.drawable.play_circle),
-                    contentDescription = if (exoPlayer.isPlaying) "Pause" else "Play",
+                    painter = painterResource(id = if (exoPlayer?.isPlaying == true) R.drawable.pause_circle else R.drawable.play_circle),
+                    contentDescription = if (exoPlayer?.isPlaying == true) "Pause" else "Play",
                     tint = Color.White,
                     modifier = Modifier.size(48.dp)
                 )
             }
         }
 
-        // ActionButtons di tengah sisi kanan
+        // Action Buttons
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 180.dp, start = 16.dp, end = 16.dp),
+                .padding(top = 180.dp, start = 16.dp, end = 16.dp)
+                .zIndex(2f),
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.Bottom
         ) {
             ActionButtons(
-                onBookmarkClick = { /* Handle bookmark click */ },
-                onLikeClick = { /* Handle like click */ },
-                onEpisodesClick = { onClickEpisode()},
-                onShareClick = { /* Handle share click */ }
+                onBookmarkClick = { /* TODO */ },
+                onLikeClick = { /* TODO */ },
+                onEpisodesClick = { onClickEpisode() },
+                onShareClick = {
+                    coroutineScope.launch {
+                        onStartShare()
+                        Toast.makeText(context, "Video sedang diunduh...", Toast.LENGTH_SHORT).show()
+
+                        val token = db.authTokenDao().getToken()?.token ?: return@launch
+                        val videoId = videoUrl.substringAfterLast("/")
+                        val file = downloadVideoToCache(context, videoId, token)
+
+                        if (file != null) {
+                            shareVideo(context, file)
+                            Toast.makeText(context, "Video berhasil dibagikan", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Gagal mengunduh video", Toast.LENGTH_SHORT).show()
+                        }
+
+                        onFinishShare()
+                    }
+                },
+                jumlahLike = likes
             )
         }
 
-        // Bottom UI Elements
+        // Bottom info
         Column(
             modifier = Modifier
                 .padding(vertical = 20.dp, horizontal = 16.dp)
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
+                .zIndex(2f)
                 .clickable { onClickEpisode() }
         ) {
             Row(
@@ -282,11 +372,19 @@ fun VideoPlayer(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painter = painterResource(id = R.drawable.playlist_play_icon_1), contentDescription = "Menu", tint = Color.White)
+                    Icon(
+                        painter = painterResource(id = R.drawable.playlist_play_icon_1),
+                        contentDescription = "Menu",
+                        tint = Color.White
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("EP.1/EP.71", color = Color.White)
+                    Text("EP.${pagerState.currentPage + 1}", color = Color.White)
                 }
-                Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Next", tint = Color.White)
+                Icon(
+                    Icons.Default.KeyboardArrowRight,
+                    contentDescription = "Next",
+                    tint = Color.White
+                )
             }
 
             LinearProgressIndicator(
@@ -295,7 +393,10 @@ fun VideoPlayer(
                     .fillMaxWidth()
                     .padding(top = 15.dp),
                 color = Color.White,
+                trackColor = Color.LightGray
             )
         }
     }
 }
+
+

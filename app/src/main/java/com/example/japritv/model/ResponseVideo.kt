@@ -10,4 +10,15 @@ data class ResponseVideo(
 )
 
 
+//@Serializable
+//data class ResponseVideoList(
+//    val data: List<VideoDataApi>
+//)
+//
+//@Serializable
+//data class ResponseVideoWrapper(
+//    val code: Int,
+//    val success: Boolean,
+//    val data: ResponseVideoList
+//)
 

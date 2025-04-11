@@ -34,7 +34,7 @@ fun RatingScreen(videoViewModel: VideoViewModel,) {
     val mostViewedVideos by videoViewModel.mostViewedVideos.collectAsState()
 
     LaunchedEffect(Unit) {
-        videoViewModel.fetchMostViewedVideos() // ✅ Kirim token agar API dapat diakses
+//        videoViewModel.fetchMostViewedVideos() // ✅ Kirim token agar API dapat diakses
     }
 
     Column(
@@ -50,21 +50,19 @@ fun RatingScreen(videoViewModel: VideoViewModel,) {
                     items(videoList!!.size) { index ->
                         val show = videoList[index]
 
-                        if (show.isRelease) {
-                            Box(
-                                modifier = Modifier
-                                    .padding(end = 4.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .padding(2.dp)
-                            ) {
-                                CardRating(
-                                    rank = index + 1,
-                                    show = show,
-                                    popularity = show.totalSales.toString(),
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .padding(end = 4.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .padding(2.dp)
+                        ) {
+                            CardRating(
+                                rank = index + 1,
+                                show = show,
+                                popularity = "",
+                            )
                         }
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             } else {

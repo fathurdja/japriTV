@@ -6,22 +6,11 @@ import com.example.japritv.model.Video
 import kotlinx.serialization.Serializable
 
 @Entity(tableName = "movie")
-@Serializable
 data class VideoData(
-    @PrimaryKey val id: String,
+    @PrimaryKey val groupid: String,
     val title: String,
-    val userId: String,
-    val totalView: Int,
-    val totalSearch: Int,
-    val totalSales: Int,
-    val totalSize: Int,
-    val releaseAt: String,
-    val isRelease: Boolean,
-    val poster: String,
-    val video: List<Video>,
-    val createdAt: String,
-    val updatedAt: String,
-    val price: Int,
-    val totalEpisode: Int
+    val idPoster: String,
+    val video : List<Video>,
 )
+
 

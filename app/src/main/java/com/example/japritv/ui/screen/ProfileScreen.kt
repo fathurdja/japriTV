@@ -26,9 +26,13 @@ import com.example.japritv.ui.components.profile.UserProfile
 import com.example.japritv.ui.components.profile.Wallet
 import com.example.japritv.ui.theme.JapriTvTheme
 import com.example.japritv.viewmodel.UserViewModel
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
+import kotlin.math.log10
+import kotlin.math.pow
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -36,13 +40,43 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
     val viewModel: UserViewModel = remember { UserViewModel(db) }
     val userInfo by viewModel.userInfo.collectAsState()
     val subscription = userInfo?.subscriptionLevel
+
+    fun humanReadableByteCount(bytes: Long, si: Boolean = true): String {
+        val unit = if (si) 1000 else 1024
+        if (bytes < unit) return "$bytes B"
+        val exp = (log10(bytes.toDouble()) / log10(unit.toDouble())).toInt()
+        val pre = (if (si) "kMGTPE" else "KMGTPE")[exp - 1] + if (si) "" else "i"
+        return String.format("%.1f %sB", bytes / unit.toDouble().pow(exp.toDouble()), pre)
+    }
+    fun getCacheSize(): String {
+        val cacheDir: File = db.openHelper.writableDatabase.path.let { File(it).parentFile ?: File("") }
+        var sizeInBytes = 0L
+
+        fun calculateSize(file: File) {
+            if (file.isFile) {
+                sizeInBytes += file.length()
+            } else {
+                file.listFiles()?.forEach { calculateSize(it) }
+            }
+        }
+
+        val cache = File(cacheDir, "cache")
+        if (cache.exists()) {
+            calculateSize(cache)
+        }
+
+        return humanReadableByteCount(sizeInBytes)
+    }
     LaunchedEffect(Unit) {
         viewModel.loadUserInfo()
+        Log.d("CACHE", "Ukuran cache saat ini: ${getCacheSize()}")
     }
 
     fun formatDate(rawDate: String): String {
         return try {
-            val inputFormat = SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss 'GMT'Z (zzzz)", Locale.ENGLISH)
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+            inputFormat.timeZone = TimeZone.getTimeZone("UTC")
+
             val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
             val date: Date = inputFormat.parse(rawDate)!!
             outputFormat.format(date)
@@ -51,6 +85,7 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
             "Invalid Date"
         }
     }
+
 
     val date = userInfo?.subscriptionEndDate?.let { formatDate(it) }
     Scaffold(
@@ -113,6 +148,8 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
             }
         }
     }
+
+
 }
 
 

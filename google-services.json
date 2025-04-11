@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "459478086146",
+    "project_id": "japritv",
+    "storage_bucket": "japritv.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:459478086146:android:196f11c4eb6be1bdbced1b",
+        "android_client_info": {
+          "package_name": "com.example.japritv"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "459478086146-5vcu5s263cuolh2sqmhabuoh1rj1srd9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIaXqBJDLOZWPN41YwMuoPQ7lvGTshwPE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "459478086146-5vcu5s263cuolh2sqmhabuoh1rj1srd9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

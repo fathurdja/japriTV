@@ -33,7 +33,7 @@ import com.example.japritv.viewmodel.VideoViewModel
 fun SearchResultList(videoViewModel: VideoViewModel) {
     val mostSearchVideos by videoViewModel.mostViewedVideos.collectAsState()
     LaunchedEffect(Unit) {
-        videoViewModel.fetchMostSearchVideos()
+//        videoViewModel.fetchMostSearchVideos()
     }
     LazyColumn(
         modifier = Modifier
@@ -45,22 +45,21 @@ fun SearchResultList(videoViewModel: VideoViewModel) {
             items(videoList.size) { index ->
                 val show = videoList[index] // ✅ Ambil data dengan aman
 
-                if (show != null) { // ✅ Pastikan show tidak null sebelum digunakan
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 4.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .padding(2.dp)
-                    ) {
-                        CardRating(
-                            rank = index+1,
-                            show = show,
-                            popularity = show.totalSales.toString(),
+                // ✅ Pastikan show tidak null sebelum digunakan
+                Box(
+                    modifier = Modifier
+                        .padding(end = 4.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .padding(2.dp)
+                ) {
+                    CardRating(
+                        rank = index+1,
+                        show = show,
+                        popularity = "",
 
-                            )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
+                        )
                 }
+                Spacer(modifier = Modifier.height(8.dp))
             }
         } ?: item {
             Box(

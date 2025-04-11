@@ -1,6 +1,7 @@
 package com.example.japritv.ui.components.home
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,13 +42,15 @@ fun MovieItem(show:VideoData, text: String,onClick: (String) -> Unit) {
             modifier = Modifier
                 .aspectRatio(2f / 3f)
                 .clip(RoundedCornerShape(8.dp))
-                .clickable { onClick(show.id) }
+                .background(Color.Gray)
+                .clickable { onClick(show.groupid) }
         ) {
-            val painter = if (show.poster.isNotEmpty()) {
-                rememberAsyncImagePainter(model = show.poster) // ✅ Pakai poster dari show
+            val painter = if (show.idPoster.isNotEmpty()) {
+                rememberAsyncImagePainter(model = "https://tv.japrime.id/video/poster/${show.idPoster}") // ✅ Pakai poster dari show
             } else {
                 painterResource(id = R.drawable.title_card) // 🔄 Pakai default kalau null
             }
+
 
             Image(
                 painter = painter,

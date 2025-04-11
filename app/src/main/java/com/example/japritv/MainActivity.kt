@@ -35,11 +35,6 @@ class  MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
-
-
-
-
-
         // ✅ Inisialisasi database hanya sekali
         database = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "video-db")
             .fallbackToDestructiveMigration()
@@ -53,6 +48,8 @@ class  MainActivity : ComponentActivity() {
 
         // Jalankan dalam coroutine karena akses Room bersifat suspend
         lifecycleScope.launch {
+            val fiveMinutesAgo = System.currentTimeMillis() - (5 * 60 * 1000)
+            database.temporaryPayment().clearIfOlderThan(fiveMinutesAgo)
             val existingToken = fcmTokenDao.getToken()
             if (existingToken == null) {
                 // Token belum ada, ambil dari Firebase

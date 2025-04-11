@@ -47,7 +47,7 @@ import kotlinx.coroutines.delay
 @Composable
 
 fun VideoScreen(viewModel: VideoViewModel,navController: NavController) {
-    val videoList by viewModel.dataList.collectAsState() // ✅ Observasi data dari ViewModel
+    val videoList by viewModel.dataList.collectAsState()
     val context = LocalContext.current
 
     val pagerState = rememberPagerState(
@@ -66,14 +66,19 @@ fun VideoScreen(viewModel: VideoViewModel,navController: NavController) {
             modifier = Modifier.fillMaxSize(),
             state = pagerState,
         ) { page ->
-            if (videoList.isNotEmpty()) { // ✅ Cek agar tidak akses indeks kosong
+            if (videoList.isNotEmpty()) {
+                val video = videoList[page].video.find { it.episode == selectedEpisode }
+                val videoId = video?.id ?: ""
+                val videoUrl = "https://tv.japrime.id/video/preview/$videoId"
+                val like = video?.like
+
                 VideoPage(
                     share = 0,
-                    like = 0,
+                    like = like!!,
                     judul = videoList[page].title,
                     deskripsi = "",
-                    url = videoList[page].poster,
-                    onClick = { navController.navigate("nowPlaying/${videoList[page].id}") },
+                    url = videoUrl,
+                    onClick = { navController.navigate("nowPlaying/${video.id}") },
                     onEpisodeClick = { showSheet = true },
                     onLikeClick = {},
                     onBookmarkClick = {}
@@ -100,7 +105,7 @@ fun VideoScreen(viewModel: VideoViewModel,navController: NavController) {
                 selectedEpisode = selectedEpisode,
                 totalEpisodes = currentVideo,
                 title = videoList[pagerState.currentPage].title,
-                poster = videoList[pagerState.currentPage].poster
+                poster = "https://tv.japrime.id/video/poster/${videoList[pagerState.currentPage].idPoster}"
             )
         }
     }

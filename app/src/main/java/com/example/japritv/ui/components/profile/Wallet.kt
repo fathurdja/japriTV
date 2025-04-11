@@ -43,12 +43,16 @@ fun Wallet(saldo:Int,onIsiUlangClick: () -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Dompet",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+
+                        Text(
+                            text = "Dompet",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+
+
                     Image(
                         painter = painterResource(id = R.drawable.vector__11_),
                         contentDescription = null,

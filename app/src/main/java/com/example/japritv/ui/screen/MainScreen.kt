@@ -71,6 +71,7 @@ fun MainScreen(
     val categoryViewModel: CategoryViewModel = viewModel()
     val showItemViewModel: ShowItemViewModel = viewModel()
 
+    val coroutineScope = rememberCoroutineScope()
 
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
@@ -88,7 +89,7 @@ fun MainScreen(
         notificationPermissionState = notificationPermissionState
     )
 
-    LaunchedEffect(key1=Unit){
+    LaunchedEffect(key1 = Unit) {
         if (notificationPermissionState.status.isGranted ||
             Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
         ) {
@@ -96,15 +97,18 @@ fun MainScreen(
         } else showNotificationDialog.value = true
     }
 
-LaunchedEffect(Unit) {
-    AuthRepository.getDataLogin(
-        db = db,
-    )
-    userViewModel.loadUserInfo()
-}
+    LaunchedEffect(currentRoute) {
+        if (currentRoute == "home" || currentRoute == "profile") {
+            coroutineScope.launch {
+                AuthRepository.getDataLogin(db)
+                userViewModel.loadUserInfo()
+            }
+        }
+    }
+
 
     LaunchedEffect(userInfo) {
-
+        userViewModel.getDataLogin(db)
         userViewModel.loadUserInfo()
         userViewModel.loadSubscriptionInfo(
             db = db,
@@ -165,8 +169,6 @@ LaunchedEffect(Unit) {
         }
     }
 }
-
-
 
 
 //@Preview

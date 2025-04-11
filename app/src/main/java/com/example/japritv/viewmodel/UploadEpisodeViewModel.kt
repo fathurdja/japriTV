@@ -65,6 +65,15 @@ class UploadEpisodeViewModel( db: AppDatabase) : ViewModel()  {
     }
 
 
+    // Ambil semua file video yang sudah di-upload user
+    fun getAllUploadedFiles(): List<File> {
+        return _episodes.mapNotNull { it.fileName }
+    }
+
+    // Ambil semua episode title dari episode
+    fun getEpisodeTitles(): List<String> {
+        return _episodes.map { it.episodeTitle }
+    }
 
     fun getFileFromUri(context: Context, uri: Uri): File? {
         val inputStream = context.contentResolver.openInputStream(uri) ?: return null

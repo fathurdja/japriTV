@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.japritv.R
 import com.example.japritv.model.Show
 import com.example.japritv.viewmodel.VideoViewModel
@@ -93,12 +94,12 @@ fun FeaturedGridSection(navController: NavController, videoViewModel: VideoViewM
                                 .width(350.dp)
                                 .height(180.dp)
                                 .clip(RoundedCornerShape(12.dp))
+                                .background(Color.Gray)
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.image_7), // Placeholder
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
+                            AsyncImage(
+                                model = "https://tv.japrime.id/video/poster/${video.idPoster}",
+                                contentDescription = "Background Image",
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }

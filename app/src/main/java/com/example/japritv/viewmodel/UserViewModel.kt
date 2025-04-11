@@ -15,6 +15,7 @@ import com.example.japritv.dao.LoginInfo
 import com.example.japritv.model.SignInResult
 
 import com.example.japritv.model.UploadVideoData
+import com.example.japritv.model.UploadVideoGroupData
 import com.example.japritv.model.subscriptionData
 import com.example.japritv.provider.GoogleAuthUiProvider
 import com.google.firebase.messaging.FirebaseMessaging
@@ -27,7 +28,6 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
 
     private val loginInfoDao = db.loginInfoDao()
 
-
     private val _userInfo = MutableStateFlow<LoginInfo?>(null)
     val userInfo: StateFlow<LoginInfo?> = _userInfo
     val subscriptionInfo = MutableStateFlow<subscriptionData?>(null)
@@ -36,8 +36,7 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
     private val _nominalState = MutableStateFlow(0) // Gunakan non-nullable Int
     val nominal: StateFlow<Int> = _nominalState
     val newsubscriptionInfo = MutableStateFlow<subscriptionData?>(null)
-    private val _unreleasedVideos = MutableStateFlow<List<UploadVideoData>>(emptyList())
-    val unreleasedVideos: StateFlow<List<UploadVideoData>> = _unreleasedVideos
+
     private val _roleAccount= MutableStateFlow<String?>(null)
     val roleAccount: StateFlow<String?> = _roleAccount
     private val _selectedkoin = MutableStateFlow(0)
@@ -59,8 +58,6 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
     }
     fun getVideoUploaded(db: AppDatabase) {
         viewModelScope.launch {
-            val videos = ProfileRepository.getVideoUploaded(db = db)
-            _unreleasedVideos.value = videos
         }
     }
     fun loadUserInfo() {
@@ -69,6 +66,11 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
                 updateLoginState() // Perbarui status login setelah mengambil data user
             }
         }
+    fun getDataLogin(db: AppDatabase){
+        viewModelScope.launch {
+            AuthRepository.getDataLogin(db)
+        }
+    }
     fun getRole(db: AppDatabase){
         viewModelScope.launch {
             _roleAccount.value = db.loginInfoDao().getRoleAccount()

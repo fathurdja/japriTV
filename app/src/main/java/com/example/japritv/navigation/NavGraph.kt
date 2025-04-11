@@ -62,6 +62,7 @@ import com.example.japritv.ui.screen.UploadVideoForm
 import com.example.japritv.ui.screen.UploadVideoScreen
 import com.example.japritv.ui.screen.VideoScreen
 import com.example.japritv.ui.screen.VideoVerticalPagerScreen
+
 import com.example.japritv.viewmodel.PaymentViewModel
 import com.example.japritv.viewmodel.ShowItemViewModel
 import com.example.japritv.viewmodel.UploadEpisodeViewModel
@@ -96,6 +97,9 @@ fun NavGraph(
             SplashScreen(navController = navController)
         }
         composable("home") {
+            coroutineScope.launch {
+                AuthRepository.getDataLogin(db = db)
+            }
             HomeScreen(navController = navController, videoViewModel = video)
         }
 
@@ -109,6 +113,7 @@ fun NavGraph(
                 VideoVerticalPagerScreen(
                     viewModel = video,
                     Id = Id,
+                    db = db,
                     onClickBack = { navController.popBackStack() })
             }
             composable("rating") {
@@ -166,30 +171,27 @@ fun NavGraph(
                     colorTextButton = Color.White,
                     modifier = Modifier,
                     onClick = {
+                        val allFilled = uploadEpisodeViewModel.episodes.all { it.fileName != null }
+                        val episodeList = uploadEpisodeViewModel.episodes
 
-                        val episode =
-                            uploadEpisodeViewModel.episodes.firstOrNull() // Ambil episode pertama
-
-                        if (episode?.fileName != null) {
+                        if (episodeList.isNotEmpty() && allFilled) {
                             uploadEpisodeViewModel.uploadVideoToServer(
-                                title = episode.movieTitle,
-                                videoFiles = listOf(episode.fileName),
+                                title = episodeList.first().movieTitle,
+                                videoFiles = uploadEpisodeViewModel.getAllUploadedFiles(),
                                 onSuccess = { videoId, totalEpisode ->
-                                    Log.d("Upload", "Video Uploaded Successfully id : $videoId")
-                                    Log.d(
-                                        "Upload",
-                                        "Video Uploaded Successfully total episode : $totalEpisode"
-                                    )
+                                    Log.d("Upload", "Video Uploaded Successfully id: $videoId")
+                                    Log.d("Upload", "Total Episodes Uploaded: $totalEpisode")
                                     userViewModel.getVideoUploaded(db)
                                 },
                                 onFailure = { error ->
                                     Log.e("Upload", "Upload Failed: $error")
                                 }
-                            ) //HAPUS koma ekstra di sini!
+                            )
                         } else {
-                            Log.e("Upload", "No episode selected or file is empty!")
+                            Log.e("Upload", "Semua episode harus diisi videonya!")
                         }
                     }
+
 
                 )
             }
@@ -210,8 +212,7 @@ fun NavGraph(
                     content = {
                         PaymentScreen(
                             modifier = Modifier,
-                            userViewModel = userViewModel,
-                            db = db
+                            uploadEpisodeViewModel = uploadEpisodeViewModel,
                         )
                     },
                     colorButton = Color(0xFFD32F2F),
@@ -241,12 +242,9 @@ fun NavGraph(
                         MetodeBayarScreen(
                             paymentViewModel,
                             navigateTo = { type, bank ->
-                                val videosUploaded = userViewModel.unreleasedVideos.value
-                                val videoId = videosUploaded.firstOrNull()?._id
                                 paymentViewModel.makePaymentVideo(
                                     type = type,
                                     db = db,
-                                    idVideo = videoId!!,
                                     bank = bank,
                                     onSuccess = {
                                         Toast.makeText(
@@ -291,7 +289,8 @@ fun NavGraph(
                             colorButton = Color.White,
                             onClick = { navController.navigate("home") },
                             onClickBack = { navController.popBackStack() },
-                            paymentViewModel = paymentViewModel)
+                            paymentViewModel = paymentViewModel
+                        )
                     },
 
                     )
@@ -364,10 +363,16 @@ fun NavGraph(
             }
 
         }
-        composable("profile") { ProfileScreen(navController, db) }
+        composable("profile") {
+
+            ProfileScreen(navController, db)
+        }
         navigation(startDestination = "riwayatPembelian", route = "profileScreen") {
             composable("login") {
-                LoginScreen(onClick = { navController.navigate("home") }, userViewModel = userViewModel)
+                LoginScreen(
+                    onClick = { navController.navigate("home") },
+                    userViewModel = userViewModel
+                )
             }
             composable("TokoJapri") {
                 ScaffoldWithButton(
@@ -519,11 +524,15 @@ fun NavGraph(
                             onBackClick = { navController.popBackStack() })
                     },
                     content = {
-                        paymentViewModel.getDataTransaction()
+//                        paymentViewModel.getDataTransaction()
                         InstruksiBayarScreen(
                             colortext = Color(0XFFD22F26),
                             colorButton = Color.White,
-                            onClick = { navController.navigate("home") },
+                            onClick = {
+
+                                navController.navigate("home")
+
+                            },
                             onClickBack = { navController.popBackStack() },
                             paymentViewModel = paymentViewModel,
                         )
@@ -534,7 +543,12 @@ fun NavGraph(
             }
             composable("riwayatPembelian") {
                 ScaffoldWithoutButton(
-                    content = { RiwayatPembelian(navController = navController, paymentViewModel = paymentViewModel)},
+                    content = {
+                        RiwayatPembelian(
+                            navController = navController,
+                            paymentViewModel = paymentViewModel
+                        )
+                    },
                     contentTop = {
                         HeaderRightWithIcon(
                             title = "Riwayat Pembelian",

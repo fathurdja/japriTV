@@ -3,9 +3,11 @@ package com.example.japritv.Repository
 import android.util.Log
 import com.example.japritv.Repository.AuthRepository.sendTokenToServer
 import com.example.japritv.dao.AppDatabase
+import com.example.japritv.dao.PaymentDataEntity
 
 import com.example.japritv.model.PaymentData
 import com.example.japritv.model.UploadVideoData
+import com.example.japritv.model.UploadVideoGroupData
 import com.example.japritv.model.UploadVideoResponse
 import com.example.japritv.model.koinData
 import com.example.japritv.model.subscriptionData
@@ -16,6 +18,7 @@ import org.json.JSONObject
 import java.io.FileNotFoundException
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlin.reflect.typeOf
 
 object ProfileRepository {
     suspend fun getDataSubscription(
@@ -67,7 +70,7 @@ object ProfileRepository {
         db: AppDatabase,
         type: String,
         bank: String
-    ): PaymentData? {
+    ): PaymentDataEntity? {
         return withContext(Dispatchers.IO) {
             try {
                 val authInfo = db.authTokenDao().getToken()
@@ -82,9 +85,10 @@ object ProfileRepository {
                 connection.doOutput = true
 
                 val requestBody = JSONObject().apply {
-                    put("type", type)
-                    put("level", level)
+                    put("method", type)
                     put("bank", bank)
+                    put("level", level)
+
                 }.toString()
                 Log.d("ProfileRepository", "Request Body: $requestBody")
                 connection.outputStream.use { outputStream ->
@@ -119,10 +123,9 @@ object ProfileRepository {
     }
     suspend fun makeDataTransactionVideo(
         type: String,
-        idVideo: String,
         bank: String,
         db: AppDatabase,
-        ): PaymentData? {
+        ): PaymentDataEntity? {
         return withContext(Dispatchers.IO) {
             try {
                 val authInfo = db.authTokenDao().getToken()
@@ -135,8 +138,7 @@ object ProfileRepository {
                 connection.doOutput = true
 
                 val requestBody = JSONObject().apply {
-                    put("type", type)  // Replace with actual creatorId
-                    put("id_video", idVideo)
+                    put("method", type)  // Replace with actual creatorId
                     put("bank", bank)// Replace with actual amount if needed
                 }.toString()
 
@@ -174,7 +176,7 @@ object ProfileRepository {
         }
     }
 
-    suspend fun getDataTransaction(db: AppDatabase): PaymentData? {
+    suspend fun getDataTransaction(db: AppDatabase): PaymentDataEntity? {
         return withContext(Dispatchers.IO) {
             try {
                 val authInfo = db.authTokenDao().getToken()
@@ -195,34 +197,40 @@ object ProfileRepository {
                 val detailObject = dataObject.optJSONObject("detail") ?: JSONObject()
 
                 val name = dataObject.optString("name", "")
-
-                return@withContext PaymentData(
+                val type = dataObject.optString("type", "")
+                val paymentData = PaymentDataEntity(
                     id = dataObject.optString("_id", ""),
                     name = name,
-                    type = dataObject.optString("type", ""),
+                    type = type,
                     status = dataObject.optString("status", ""),
                     createdAt = dataObject.optString("createdAt", ""),
                     updatedAt = dataObject.optString("updatedAt", ""),
                     userName = userObject.optString("name", ""),
-                    bank = detailObject.optString("bank", ""),
+                    bank = invoiceObject.optString("bankShortCode", ""),
                     amount = detailObject.optInt("amount", 0),
-                    unique = if (name == "coin") detailObject.optInt("unique", 0) else 0,
-                    serverFee = if (name == "coin") detailObject.optInt("server_fee", 0) else 0,
+                    unique =  detailObject.optInt("unique", 0),
+                    serverFee =  detailObject.optInt("server_fee", 0),
                     admin = detailObject.optInt("admin", 0),
                     totalAmount = detailObject.optInt("total_amount", 0),
                     invoiceId = invoiceObject.optString("id", ""),
-                    vaNumber = invoiceObject.optString("va_number", ""),
-                    vaName = invoiceObject.optString("va_name", ""),
-                    level = if (name == "subscription") detailObject.optString("level", "") else null,
-                    idVideo = if (name == "video") detailObject.optString("id_video", "") else null,
-                    totalEpisode = if (name == "video") detailObject.optInt("total_episode", 0) else null
+                    vaNumber = invoiceObject.optString("accountNo", ""),
+                    vaName = invoiceObject.optString("displayName", ""),
+                    level = if (type == "subscription") detailObject.optString("level", "") else null,
+                    idVideo = if (type == "video") detailObject.optString("id_video", "") else null,
+                    totalEpisode = if (type == "video") detailObject.optInt("total_episode", 0) else null
                 )
+
+                // ✅ Simpan ke Room
+                db.temporaryPayment().insert(paymentData)
+
+                return@withContext paymentData
             } catch (e: Exception) {
                 Log.e("GetDataTransaction", "Exception: ${e.message}", e)
                 return@withContext null
             }
         }
     }
+
     suspend fun deleteSubscription(id: String, db: AppDatabase): Boolean {
         return withContext(Dispatchers.IO) {
             try {
@@ -256,7 +264,7 @@ object ProfileRepository {
             }
         }
     }
-    suspend fun getVideoUploaded(db: AppDatabase): List<UploadVideoData> {
+    suspend fun getVideoUploaded(db: AppDatabase): UploadVideoGroupData? {
         return withContext(Dispatchers.IO) {
             try {
                 val authInfo = db.authTokenDao().getToken()
@@ -276,27 +284,29 @@ object ProfileRepository {
                 val gson = Gson()
                 val videoResponse = gson.fromJson(responseMessage, UploadVideoResponse::class.java)
 
-                return@withContext if (videoResponse.success) {
-                    videoResponse.data.filter { !it.release }
+                return@withContext if (videoResponse.success == true && videoResponse.data != null) {
+                    videoResponse.data
                 } else {
-                    Log.e("UploadVideoRepository", "API returned success = false")
-                    emptyList()
+                    Log.e("UploadVideoRepository", "API returned success = false or data is null")
+                    null
                 }
             } catch (e: FileNotFoundException) {
                 Log.e("UploadVideoRepository", "Endpoint not found! Check your API URL.", e)
-                emptyList()
+                null
             } catch (e: Exception) {
                 Log.e("UploadVideoRepository", "Error fetching videos", e)
-                emptyList()
+                null
             }
         }
     }
+
+
     suspend fun topUpSaldo(
         type: String,
         amount: Int,
         db: AppDatabase,
         bank: String
-    ): PaymentData? {
+    ): PaymentDataEntity? {
         return withContext(Dispatchers.IO) {
             try {
                 val authInfo = db.authTokenDao().getToken()
@@ -310,8 +320,8 @@ object ProfileRepository {
                 connection.doOutput = true
 
                 val requestBody = JSONObject().apply {
-                    put("type", type)
-                    put("amount", amount)
+                    put("method", type)
+                    put("coin", amount)
                     put("bank", bank)
                 }.toString()
 
@@ -326,26 +336,158 @@ object ProfileRepository {
                 val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
 
                 Log.d("ProfileRepository", "Response Code: $responseCode")
-                Log.d("ProfileRepository", "Response Body: $responseMessage")
+                Log.d("ProfileRepository", "ini respons dari API Response Body: $responseMessage")
 
-                val jsonResponse = JSONObject(responseMessage)
-                val success = jsonResponse.optBoolean("success", false)
 
-                return@withContext if (success) {
-                    getDataTransaction(db)
-                } else {
-                    Log.e(
-                        "ProfileRepository",
-                        "Top-up failed: ${jsonResponse.optString("message")}"
-                    )
-                    null
-                }
+                return@withContext getDataTransaction(db = db)
+
+
             } catch (e: Exception) {
                 Log.e("ProfileRepository", "Exception during topUpSaldo", e)
                 return@withContext null
             }
         }
     }
+    suspend fun topUpSaldoQr(
+        type: String,
+        amount: Int,
+        db: AppDatabase,
+    ): PaymentDataEntity? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: return@withContext null
+
+                val url = URL("https://tv.japrime.id/payment/coin")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Authorization", token)
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doOutput = true
+
+                val requestBody = JSONObject().apply {
+                    put("method", type)
+                    put("coin", amount)
+                }.toString()
+
+                Log.d("ProfileRepository", "Request Body: $requestBody")
+
+                connection.outputStream.use { outputStream ->
+                    outputStream.write(requestBody.toByteArray())
+                    outputStream.flush()
+                }
+
+                val responseCode = connection.responseCode
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+
+                Log.d("ProfileRepository", "Response Code: $responseCode")
+                Log.d("ProfileRepository", "ini respons dari API Response Body: $responseMessage")
+
+
+                return@withContext getDataTransaction(db = db)
+
+
+            } catch (e: Exception) {
+                Log.e("ProfileRepository", "Exception during topUpSaldo", e)
+                return@withContext null
+            }
+        }
+    }
+
+    suspend fun topUpSaldoUser(
+        type: String,
+        amount: Int,
+        db: AppDatabase,
+        bank: String
+    ): PaymentDataEntity? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: return@withContext null
+
+                val url = URL("https://tv.japrime.id/payment/saldo")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Authorization", token)
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doOutput = true
+
+                val requestBody = JSONObject().apply {
+                    put("method", type)
+                    put("coin", amount)
+                    put("bank", bank)
+                }.toString()
+
+                Log.d("ProfileRepository", "Request Body: $requestBody")
+
+                connection.outputStream.use { outputStream ->
+                    outputStream.write(requestBody.toByteArray())
+                    outputStream.flush()
+                }
+
+                val responseCode = connection.responseCode
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+
+                Log.d("ProfileRepository", "Response Code: $responseCode")
+                Log.d("ProfileRepository", "ini respons dari API Response Body: $responseMessage")
+
+
+                return@withContext getDataTransaction(db = db)
+
+
+            } catch (e: Exception) {
+                Log.e("ProfileRepository", "Exception during topUpSaldo", e)
+                return@withContext null
+            }
+        }
+    }
+    suspend fun topUpSaldoUserQr(
+        type: String,
+        amount: Int,
+        db: AppDatabase,
+    ): PaymentDataEntity? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: return@withContext null
+
+                val url = URL("https://tv.japrime.id/payment/saldo")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Authorization", token)
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doOutput = true
+
+                val requestBody = JSONObject().apply {
+                    put("method", type)
+                    put("coin", amount)
+                }.toString()
+
+                Log.d("ProfileRepository", "Request Body: $requestBody")
+
+                connection.outputStream.use { outputStream ->
+                    outputStream.write(requestBody.toByteArray())
+                    outputStream.flush()
+                }
+
+                val responseCode = connection.responseCode
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+
+                Log.d("ProfileRepository", "Response Code: $responseCode")
+                Log.d("ProfileRepository", "ini respons dari API Response Body: $responseMessage")
+
+
+                return@withContext getDataTransaction(db = db)
+
+
+            } catch (e: Exception) {
+                Log.e("ProfileRepository", "Exception during topUpSaldo", e)
+                return@withContext null
+            }
+        }
+    }
+
+
     suspend fun getHistoryTransactionVideo(db: AppDatabase): List<PaymentData> {
         return withContext(Dispatchers.IO) {
             try {

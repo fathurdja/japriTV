@@ -17,16 +17,16 @@ interface VideoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertVideoData(videoData: List<VideoData>) // Tambahkan fungsi untuk insert batch
 
-    @Query("SELECT * FROM movie WHERE id = :id")
+    @Query("SELECT * FROM movie WHERE groupid = :id")
     suspend fun getVideoDataById(id: String): VideoData?
     @Query("DELETE FROM movie") // ✅ Tambahkan fungsi ini untuk menghapus semua data
     suspend fun clearVideos()
     @Query("SELECT * FROM movie")
     suspend fun getAllVideoData(): List<VideoData>
-    @Query("SELECT poster FROM movie WHERE id = :id")
-    suspend fun getPosterById(id: String): String?
+    @Query("SELECT idPoster FROM movie WHERE groupid = :groupId")
+    suspend fun getPosterByGroupId(groupId: String): String?
 
-    @Query("SELECT * FROM movie WHERE id = :id")
+    @Query("SELECT * FROM movie WHERE groupid = :id")
     suspend fun getVideoById(id: String): VideoData?
 
 

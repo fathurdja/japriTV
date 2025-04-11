@@ -1,5 +1,7 @@
 package com.example.japritv.ui.components.video
 
+import android.net.Uri
+import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,19 +22,31 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.SimpleExoPlayer
+import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import com.example.japritv.R
 
 
+@OptIn(UnstableApi::class)
 @Composable
 fun VideoPage(
     share: Int,
@@ -45,13 +59,45 @@ fun VideoPage(
     onLikeClick: () -> Unit,
     onBookmarkClick: () -> Unit,
 ) {
+    val local = LocalContext.current
+    val exoPlayer = remember {
+        SimpleExoPlayer.Builder(local).build().apply {
+            val mediaItem = MediaItem.fromUri(Uri.parse(url))
+            setMediaItem(mediaItem)
+            prepare()
+            playWhenReady = true
+        }
+    }
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(20_000)
+        exoPlayer.pause()
+        exoPlayer.seekTo(0)
+    }
+
+    // Release player on dispose
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.release()
+        }
+    }
+
+
     Box(modifier = Modifier.fillMaxSize()) {
         // Background Image
-        AsyncImage(
-            model = url,
-            contentDescription = "Background Image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
+        AndroidView(
+            factory = {
+                PlayerView(it).apply {
+                    player = exoPlayer
+                    useController = false
+                    layoutParams = android.view.ViewGroup.LayoutParams(
+                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                        android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxSize()
+                .zIndex(-1f) // Let content overlay on top
         )
         Column(
             modifier = Modifier.fillMaxHeight(),

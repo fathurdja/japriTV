@@ -108,7 +108,7 @@ fun DetailPembayaranSubsOrCoin(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             when (typePayment) {
-                                "Subscription" -> {
+                                "subscription" -> {
                                     Text("Anggota $tipeSubs", color = Color.Gray)
                                     Text("Rp. ${formatter.format(Amount)}", color = Color.Gray)
                                 }

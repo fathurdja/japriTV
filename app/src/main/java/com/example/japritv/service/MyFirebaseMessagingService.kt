@@ -15,39 +15,60 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
-    override fun onMessageReceived(remoteMessage: RemoteMessage) {
-
-            super.onMessageReceived(remoteMessage)
-
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val notificationId = 1
-            val requestCode = 1
-
-            val channelId = "Firebase Messaging ID"
-            val channelName = "Firebase Messaging"
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                notificationManager.createNotificationChannel(
-                    NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
-                )
-            }
-
-            val intent = Intent(this, MainActivity::class.java)
-            val pendingIntentFlag = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) 0 else PendingIntent.FLAG_IMMUTABLE
-            val pendingIntent = PendingIntent.getActivity(this, requestCode, intent, pendingIntentFlag)
-
-            val notification = NotificationCompat.Builder(this, channelId)
-                .setContentTitle(remoteMessage.notification?.title)
-                .setContentText(remoteMessage.notification?.body)
-                .setSmallIcon(R.drawable.japripay)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
-                .build()
-
-            notificationManager.notify(notificationId, notification)
-
-
-        // ...
+    fun formatRupiah(amount: String?): String {
+        return try {
+            val number = amount?.toDoubleOrNull() ?: return "Rp0"
+            val format = java.text.NumberFormat.getCurrencyInstance(java.util.Locale("in", "ID"))
+            format.format(number)
+        } catch (e: Exception) {
+            "Rp0"
+        }
     }
+    override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        super.onMessageReceived(remoteMessage)
+
+        Log.d(TAG, "FCM Received!")
+        Log.d(TAG, "FCM Data: ${remoteMessage.data}")
+        Log.d(TAG, "FCM Notification Title: ${remoteMessage.notification?.title}")
+        Log.d(TAG, "FCM Notification Body: ${remoteMessage.notification?.body}")
+
+        // Ambil dari data, bukan notification
+        val data = remoteMessage.data
+        val title = data["status"] ?: "Notifikasi"
+        val body = "Pembayaran sebesar ${formatRupiah(data["amount"])} dengan ref ${data["ref"]}"
+
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationId = 1
+        val channelId = "Firebase Messaging ID"
+        val channelName = "Firebase Messaging"
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val intent = Intent(this, MainActivity::class.java)
+        val pendingIntentFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, pendingIntentFlag)
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle(title) // ✅ Dari data["status"]
+            .setContentText(body)   // ✅ Tampilkan info pembayaran
+            .setSmallIcon(R.drawable.japripay)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build()
+
+        notificationManager.notify(notificationId, notification)
+
+
+
+    }
+
+
+
 
     override fun onNewToken(token: String) {
         Log.d(TAG, "Refreshed token: $token")
