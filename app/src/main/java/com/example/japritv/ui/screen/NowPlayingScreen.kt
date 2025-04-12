@@ -1,5 +1,6 @@
 package com.example.japritv.ui.screen
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
@@ -34,6 +35,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.japritv.R
 import com.example.japritv.dao.AppDatabase
 import com.example.japritv.model.Video
+import com.example.japritv.ui.components.ContentwatchFailed
 import com.example.japritv.ui.components.HeaderRightWithIcon
 import com.example.japritv.ui.components.video.ActionButtons
 import com.example.japritv.ui.components.video.ContainerEpisode
@@ -43,19 +45,26 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.example.japritv.utils.downloadVideoToCache
 import com.example.japritv.utils.shareVideo
+import com.example.japritv.viewmodel.UserViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun VideoVerticalPagerScreen(
     viewModel: VideoViewModel,
+    userViewModel: UserViewModel,
     Id: String,
+    index: Int = 0,
     db: AppDatabase,
+    login: () -> Unit,
+    topUpsaldo: () -> Unit,
     onClickBack: () -> Unit
 ) {
     val video by viewModel.selectedVideo.collectAsState()
+    val dataUser by userViewModel.userInfo.collectAsState()
     var showSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     var selectedEpisode by remember { mutableStateOf(1) }
@@ -72,9 +81,8 @@ fun VideoVerticalPagerScreen(
 
     val poster = "https://tv.japrime.id/video/poster/${video?.idPoster}"
     val context = LocalContext.current
-
     val pagerState = rememberPagerState(
-        initialPage = 0,
+        initialPage = index,
         initialPageOffsetFraction = 0f,
         pageCount = { video?.video?.size ?: 0 }
     )
@@ -82,43 +90,78 @@ fun VideoVerticalPagerScreen(
         val targetIndex = video?.video?.indexOfFirst { it.episode == selectedEpisode } ?: 0
         pagerState.animateScrollToPage(targetIndex)
     }
+    LaunchedEffect(Unit) {
+        userViewModel.loadUserInfo()
+        println(userViewModel.userInfo.value)
+    }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        VerticalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize()
-        ) { page ->
-            video?.video?.getOrNull(page)?.let { videoItem ->
-                Box(modifier = Modifier.fillMaxSize()) {
-                    VideoPlayer(
-                        context = context,
-                        videoUrl = "https://tv.japrime.id/video/watch/${videoItem.id}",
-                        thumbnailUrl = poster ?: "",
-                        pagerState = pagerState,
-                        db = db,
-                        onClickEpisode = { showSheet = true },
-                        likes = videoItem.like,
-                        onStartShare = {
-                            isSheetEnabled = true
-                        },
-                        onFinishShare = {
-                            isSheetEnabled = true
-                        }
-                    )
+    if (dataUser == null) {
+        ContentwatchFailed(
+            urlImage = poster ?: "",
+            onClick = { login() },
+            text = "Login Untuk Nonton"
+        )
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.TopStart)
-                            .zIndex(1f)
-                    ) {
-                        HeaderRightWithIcon(
-                            title = "${video!!.title} Episode ${videoItem.episode}",
-                            color = Color.Transparent,
-                            textColor = Color.White,
-                            resId = R.drawable.arrowwhite,
-                            onBackClick = { onClickBack() }
+    } else if (dataUser!!.saldo == 0){
+        ContentwatchFailed(
+            urlImage = poster ?: "",
+            onClick = {topUpsaldo() },
+            text = "Top up Saldo Untuk Nonton"
+        )
+    }
+    else{
+        Column(modifier = Modifier.fillMaxSize()) {
+            VerticalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                video?.video?.getOrNull(page)?.let { videoItem ->
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        VideoPlayer(
+                            context = context,
+                            videoUrl = "https://tv.japrime.id/video/watch/${videoItem.id}",
+                            thumbnailUrl = poster ?: "",
+                            pagerState = pagerState,
+                            db = db,
+                            title = video!!.title,
+                            episode = videoItem.episode,
+                            groupId = video!!.groupid,
+                            posterId = video!!.idPoster,
+                            onLikeClick = { viewModel.likeVideo(db = db, idVideo = videoItem.id) },
+                            onStartShare = {
+                                isSheetEnabled = true
+                            },
+                            onFinishShare = {
+                                isSheetEnabled = true
+                            },
+                            onVideoStarted = { idVideo, title, episode, idGroup, idPoster ->
+                                // Simpan riwayat video yang ditonton
+                                viewModel.saveToHistory(
+                                    videoId = idVideo,
+                                    title = title,
+                                    episode = episode,
+                                    idgroup = idGroup,
+                                    idPoster = idPoster
+                                )
+                            },
+                            onClickEpisode = { showSheet = true},
+                            likes = videoItem.like,
                         )
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.TopStart)
+                                .zIndex(1f)
+                        ) {
+                            HeaderRightWithIcon(
+                                title = "${video!!.title} Episode ${videoItem.episode}",
+                                color = Color.Transparent,
+                                textColor = Color.White,
+                                resId = R.drawable.arrowwhite,
+                                onBackClick = { onClickBack() }
+                            )
+                        }
                     }
                 }
             }
@@ -170,7 +213,13 @@ fun VideoPlayer(
     context: Context,
     pagerState: PagerState,
     db: AppDatabase,
+    title: String,
+    episode: Int,
+    groupId: String,
+    posterId: String,
+    onVideoStarted: (String, String, Int, String, String) -> Unit,
     onClickEpisode: () -> Unit,
+    onLikeClick: () -> Unit,
     likes: Int,
     onStartShare: () -> Unit,
     onFinishShare: () -> Unit
@@ -219,6 +268,13 @@ fun VideoPlayer(
 
         exoPlayer = player
         isPlaying = true
+        onVideoStarted(
+            videoUrl.substringAfterLast("/"), // idVideo
+            title,                            // judul video
+            episode,                          // episode
+            groupId,                          // idGroup
+            posterId                          // posterId
+        )
     }
 
     // Release on dispose
@@ -332,7 +388,7 @@ fun VideoPlayer(
         ) {
             ActionButtons(
                 onBookmarkClick = { /* TODO */ },
-                onLikeClick = { /* TODO */ },
+                onLikeClick = {  onLikeClick() },
                 onEpisodesClick = { onClickEpisode() },
                 onShareClick = {
                     coroutineScope.launch {

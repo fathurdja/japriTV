@@ -71,6 +71,15 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
             AuthRepository.getDataLogin(db)
         }
     }
+
+    fun clearMembership() {
+        _selectedMembership.value = null
+    }
+
+    fun clearKoin() {
+        _selectedkoin.value = 0
+    }
+
     fun getRole(db: AppDatabase){
         viewModelScope.launch {
             _roleAccount.value = db.loginInfoDao().getRoleAccount()

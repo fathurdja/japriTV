@@ -90,6 +90,8 @@ object AuthRepository {
                     val subscriptionLevel = subscriptionJson?.optString("level")
                     val subscriptionStartDate = subscriptionJson?.optString("start_date")
                     val subscriptionEndDate = subscriptionJson?.optString("end_date")
+                    val subscriptionExpired = subscriptionJson?.optBoolean("expired")
+
 
                     val loginInfo = LoginInfo(
                         tokenAuth = idToken ?: "",
@@ -105,7 +107,8 @@ object AuthRepository {
                         role = role,
                         subscriptionLevel = subscriptionLevel,
                         subscriptionStartDate = subscriptionStartDate,
-                        subscriptionEndDate = subscriptionEndDate
+                        subscriptionEndDate = subscriptionEndDate,
+                        subscriptionExpired = subscriptionExpired
                     )
 
                     db.loginInfoDao().saveLoginInfo(loginInfo)

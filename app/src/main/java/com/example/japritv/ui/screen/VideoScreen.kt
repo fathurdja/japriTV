@@ -28,12 +28,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.SimpleExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import com.example.japritv.R
+import com.example.japritv.dao.AppDatabase
 import com.example.japritv.model.ResponseVideo
 import com.example.japritv.ui.components.video.ContainerEpisode
 import com.example.japritv.ui.components.video.VideoPage
@@ -43,49 +45,73 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 
 import kotlinx.coroutines.delay
 
+@OptIn(UnstableApi::class)
 @kotlin.OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-
-fun VideoScreen(viewModel: VideoViewModel,navController: NavController) {
+fun VideoScreen(viewModel: VideoViewModel,navController: NavController,db: AppDatabase) {
     val videoList by viewModel.dataList.collectAsState()
     val context = LocalContext.current
-
-    val pagerState = rememberPagerState(
-        initialPage = 0,
-        initialPageOffsetFraction = 0f,
-        pageCount = { videoList.size }
-    )
-
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { videoList.size })
     var showSheet by remember { mutableStateOf(false) }
     var selectedEpisode by remember { mutableStateOf(1) }
-
     val sheetState = rememberModalBottomSheetState()
-
+    val playerMap = remember { mutableMapOf<Int, SimpleExoPlayer>() }
     Column {
         VerticalPager(
             modifier = Modifier.fillMaxSize(),
-            state = pagerState,
+            state = pagerState
         ) { page ->
             if (videoList.isNotEmpty()) {
+                val isCurrentPage = pagerState.currentPage == page
                 val video = videoList[page].video.find { it.episode == selectedEpisode }
                 val videoId = video?.id ?: ""
                 val videoUrl = "https://tv.japrime.id/video/preview/$videoId"
-                val like = video?.like
+
+                val player = remember(page) {
+                    SimpleExoPlayer.Builder(context).build().also { playerMap[page] = it }
+                }
+
+                LaunchedEffect(isCurrentPage, videoUrl) {
+                    val mediaItem = MediaItem.Builder()
+                        .setUri(Uri.parse(videoUrl))
+                        .setMimeType(MimeTypes.APPLICATION_MP4)
+                        .build()
+
+                    player.setMediaItem(mediaItem)
+                    player.prepare()
+                    player.playWhenReady = isCurrentPage
+
+                    if (!isCurrentPage) {
+                        player.pause()
+                    }
+                }
+
+                DisposableEffect(Unit) {
+                    onDispose {
+                        player.release()
+                        playerMap.remove(page)
+                    }
+                }
 
                 VideoPage(
+                    player = player,
                     share = 0,
-                    like = like!!,
+                    like = video?.like ?: 0,
                     judul = videoList[page].title,
                     deskripsi = "",
-                    url = videoUrl,
-                    onClick = { navController.navigate("nowPlaying/${video.id}") },
+                    onClick = { navController.navigate("nowPlaying/$videoId") },
                     onEpisodeClick = { showSheet = true },
-                    onLikeClick = {},
+                    onLikeClick = {
+                        video?.let {
+                            viewModel.likeVideo(db = db, idVideo = it.id)
+                        }
+                    },
                     onBookmarkClick = {}
                 )
             }
         }
     }
+
 
     // Bottom Sheet untuk memilih episode
     if (showSheet && pagerState.currentPage in videoList.indices) {

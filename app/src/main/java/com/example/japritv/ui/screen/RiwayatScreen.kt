@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 
@@ -34,9 +36,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.japritv.R
 import com.example.japritv.ui.components.CustomBoxButton
 import com.example.japritv.ui.components.Header
+import com.example.japritv.ui.components.ShowHistorySection
 import com.example.japritv.ui.components.home.ShowsGridSection
 import com.example.japritv.ui.components.video.ModalityContainer
 import com.example.japritv.viewmodel.VideoViewModel
@@ -44,8 +50,8 @@ import com.example.japritv.viewmodel.VideoViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun RiwayatScreen(videoViewModel: VideoViewModel,onClick: (String, String) -> Unit) {
-    val riwayatMovies by videoViewModel.dataList.collectAsState()
+fun RiwayatScreen(videoViewModel: VideoViewModel,onClick: (String, String) -> Unit,navController: NavController) {
+    val historyList by videoViewModel.historyList.collectAsState(initial = emptyList())
     val sheetState = rememberModalBottomSheetState()
 
     val scope = rememberCoroutineScope()
@@ -71,15 +77,38 @@ fun RiwayatScreen(videoViewModel: VideoViewModel,onClick: (String, String) -> Un
         },
 
         ) {
-        Box(
-            modifier = Modifier.padding(
-                top = 70.dp
-            )
-        ) {
-            ShowsGridSection(
-                riwayatMovies,
-                onClick = {  showSheet = true  }
-            )
+        if (historyList.isEmpty()){
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.video_slash_icon_1),
+                        contentDescription = "Not Found",
+                        modifier = Modifier.fillMaxWidth(0.6f)
+                    )
+                    Text(
+                        text = "konten tidak ditemukan",
+                        color = Color.White
+                    )
+                }
+            }
+        }else{
+            Box(
+                modifier = Modifier.padding(
+                    top = 70.dp
+                )
+            ) {
+                ShowHistorySection(
+                    historyList,
+                    onClick = {id ,index-> navController.navigate("nowPlayingHistory/$id/$index")   }
+                )
+            }
         }
 
         if (showSheet) {

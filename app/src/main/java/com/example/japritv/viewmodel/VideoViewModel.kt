@@ -10,9 +10,11 @@ import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
+import com.example.japritv.Repository.ProfileRepository
 import com.example.japritv.Repository.VideoRepository
 import com.example.japritv.dao.AppDatabase
 import com.example.japritv.dao.VideoData
+import com.example.japritv.dao.historyEntity
 
 
 import com.example.japritv.model.ResponseVideo
@@ -23,6 +25,7 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -62,6 +65,7 @@ class VideoViewModel(private val videoRepository: VideoRepository, private val d
     private val _poster = MutableStateFlow<String?>(null)
     val poster: StateFlow<String?> = _poster
 
+    val historyList: Flow<List<historyEntity>> = db.historyDao().getAllHistory()
     private val client = HttpClient {
         install(ContentNegotiation) {
             json(Json {
@@ -71,7 +75,24 @@ class VideoViewModel(private val videoRepository: VideoRepository, private val d
             })
         }
     }
-
+    fun saveToHistory(videoId: String, title: String, episode: Int,idgroup:String,idPoster:String) {
+        viewModelScope.launch {
+            val history = historyEntity(
+                idGroup = idgroup ,
+                title = title,
+                poster = idPoster,
+                episode = episode,
+                idVideo = videoId,
+                timestamp = System.currentTimeMillis()
+            )
+            db.historyDao().insertHistory(history)
+        }
+    }
+    fun likeVideo(db: AppDatabase,idVideo: String){
+        viewModelScope.launch {
+            ProfileRepository.likeVideo(db,idVideo)
+        }
+    }
 
     fun getPoster(id: String) {
         viewModelScope.launch {
@@ -130,8 +151,17 @@ class VideoViewModel(private val videoRepository: VideoRepository, private val d
 
                         val isDifferent = videosFromRoom.size != response.data.size ||
                                 videosFromRoom.zip(response.data).any { (roomVideo, apiVideo) ->
-                                    roomVideo.groupid != apiVideo.idgroup || roomVideo.title != apiVideo.title
+                                    roomVideo.groupid != apiVideo.idgroup ||
+                                            roomVideo.title != apiVideo.title ||
+                                            roomVideo.video.size != apiVideo.video.size ||
+                                            roomVideo.video.zip(apiVideo.video).any { (roomEp, apiEp) ->
+                                                roomEp.id != apiEp.id ||
+                                                        roomEp.episode != apiEp.episode ||
+                                                        roomEp.view != apiEp.view ||
+                                                        roomEp.like != apiEp.like
+                                            }
                                 }
+
 
                         if (isDifferent) {
                             println("Ada perubahan data, memperbarui Room Database...")

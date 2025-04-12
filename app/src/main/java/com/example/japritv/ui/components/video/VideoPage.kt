@@ -24,6 +24,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,60 +50,33 @@ import com.example.japritv.R
 @OptIn(UnstableApi::class)
 @Composable
 fun VideoPage(
+    player: SimpleExoPlayer,
     share: Int,
     like: Int,
     judul: String,
     deskripsi: String,
-    url: String,
     onClick: () -> Unit,
     onEpisodeClick: () -> Unit,
     onLikeClick: () -> Unit,
     onBookmarkClick: () -> Unit,
 ) {
-    val local = LocalContext.current
-    val exoPlayer = remember {
-        SimpleExoPlayer.Builder(local).build().apply {
-            val mediaItem = MediaItem.fromUri(Uri.parse(url))
-            setMediaItem(mediaItem)
-            prepare()
-            playWhenReady = true
-        }
-    }
-    LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(20_000)
-        exoPlayer.pause()
-        exoPlayer.seekTo(0)
-    }
-
-    // Release player on dispose
-    DisposableEffect(Unit) {
-        onDispose {
-            exoPlayer.release()
-        }
-    }
-
+    val isLiked = remember { mutableStateOf(false) }
+    val isBookmarked = remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Background Image
         AndroidView(
             factory = {
                 PlayerView(it).apply {
-                    player = exoPlayer
+                    this.player = player
                     useController = false
-                    layoutParams = android.view.ViewGroup.LayoutParams(
-                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                        android.view.ViewGroup.LayoutParams.MATCH_PARENT
-                    )
                 }
             },
             modifier = Modifier
                 .fillMaxSize()
-                .zIndex(-1f) // Let content overlay on top
+                .zIndex(-1f)
         )
-        Column(
-            modifier = Modifier.fillMaxHeight(),
-        ) {
-            // Overlay Details
+
+        Column(modifier = Modifier.fillMaxHeight()) {
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -114,7 +88,6 @@ fun VideoPage(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Bottom
-
                 ) {
                     Column(modifier = Modifier.weight(4f)) {
                         Text(
@@ -139,23 +112,24 @@ fun VideoPage(
                             verticalArrangement = Arrangement.SpaceBetween,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            IconWithText(
-                                iconRes = R.drawable.vector__13_,
-                                text = share.toString(),
-                                onClick = onBookmarkClick
-                            )
+                            IconWithText(iconRes = R.drawable.vector__13_, text = "",onClick = {
+                                isBookmarked.value = !isBookmarked.value
+                                onBookmarkClick()
+                            },
+                                tint = if (isBookmarked.value) Color.Red else Color.White)
                             Spacer(modifier = Modifier.height(24.dp))
-                            IconWithText(iconRes = R.drawable.vector__14_, text = like.toString(),onLikeClick)
+                            IconWithText(iconRes = R.drawable.vector__14_, text = if (isLiked.value)"${like + 1}" else like.toString(),  onClick = {
+                                isLiked.value = !isLiked.value
+                                onLikeClick()
+                            },
+                                tint = if (isLiked.value) Color.Red else Color.White)
                             Spacer(modifier = Modifier.height(24.dp))
-                            IconWithText(
-                                iconRes = R.drawable.playlist_play_icon_1,
-                                text = "Episode",
-                                onClick = onEpisodeClick
-                            )
+                            IconWithText(iconRes = R.drawable.playlist_play_icon_1, text = "Episode", onClick = onEpisodeClick)
                         }
                     }
                 }
             }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -164,15 +138,9 @@ fun VideoPage(
                     .padding(vertical = 12.dp, horizontal = 16.dp)
             ) {
                 Button(
-//                modifier = Modifier.fillMaxHeight()
-//                    .padding(16.dp).height(30.dp),
                     onClick = { onClick() },
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = Color(
-                            android.graphics.Color.parseColor(
-                                "#D22F26"
-                            )
-                        )
+                        backgroundColor = Color(android.graphics.Color.parseColor("#D22F26"))
                     ),
                     shape = RoundedCornerShape(20.dp),
                 ) {
@@ -188,16 +156,14 @@ fun VideoPage(
                             modifier = Modifier.size(12.dp)
                         )
                     }
-
                 }
             }
         }
     }
 }
 
-
 @Composable
-fun IconWithText(iconRes: Int, text: String, onClick: () -> Unit) {
+fun IconWithText(iconRes: Int, text: String, onClick: () -> Unit, tint: Color = Color.White) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.clickable { onClick() }
@@ -205,25 +171,27 @@ fun IconWithText(iconRes: Int, text: String, onClick: () -> Unit) {
         Image(
             painter = painterResource(id = iconRes),
             contentDescription = null,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(24.dp),
+            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(tint)
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(text = text, color = Color.White, fontSize = 13.sp)
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewMovieScreen() {
-    VideoPage(
-        like = 1190,
-        share = 452,
-        judul = "Money Heist: Korea. Joint Economic Area",
-        deskripsi = "Tonton keseruan 8 pencuri melakukan penyanderaan dan mengunci diri di Badan...",
-        onClick = {},
-        url = "https://images.unsplash.com/photo-1506794778208-330ed979da61?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4",
-        onEpisodeClick = {},
-        onBookmarkClick = {},
-        onLikeClick = {}
-    )
-}
+
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewMovieScreen() {
+//    VideoPage(
+//        like = 1190,
+//        share = 452,
+//        judul = "Money Heist: Korea. Joint Economic Area",
+//        deskripsi = "Tonton keseruan 8 pencuri melakukan penyanderaan dan mengunci diri di Badan...",
+//        onClick = {},
+//        onEpisodeClick = {},
+//        onBookmarkClick = {},
+//        onLikeClick = {},
+//        player = SimpleExoPlayer(LocalContext.current)
+//    )
+//}

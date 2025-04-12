@@ -114,7 +114,23 @@ fun NavGraph(
                     viewModel = video,
                     Id = Id,
                     db = db,
-                    onClickBack = { navController.popBackStack() })
+                    onClickBack = { navController.popBackStack() },
+                    userViewModel = userViewModel,
+                    login = {navController.navigate("login")},
+                    topUpsaldo = {navController.navigate("TokoJapri")})
+            }
+            composable("nowPlayingHistory/{Id}/{index}") { backStackEntry ->
+                val Id = backStackEntry.arguments?.getString("Id") ?: return@composable
+                val index = backStackEntry.arguments?.getInt("index") ?: return@composable
+                VideoVerticalPagerScreen(
+                    viewModel = video,
+                    Id = Id,
+                    db = db,
+                    index = index,
+                    onClickBack = { navController.popBackStack() },
+                    userViewModel = userViewModel,
+                    login = {navController.navigate("login")},
+                    topUpsaldo = {navController.navigate("TokoJapri")})
             }
             composable("rating") {
                 RatingScreen(videoViewModel = video)
@@ -125,7 +141,7 @@ fun NavGraph(
         }
 
         // Video and Upload screens
-        composable("video") { VideoScreen(viewModel = video, navController = navController) }
+        composable("video") { VideoScreen(viewModel = video, navController = navController, db = db) }
 
 
         composable("upload") {
@@ -303,11 +319,12 @@ fun NavGraph(
                 videoViewModel = video,
                 onClick = { selectedCoin, selectedPrice ->
                     navController.navigate("MetodeBayarBlack/$selectedCoin/$selectedPrice")
-                })
+                },
+                navController = navController)
         }
         navigation(startDestination = "MetodeBayar", route = "riwayatRoute") {
             composable("MetodeBayarBlack/{coin}/{price}") { backStackEntry ->
-                val viewModel = viewModel<PaymentViewModel>()
+
                 val coin = backStackEntry.arguments?.getString("coin") ?: ""
                 val price = backStackEntry.arguments?.getString("price") ?: ""
 
@@ -323,9 +340,86 @@ fun NavGraph(
                     },
                     content = {
                         MetodeBayarScreen(
-                            viewModel,
+                            paymentViewModel,
                             navigateTo = { type, bank ->
-                                navController.navigate("InstruksiBayarBlack/$coin/$price")
+                                    coroutineScope.launch {
+                                        val level = userViewModel.selectedMembership.value
+                                        val datasubscription = userViewModel.subscriptionInfo.value
+                                        val koin = userViewModel.selectedkoin.value
+                                        if (level != null && koin == 0) {
+                                            paymentViewModel.topUpSaldoSubscription(
+                                                type = type,
+                                                db = db,
+                                                level = level,
+                                                bank = bank,
+                                                onSuccess = {
+                                                    navController.navigate("InstruksiBayarSubscriptionOrCoins")
+                                                },
+                                                onError = {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Gagal Membeli Membership",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            )
+                                            Toast.makeText(
+                                                context,
+                                                "Berhasil Membeli Membership",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else if (
+                                            datasubscription != null
+                                        ) {
+                                            userViewModel.setSubscriptionInfo(
+                                                subscription = datasubscription,
+                                                db = db
+                                            )
+                                            userViewModel.newsubscriptionInfo.value = datasubscription
+                                            println(datasubscription.isPayed)
+                                            Toast.makeText(
+                                                context,
+                                                "Berhasil Mengupdate Membership",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else if (koin != 0 && level == null) {
+                                            paymentViewModel.topUpSaldoKoin(
+                                                type = type,
+                                                amount = koin,
+                                                db = db,
+                                                bank = bank,
+                                                onSuccess = {
+                                                    navController.navigate("InstruksiBayarBlack")
+                                                },
+                                                onError = {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Gagal top up saldo",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            )
+                                        } else {
+                                            Toast.makeText(
+                                                context,
+                                                "Gagal bertransaksi",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+
+
+
+                                        {
+                                            Toast.makeText(
+                                                context,
+                                                "Gagal Membeli Membership",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+
+
+                                    }
+                                navController.navigate("InstruksiBayarBlack")
                             })
                     },
 
@@ -333,7 +427,7 @@ fun NavGraph(
 
 
             }
-            composable("InstruksiBayarBlack/{coin}/{price}") {
+            composable("InstruksiBayarBlack") {
 
                 ScaffoldWithoutButton(
                     containerColor = Color.Black,
@@ -351,7 +445,6 @@ fun NavGraph(
                             colorButton = Color.Black,
                             onClick = { navController.navigate("home") },
                             onClickBack = { navController.popBackStack() },
-
                             paymentViewModel = paymentViewModel,
 
                             )
@@ -397,11 +490,11 @@ fun NavGraph(
                         val koin = userViewModel.selectedkoin.value
                         val selectedMember = userViewModel.selectedMembership.value
                         val nominal = userViewModel.nominal.value
-                        Toast.makeText(
-                            context,
-                            "$koin $selectedMember $nominal ",
-                            Toast.LENGTH_SHORT
-                        ).show()
+//                        Toast.makeText(
+//                            context,
+//                            "$koin $selectedMember $nominal ",
+//                            Toast.LENGTH_SHORT
+//                        ).show()
                     }
 
 
@@ -434,21 +527,21 @@ fun NavGraph(
                                             level = level,
                                             bank = bank,
                                             onSuccess = {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Membership Berhasil di order",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                                 navController.navigate("InstruksiBayarSubscriptionOrCoins")
                                             },
                                             onError = {
                                                 Toast.makeText(
                                                     context,
-                                                    "Gagal Membeli Membership",
+                                                    "Membership Aktif",
                                                     Toast.LENGTH_SHORT
                                                 ).show()
                                             }
                                         )
-                                        Toast.makeText(
-                                            context,
-                                            "Berhasil Membeli Membership",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
                                     } else if (
                                         datasubscription != null
                                     ) {

@@ -29,38 +29,37 @@ class PaymentViewModel(private val db: AppDatabase) : ViewModel() {
     private val _historyTransSubscription = MutableStateFlow<List<PaymentData>?>(null)
     val historyTransSubscription: StateFlow<List<PaymentData>?> = _historyTransSubscription
     private val _historyTransCoin = MutableStateFlow<List<PaymentData>?>(null)
-    val historyTransCoin: StateFlow<List<PaymentData>?> = _historyTransSubscription
+    val historyTransCoin: StateFlow<List<PaymentData>?> = _historyTransCoin
 
     init {
         // Simulasi data dari API
         _paymentMethods.value = listOf(
-            PaymentCategory(
-                title = "Pembayaran Instan / E-Wallet",
-                items = listOf(
-                    PaymentItem(R.drawable.qris, "Qris", ""),
-
-                    ),
-                type = "qr"
-            ),
+//            PaymentCategory(
+//                title = "Pembayaran Instan / E-Wallet",
+//                items = listOf(
+//                    PaymentItem(R.drawable.qris, "Qris", ""),
+//
+//                    ),
+//                type = "qr"
+//            ),
             PaymentCategory(
                 title = "Virtual Account",
                 items = listOf(
-                    PaymentItem(R.drawable.bank_central_asia, "Transfer Bank BCA", "BCA"),
-                    PaymentItem(R.drawable.bank_bni_logo, "Transfer Bank BNI", "BNI"),
+//                    PaymentItem(R.drawable.bank_central_asia, "Transfer Bank BCA", "BCA"),
+//                    PaymentItem(R.drawable.bank_bni_logo, "Transfer Bank BNI", "BNI"),
                     PaymentItem(R.drawable.bank_rakyat_indonesia_logo, "Transfer Bank BRI", "BRI"),
                     PaymentItem(
                         R.drawable.bank_mandiri_logo_2016,
                         "Transfer Bank MANDIRI",
                         "MANDIRI"
                     ),
-                    PaymentItem(R.drawable._09091_1, "Transfer Bank CIMB", "CIMB"),
+//                    PaymentItem(R.drawable._09091_1, "Transfer Bank CIMB", "CIMB"),
 
                     ),
                 type = "va"
             ),
         )
     }
-
     fun getDataTransaction() {
         viewModelScope.launch {
             val transactions = db.temporaryPayment().getLatestPayment()

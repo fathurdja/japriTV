@@ -60,6 +60,7 @@ fun TokoJapriTV(userViewModel: UserViewModel) {
             onCoinSelected = { coin, price ->
                 userViewModel.setKoin(coin.toInt())
                 userViewModel.setNominal(price.replace("Rp ", "").replace(".", "").toInt())
+                userViewModel.clearMembership()
             }
         )
 
@@ -77,7 +78,9 @@ fun TokoJapriTV(userViewModel: UserViewModel) {
         MembershipOptions(
             selectedMembership = selectedMembership ?: "",
             nominal = nominal ?: 0,// Pastikan selectedMembership tidak null
-            onSelect = { userViewModel.setSelectedMembership(it)},
+            onSelect = {
+                userViewModel.setSelectedMembership(it)
+                userViewModel.clearKoin()       },
             harga = { userViewModel.setNominal(it) } // Pastikan fungsi harga menerima nilai
         )
 

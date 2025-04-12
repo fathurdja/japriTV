@@ -98,6 +98,17 @@ fun MainScreen(
     }
 
     LaunchedEffect(currentRoute) {
+        selectedItem = when (currentRoute) {
+            "home" -> 0
+            "video" -> 1
+            "upload" -> 2
+            "history" -> 3
+            "profile" -> 4
+            else -> selectedItem
+        }
+    }
+
+    LaunchedEffect(currentRoute) {
         if (currentRoute == "home" || currentRoute == "profile") {
             coroutineScope.launch {
                 AuthRepository.getDataLogin(db)

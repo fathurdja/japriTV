@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -50,18 +51,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ResourceType", "ContextCastToActivity",
+@SuppressLint(
+    "UnusedMaterial3ScaffoldPaddingParameter", "ResourceType", "ContextCastToActivity",
     "RememberReturnType"
 )
 @Composable
-fun LoginScreen(onClick: () -> Unit,userViewModel: UserViewModel) {
+fun LoginScreen(onClick: () -> Unit, userViewModel: UserViewModel) {
 
 
     val context = LocalContext.current
     val activity = LocalContext.current as? Activity
     val credentialManager: CredentialManager = remember { CredentialManager.create(context) }
     val coroutineScope = rememberCoroutineScope()
-    val googleAuthUiProvider = remember { activity?.let { GoogleAuthUiProvider(it, credentialManager) } }
+    val googleAuthUiProvider =
+        remember { activity?.let { GoogleAuthUiProvider(it, credentialManager) } }
     val db = remember { AppDatabase.getDatabase(context) } // Hindari pemanggilan berulang
     val authTokenDao = remember { db.authTokenDao() }
     val googleAuthFirebase by lazy {
@@ -73,7 +76,7 @@ fun LoginScreen(onClick: () -> Unit,userViewModel: UserViewModel) {
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult(),
         onResult = { result ->
-            if(result.resultCode == RESULT_OK) {
+            if (result.resultCode == RESULT_OK) {
                 coroutineScope.launch {
                     val signInResult = googleAuthFirebase.signInWithIntent(
                         intent = result.data ?: return@launch
@@ -120,7 +123,13 @@ fun LoginScreen(onClick: () -> Unit,userViewModel: UserViewModel) {
                 ) {
                     Column {
                         ButtonLogin(
-                            onClick = { /* Handle Japri Pay login */ },
+                            onClick = {
+                                Toast.makeText(
+                                    context,
+                                    "Login Dengan Japri Pay Belum Tersedia",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            },
                             text = "Login dengan Japri Pay",
                             icon = R.drawable.japripay,
 
@@ -128,7 +137,13 @@ fun LoginScreen(onClick: () -> Unit,userViewModel: UserViewModel) {
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         ButtonLogin(
-                            onClick = { /* Handle Facebook login */ },
+                            onClick = {
+                                Toast.makeText(
+                                    context,
+                                    "Login Dengan Facebook Belum Tersedia",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            },
                             text = "Login dengan Facebook",
                             icon = R.drawable.path14,
                             color = Color(0xFF3E67B5)

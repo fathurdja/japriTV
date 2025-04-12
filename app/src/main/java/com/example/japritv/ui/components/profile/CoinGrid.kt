@@ -48,8 +48,8 @@ fun CoinGrid(
 ) {
     // Data yang akan ditampilkan secara dinamis
     val coinData = listOf(
-        Pair("150", "Rp 15.000"),
-        Pair("200", "Rp 20.000"),
+        Pair("10000", "Rp 10.000"),
+        Pair("20000", "Rp 20.000"),
 
     )
 

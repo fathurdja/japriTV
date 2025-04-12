@@ -264,32 +264,25 @@ object ProfileRepository {
             }
         }
     }
-    suspend fun getVideoUploaded(db: AppDatabase): UploadVideoGroupData? {
+    suspend fun likeVideo(db: AppDatabase,idVideo: String): Boolean? {
         return withContext(Dispatchers.IO) {
             try {
                 val authInfo = db.authTokenDao().getToken()
                 val token = authInfo?.token ?: ""
                 Log.d("UploadVideoRepository", "Token: $token")
 
-                val url = URL("https://tv.japrime.id/creator/upload")
+                val url = URL("https://tv.japrime.id/video/like/{$idVideo}")
                 val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "GET"
+                connection.requestMethod = "POST"
                 connection.setRequestProperty("Authorization", token)
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doOutput = false
 
                 val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
                 Log.d("UploadVideoRepository", "Response Body: $responseMessage")
+                return@withContext true
 
-                val gson = Gson()
-                val videoResponse = gson.fromJson(responseMessage, UploadVideoResponse::class.java)
 
-                return@withContext if (videoResponse.success == true && videoResponse.data != null) {
-                    videoResponse.data
-                } else {
-                    Log.e("UploadVideoRepository", "API returned success = false or data is null")
-                    null
-                }
             } catch (e: FileNotFoundException) {
                 Log.e("UploadVideoRepository", "Endpoint not found! Check your API URL.", e)
                 null
@@ -514,27 +507,28 @@ object ProfileRepository {
                     val invoiceObject = dataObject.optJSONObject("invoice") ?: JSONObject()
                     val detailObject = dataObject.optJSONObject("detail") ?: JSONObject()
                     val name = dataObject.optString("name", "")
+                    val type = dataObject.optString("type", "")
 
                     val paymentData = PaymentData(
                         id = dataObject.optString("_id", ""),
                         name = name,
-                        type = dataObject.optString("type", ""),
+                        type = type,
                         status = dataObject.optString("status", ""),
                         createdAt = dataObject.optString("createdAt", ""),
                         updatedAt = dataObject.optString("updatedAt", ""),
                         userName = userObject.optString("name", ""),
                         bank = detailObject.optString("bank", ""),
                         amount = detailObject.optInt("amount", 0),
-                        unique = if (name == "coin") detailObject.optInt("unique", 0) else 0,
-                        serverFee = if (name == "coin") detailObject.optInt("server_fee", 0) else 0,
+                        unique = if (type == "coin") detailObject.optInt("unique", 0) else 0,
+                        serverFee = if (type == "coin") detailObject.optInt("server_fee", 0) else 0,
                         admin = detailObject.optInt("admin", 0),
                         totalAmount = detailObject.optInt("total_amount", 0),
                         invoiceId = invoiceObject.optString("id", ""),
                         vaNumber = invoiceObject.optString("va_number", ""),
                         vaName = invoiceObject.optString("va_name", ""),
-                        level = if (name == "subscription") detailObject.optString("level", "") else null,
-                        idVideo = if (name == "video") detailObject.optString("id_video", "") else null,
-                        totalEpisode = if (name == "video") detailObject.optInt("total_episode", 0) else null
+                        level = if (type == "subscription") detailObject.optString("level", "") else null,
+                        idVideo = if (type == "video") detailObject.optString("id_video", "") else null,
+                        totalEpisode = if (type== "video") detailObject.optInt("total_episode", 0) else null
                     )
                     paymentList.add(paymentData)
                 }
@@ -572,27 +566,28 @@ object ProfileRepository {
                     val invoiceObject = dataObject.optJSONObject("invoice") ?: JSONObject()
                     val detailObject = dataObject.optJSONObject("detail") ?: JSONObject()
                     val name = dataObject.optString("name", "")
+                    val type = dataObject.optString("type", "")
 
                     val paymentData = PaymentData(
                         id = dataObject.optString("_id", ""),
                         name = name,
-                        type = dataObject.optString("type", ""),
+                        type = type,
                         status = dataObject.optString("status", ""),
                         createdAt = dataObject.optString("createdAt", ""),
                         updatedAt = dataObject.optString("updatedAt", ""),
                         userName = userObject.optString("name", ""),
                         bank = detailObject.optString("bank", ""),
                         amount = detailObject.optInt("amount", 0),
-                        unique = if (name == "coin") detailObject.optInt("unique", 0) else 0,
-                        serverFee = if (name == "coin") detailObject.optInt("server_fee", 0) else 0,
+                        unique = if (type == "coin") detailObject.optInt("unique", 0) else 0,
+                        serverFee = if (type == "coin") detailObject.optInt("server_fee", 0) else 0,
                         admin = detailObject.optInt("admin", 0),
                         totalAmount = detailObject.optInt("total_amount", 0),
                         invoiceId = invoiceObject.optString("id", ""),
                         vaNumber = invoiceObject.optString("va_number", ""),
                         vaName = invoiceObject.optString("va_name", ""),
-                        level = if (name == "subscription") detailObject.optString("level", "") else null,
-                        idVideo = if (name == "video") detailObject.optString("id_video", "") else null,
-                        totalEpisode = if (name == "video") detailObject.optInt("total_episode", 0) else null
+                        level = if (type == "subscription") detailObject.optString("level", "") else null,
+                        idVideo = if (type == "video") detailObject.optString("id_video", "") else null,
+                        totalEpisode = if (type== "video") detailObject.optInt("total_episode", 0) else null
                     )
                     paymentList.add(paymentData)
                 }
@@ -630,27 +625,28 @@ object ProfileRepository {
                     val invoiceObject = dataObject.optJSONObject("invoice") ?: JSONObject()
                     val detailObject = dataObject.optJSONObject("detail") ?: JSONObject()
                     val name = dataObject.optString("name", "")
+                    val type = dataObject.optString("type", "")
 
                     val paymentData = PaymentData(
                         id = dataObject.optString("_id", ""),
                         name = name,
-                        type = dataObject.optString("type", ""),
+                        type = type,
                         status = dataObject.optString("status", ""),
                         createdAt = dataObject.optString("createdAt", ""),
                         updatedAt = dataObject.optString("updatedAt", ""),
                         userName = userObject.optString("name", ""),
                         bank = detailObject.optString("bank", ""),
                         amount = detailObject.optInt("amount", 0),
-                        unique = if (name == "coin") detailObject.optInt("unique", 0) else 0,
-                        serverFee = if (name == "coin") detailObject.optInt("server_fee", 0) else 0,
+                        unique = if (type == "coin") detailObject.optInt("unique", 0) else 0,
+                        serverFee = if (type == "coin") detailObject.optInt("server_fee", 0) else 0,
                         admin = detailObject.optInt("admin", 0),
                         totalAmount = detailObject.optInt("total_amount", 0),
                         invoiceId = invoiceObject.optString("id", ""),
                         vaNumber = invoiceObject.optString("va_number", ""),
                         vaName = invoiceObject.optString("va_name", ""),
-                        level = if (name == "subscription") detailObject.optString("level", "") else null,
-                        idVideo = if (name == "video") detailObject.optString("id_video", "") else null,
-                        totalEpisode = if (name == "video") detailObject.optInt("total_episode", 0) else null
+                        level = if (type == "subscription") detailObject.optString("level", "") else null,
+                        idVideo = if (type == "video") detailObject.optString("id_video", "") else null,
+                        totalEpisode = if (type== "video") detailObject.optInt("total_episode", 0) else null
                     )
                     paymentList.add(paymentData)
                 }

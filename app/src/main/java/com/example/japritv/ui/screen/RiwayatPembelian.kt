@@ -63,6 +63,11 @@ fun RiwayatPembelian(
         paymentViewModel.getHistoryTransactionCoin()
         delay(300) // Delay agar loading muncul sebentar
         isLoading = false
+
+        println(historyCoin)
+        println(historySubscription)
+        println(historyVideo)
+
     }
 
     fun formatDate(rawDate: String): String {
@@ -144,7 +149,7 @@ fun RiwayatPembelian(
                                 else -> "Unknown"
                             } ,
                             date = formatDate(item.createdAt),
-                            harga = "Rp ${item.amount}",
+                            harga = "Rp ${item.totalAmount}",
                             image = when (selectedMenu) {
                                 "Pembelian Koin" -> R.drawable.crown
                                 "Pembelian Keanggotaan" -> R.drawable.crown // ganti dengan icon coin jika ada

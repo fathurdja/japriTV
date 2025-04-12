@@ -113,7 +113,7 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
                         onClick = { navController.navigate("login") }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    if (userInfo?.subscriptionLevel != null) {
+                    if (userInfo?.subscriptionExpired == false) {
                         MembershipCard(
                             level = subscription!!,
                             endDate = date!!,
