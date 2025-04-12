@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.japritv.R
 import com.example.japritv.Repository.ProfileRepository
+import com.example.japritv.converters.PaymentBankConverter
 import com.example.japritv.dao.AppDatabase
 import com.example.japritv.dao.PaymentDataEntity
 import com.example.japritv.model.PaymentData
@@ -32,34 +33,43 @@ class PaymentViewModel(private val db: AppDatabase) : ViewModel() {
     val historyTransCoin: StateFlow<List<PaymentData>?> = _historyTransCoin
 
     init {
-        // Simulasi data dari API
-        _paymentMethods.value = listOf(
-//            PaymentCategory(
-//                title = "Pembayaran Instan / E-Wallet",
-//                items = listOf(
-//                    PaymentItem(R.drawable.qris, "Qris", ""),
-//
-//                    ),
-//                type = "qr"
-//            ),
-            PaymentCategory(
-                title = "Virtual Account",
-                items = listOf(
-//                    PaymentItem(R.drawable.bank_central_asia, "Transfer Bank BCA", "BCA"),
-//                    PaymentItem(R.drawable.bank_bni_logo, "Transfer Bank BNI", "BNI"),
-                    PaymentItem(R.drawable.bank_rakyat_indonesia_logo, "Transfer Bank BRI", "BRI"),
-                    PaymentItem(
-                        R.drawable.bank_mandiri_logo_2016,
-                        "Transfer Bank MANDIRI",
-                        "MANDIRI"
-                    ),
-//                    PaymentItem(R.drawable._09091_1, "Transfer Bank CIMB", "CIMB"),
-
-                    ),
-                type = "va"
-            ),
-        )
+        fetchPaymentConfig()
     }
+
+    private fun fetchPaymentConfig() {
+        viewModelScope.launch {
+            val config = db.paymentDataclass().getConfig()
+            config?.let {
+                val bankList = PaymentBankConverter().toList(it.banks)
+
+                val bankItems = bankList.mapNotNull { bank ->
+                    val status = if (bank.online) "Available" else "Not Available"
+                    when (bank.name.uppercase()) {
+                        "BCA" -> PaymentItem(R.drawable.bank_central_asia, "Transfer Bank BCA", "BCA", bank.online, status)
+                        "BNI" -> PaymentItem(R.drawable.bank_bni_logo, "Transfer Bank BNI", "BNI", bank.online, status)
+                        "BRI" -> PaymentItem(R.drawable.bank_rakyat_indonesia_logo, "Transfer Bank BRI", "BRI", bank.online, status)
+                        "MANDIRI" -> PaymentItem(R.drawable.bank_mandiri_logo_2016, "Transfer Bank Mandiri", "MANDIRI", bank.online, status)
+                        else -> null
+                    }
+                }
+
+                _paymentMethods.value = listOf(
+                    PaymentCategory(
+                        title = "Virtual Account",
+                        items = bankItems,
+                        type = "va"
+                    )
+                    ,
+                    PaymentCategory(
+                        title = "QRIS",
+                        items = listOf(PaymentItem(R.drawable.qris, "QRIS", "QRIS",status = "Not Available")),
+                        type = "qris")
+                )
+            }
+        }
+    }
+
+
     fun getDataTransaction() {
         viewModelScope.launch {
             val transactions = db.temporaryPayment().getLatestPayment()
@@ -90,9 +100,9 @@ class PaymentViewModel(private val db: AppDatabase) : ViewModel() {
         }
     }
 
-    fun deleteTransaction() {
+    fun cancelTransaction(db: AppDatabase,idPayment: String) {
         viewModelScope.launch {
-
+            ProfileRepository.cancelPayment(db = db, idpayment = idPayment)
         }
     }
 
@@ -156,6 +166,13 @@ class PaymentViewModel(private val db: AppDatabase) : ViewModel() {
     }
 }
 
-    // Data class untuk kategori dan item pembayaran
-    data class PaymentCategory(val title: String, val items: List<PaymentItem>, val type: String)
-    data class PaymentItem(val iconRes: Int, val name: String, val value: String)
+// Data class untuk kategori dan item pembayaran
+data class PaymentCategory(val title: String, val items: List<PaymentItem>, val type: String)
+data class PaymentItem(
+    val iconRes: Int,
+    val name: String,
+    val value: String,
+    val online: Boolean = false,
+    val status: String = "Available"
+)
+

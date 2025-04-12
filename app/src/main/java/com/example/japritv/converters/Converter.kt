@@ -1,6 +1,7 @@
 package com.example.japritv.converters
 
 import androidx.room.TypeConverter
+import com.example.japritv.model.BankList
 import com.example.japritv.model.Video
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -19,5 +20,16 @@ class Converter {
     @TypeConverter
     fun fromJsonToVideoList(videosJson: String): List<Video> {
         return Json.decodeFromString(videosJson)  // Correctly deserialize JSON string to List<Video>
+    }
+
+    @TypeConverter
+    fun fromBankInfoList(value: List<BankList>?): String {
+        return Gson().toJson(value)
+    }
+
+    @TypeConverter
+    fun toBankInfoList(value: String): List<BankList> {
+        val listType = object : TypeToken<List<BankList>>() {}.type
+        return Gson().fromJson(value, listType)
     }
 }

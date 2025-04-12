@@ -48,7 +48,7 @@ import kotlinx.coroutines.delay
 @OptIn(UnstableApi::class)
 @kotlin.OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun VideoScreen(viewModel: VideoViewModel,navController: NavController,db: AppDatabase) {
+fun VideoScreen(viewModel: VideoViewModel,onClick: (String) -> Unit,db: AppDatabase) {
     val videoList by viewModel.dataList.collectAsState()
     val context = LocalContext.current
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { videoList.size })
@@ -63,6 +63,7 @@ fun VideoScreen(viewModel: VideoViewModel,navController: NavController,db: AppDa
         ) { page ->
             if (videoList.isNotEmpty()) {
                 val isCurrentPage = pagerState.currentPage == page
+                val idGroup = videoList[page].groupid
                 val video = videoList[page].video.find { it.episode == selectedEpisode }
                 val videoId = video?.id ?: ""
                 val videoUrl = "https://tv.japrime.id/video/preview/$videoId"
@@ -99,7 +100,7 @@ fun VideoScreen(viewModel: VideoViewModel,navController: NavController,db: AppDa
                     like = video?.like ?: 0,
                     judul = videoList[page].title,
                     deskripsi = "",
-                    onClick = { navController.navigate("nowPlaying/$videoId") },
+                    onClick = { onClick(idGroup) },
                     onEpisodeClick = { showSheet = true },
                     onLikeClick = {
                         video?.let {

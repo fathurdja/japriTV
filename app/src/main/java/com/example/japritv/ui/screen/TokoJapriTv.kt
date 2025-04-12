@@ -1,5 +1,6 @@
 package com.example.japritv.ui.screen
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.japritv.R
+import com.example.japritv.dao.AppDatabase
 import com.example.japritv.ui.components.CustomBoxButton
 import com.example.japritv.ui.components.HeaderRightWithIcon
 import com.example.japritv.ui.components.ScaffoldWithButton
@@ -33,12 +36,20 @@ import com.example.japritv.ui.components.profile.Keanggotaan
 import com.example.japritv.viewmodel.UserViewModel
 
 @Composable
-fun TokoJapriTV(userViewModel: UserViewModel) {
+fun TokoJapriTV(userViewModel: UserViewModel,db: AppDatabase) {
     val selectedMembership by userViewModel.selectedMembership.collectAsState()
     val nominal by userViewModel.nominal.collectAsState()
     val selectedCoin by userViewModel.selectedkoin.collectAsState()
 
-
+    var weeklyPrice by remember { mutableStateOf(0) }
+    var monthlyPrice by remember { mutableStateOf(0) }
+    LaunchedEffect(Unit) {
+        val config = db.paymentDataclass().getConfig()
+        config?.let {
+            weeklyPrice = it.subPriceMingguan
+            monthlyPrice = it.subPriceBulanan
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -80,101 +91,95 @@ fun TokoJapriTV(userViewModel: UserViewModel) {
             nominal = nominal ?: 0,// Pastikan selectedMembership tidak null
             onSelect = {
                 userViewModel.setSelectedMembership(it)
-                userViewModel.clearKoin()       },
-            harga = { userViewModel.setNominal(it) } // Pastikan fungsi harga menerima nilai
+                userViewModel.clearKoin()
+            },
+            harga = { userViewModel.setNominal(it) },
+            weeklyPrice = weeklyPrice,
+            monthlyPrice = monthlyPrice // Pastikan fungsi harga menerima nilai
         )
 
-        // Membership Cards
-
-
-
-//       Box(modifier = Modifier.fillMaxWidth().padding(top = 150.dp, start = 20.dp, end = 20.dp)) {
-//
-//              CustomBoxButton(
-//                  colorBackground = Color(0xFF6B6B6B),
-//                  colorText = Color.White,
-//                  title = "lanjut ke Pembayaran",
-//                  onClick = {},
-//                  modifier = Modifier.align(Alignment.BottomCenter)
-//              )
-//
-//       }
     }
 }
 
-
+@SuppressLint("DefaultLocale")
+fun Int.formatRupiah(): String {
+    return String.format("%,d", this).replace(',', '.')
+}
 @Composable
-fun MembershipOptions(selectedMembership: String, nominal:Int,onSelect: (String) -> Unit, harga:(Int)->Unit) {
+fun MembershipOptions(selectedMembership: String, nominal:Int,weeklyPrice: Int,
+                      monthlyPrice: Int,onSelect: (String) -> Unit, harga:(Int)->Unit,) {
+
+
     Column(modifier = Modifier.padding(horizontal = 12.dp)) {
         Keanggotaan(
             tipe = "Mingguan",
-            harga = "Rp 100.000",
-            hargaLama = "Rp 99.000",
+            harga = "Rp ${weeklyPrice.formatRupiah()}",
+            hargaLama = "",
             benefits = "Untuk 50 judul video",
             isSelected = selectedMembership == "mingguan",
             onClick = {
                 onSelect("mingguan")
-                harga(100000)
+                harga(weeklyPrice)
             },
-            setharga = nominal == 100000,
-            setHarga = {harga(100000)}
+            setharga = nominal == weeklyPrice,
+            setHarga = {harga(weeklyPrice)}
         )
         Spacer(modifier = Modifier.height(14.dp))
         Keanggotaan(
             tipe = "Bulanan",
-            harga = "Rp 250.000",
-            hargaLama = "Rp 500.000",
+            harga = "Rp ${monthlyPrice.formatRupiah()}",
+            hargaLama = "",
             benefits = "Semua episode bisa ditonton gratis",
             isSelected = selectedMembership == "bulanan",
             onClick = {
                 onSelect("bulanan")
-                harga(250000)},
-            setharga = nominal == 250000,
-             setHarga = {harga(250000)}
+                harga(monthlyPrice)},
+            setharga = nominal == monthlyPrice,
+             setHarga = {harga(monthlyPrice)}
         )
     }
 }
-@Preview
-@Composable
-private fun TokoJapriTvPreview() {
-    val userViewModel:UserViewModel = viewModel()
-    val navController= rememberNavController()
-    ScaffoldWithButton(
-        navController = navController ,
-        containerColor = Color.Black,
-        navigationRoute = "",
-        content = {TokoJapriTV(userViewModel)},
-        titleButton = "Lanjut Ke Pembayaran",
-        contentTop = {HeaderRightWithIcon(
-            title = "Toko Japri Tv",
-            color = Color.Black,
-            textColor = Color.White,
-            resId = R.drawable.vector__9_,
-            onBackClick = {}
-        )},
-        colorButton = Color.Red,
-        colorTextButton = Color.White,
-        modifier = Modifier,
-        onClick = {}
-    )
-}
-@Preview
-@Composable
-private fun TokoJapriTvPreview2() {
-    val userViewModel:UserViewModel = viewModel()
-    val navController= rememberNavController()
-    ScaffoldWithoutButton(
-        containerColor = Color.Black,
-        content = {TokoJapriTV(userViewModel
-
-        )},
-        contentTop = { HeaderRightWithIcon(
-            title = "Toko Japri Tv",
-            color = Color.Black,
-            textColor = Color.White,
-            resId = R.drawable.arrowwhite,
-            onBackClick = {}
-        ) }
-    )
-}
+//@Preview
+//@Composable
+//private fun TokoJapriTvPreview() {
+//    val userViewModel:UserViewModel = viewModel()
+//    val navController= rememberNavController()
+//    ScaffoldWithButton(
+//        navController = navController ,
+//        containerColor = Color.Black,
+//        navigationRoute = "",
+//        content = {TokoJapriTV(userViewModel)},
+//        titleButton = "Lanjut Ke Pembayaran",
+//        contentTop = {HeaderRightWithIcon(
+//            title = "Toko Japri Tv",
+//            color = Color.Black,
+//            textColor = Color.White,
+//            resId = R.drawable.vector__9_,
+//            onBackClick = {}
+//        )},
+//        colorButton = Color.Red,
+//        colorTextButton = Color.White,
+//        modifier = Modifier,
+//        onClick = {}
+//    )
+//}
+//@Preview
+//@Composable
+//private fun TokoJapriTvPreview2() {
+//    val userViewModel:UserViewModel = viewModel()
+//    val navController= rememberNavController()
+//    ScaffoldWithoutButton(
+//        containerColor = Color.Black,
+//        content = {TokoJapriTV(userViewModel
+//
+//        )},
+//        contentTop = { HeaderRightWithIcon(
+//            title = "Toko Japri Tv",
+//            color = Color.Black,
+//            textColor = Color.White,
+//            resId = R.drawable.arrowwhite,
+//            onBackClick = {}
+//        ) }
+//    )
+//}
 

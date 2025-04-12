@@ -42,6 +42,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun InstruksiBayarScreen(
     modifier: Modifier = Modifier,
+    db :AppDatabase,
     onClick: () -> Unit,
     onClickBack: () -> Unit,
     colortext: Color,
@@ -80,6 +81,8 @@ fun InstruksiBayarScreen(
                         bank = transactionData!!.bank,
                         vaName = transactionData!!.vaName,
                         vaNumber = transactionData!!.vaNumber,
+                        status = transactionData!!.status ?: "Menunggu Pembayaran",
+                        cancel = false
                     )
 
                     Spacer(modifier = Modifier.padding(vertical = 15.dp))
@@ -111,7 +114,10 @@ fun InstruksiBayarScreen(
 
                     CustomBoxButtonBorder(
                         title = "Batalkan Pembayaran",
-                        onClick = { onClickBack() },
+                        onClick = {
+                            paymentViewModel.cancelTransaction(db = db, idPayment = transactionData!!.id)
+                            onClickBack()
+                                  },
                         colorBackground = colorButton,
                         colorText = colortext,
                         modifier = modifier

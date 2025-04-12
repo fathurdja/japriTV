@@ -1,5 +1,6 @@
 package com.example.japritv.ui.screen
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +39,7 @@ import com.example.japritv.ui.components.profile.RiwayatCard
 import com.example.japritv.ui.theme.JapriTvTheme
 import com.example.japritv.viewmodel.PaymentViewModel
 import com.example.japritv.viewmodel.UserViewModel
+import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -154,7 +156,12 @@ fun RiwayatPembelian(
                                 "Pembelian Koin" -> R.drawable.crown
                                 "Pembelian Keanggotaan" -> R.drawable.crown // ganti dengan icon coin jika ada
                                 else -> R.drawable.theaters
-                            }
+                            },
+                            status = item.status,
+                            onClick = {
+                                val json = Uri.encode(Gson().toJson(item))
+                                navController.navigate("instruksi_bayar_screen/$json")},
+                            cancel = item.isCancel ?: false
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }

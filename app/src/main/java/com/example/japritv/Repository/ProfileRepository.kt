@@ -3,7 +3,9 @@ package com.example.japritv.Repository
 import android.util.Log
 import com.example.japritv.Repository.AuthRepository.sendTokenToServer
 import com.example.japritv.dao.AppDatabase
+import com.example.japritv.dao.PaymentConfigEntity
 import com.example.japritv.dao.PaymentDataEntity
+import com.example.japritv.model.BankList
 
 import com.example.japritv.model.PaymentData
 import com.example.japritv.model.UploadVideoData
@@ -14,6 +16,7 @@ import com.example.japritv.model.subscriptionData
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.FileNotFoundException
 import java.net.HttpURLConnection
@@ -76,8 +79,7 @@ object ProfileRepository {
                 val authInfo = db.authTokenDao().getToken()
                 val token = authInfo?.token ?: ""
                 Log.e("ProfileRepository", "Token: $token")
-//                sendTokenToServer(idToken, db, nama, profile)
-                val url = URL("https://tv.japrime.id/payment/subscription")
+                val url = URL("https://tv.japrime.id/payment")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
                 connection.setRequestProperty("Authorization", token)
@@ -85,6 +87,7 @@ object ProfileRepository {
                 connection.doOutput = true
 
                 val requestBody = JSONObject().apply {
+                    put("type", "subscription")
                     put("method", type)
                     put("bank", bank)
                     put("level", level)
@@ -130,7 +133,7 @@ object ProfileRepository {
             try {
                 val authInfo = db.authTokenDao().getToken()
                 val token = authInfo?.token ?: ""
-                val url = URL("https://tv.japrime.id/payment/video")
+                val url = URL("https://tv.japrime.id/payment")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
                 connection.setRequestProperty("Authorization", token)
@@ -138,6 +141,7 @@ object ProfileRepository {
                 connection.doOutput = true
 
                 val requestBody = JSONObject().apply {
+                    put("type", "video")
                     put("method", type)  // Replace with actual creatorId
                     put("bank", bank)// Replace with actual amount if needed
                 }.toString()
@@ -181,7 +185,7 @@ object ProfileRepository {
             try {
                 val authInfo = db.authTokenDao().getToken()
                 val token = authInfo?.token ?: ""
-                val url = URL("https://tv.japrime.id/payment")
+                val url = URL("https://tv.japrime.id/payment/invoice")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 connection.setRequestProperty("Authorization", token)
@@ -292,6 +296,87 @@ object ProfileRepository {
             }
         }
     }
+    suspend fun cancelPayment(db: AppDatabase,idpayment: String): Boolean? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val authInfo = db.authTokenDao().getToken()
+                val token = authInfo?.token ?: ""
+                Log.d("UploadVideoRepository", "Token: $token")
+
+                val url = URL("https://tv.japrime.id/payment/invoice")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Authorization", token)
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doOutput = false
+                val requestBody = JSONObject().apply {
+                    put("action", "CANCELED")
+                    put("method", idpayment)
+                }.toString()
+                connection.outputStream.use { outputStream ->
+                    outputStream.write(requestBody.toByteArray())
+                    outputStream.flush()
+                }
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+                Log.d("payment Canceled", "Response Body: $responseMessage")
+                return@withContext true
+
+
+            } catch (e: FileNotFoundException) {
+                Log.e("UploadVideoRepository", "Endpoint not found! Check your API URL.", e)
+                null
+            } catch (e: Exception) {
+                Log.e("UploadVideoRepository", "Error fetching videos", e)
+                null
+            }
+        }
+    }
+
+    suspend fun fetchAndStorePaymentConfig(db: AppDatabase): PaymentConfigEntity? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = URL("https://tv.japrime.id/service")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Content-Type", "application/json")
+
+                val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
+                val json = JSONObject(responseMessage).optJSONObject("data") ?: return@withContext null
+
+                val subscription = json.getJSONObject("subscription")
+                val subPrice = subscription.getJSONObject("price")
+                val subValidity = subscription.getJSONObject("validity")
+
+                val payment = json.getJSONObject("payment")
+
+                val paymentTypesArray = payment.getJSONArray("type")
+                val paymentMethodsArray = payment.getJSONArray("method")
+                val banksArray = payment.getJSONArray("bank")
+
+                val banksJsonArray = JSONArray()
+                for (i in 0 until banksArray.length()) {
+                    val bank = banksArray.getJSONObject(i)
+                    banksJsonArray.put(bank)
+                }
+
+                val config = PaymentConfigEntity(
+                    subPriceMingguan = subPrice.optInt("mingguan", 0),
+                    subPriceBulanan = subPrice.optInt("bulanan", 0),
+                    subValidityMingguan = subValidity.optInt("mingguan", 0),
+                    subValidityBulanan = subValidity.optInt("bulanan", 0),
+                    paymentTypes = paymentTypesArray.toString(),
+                    paymentMethods = paymentMethodsArray.toString(),
+                    banks = banksJsonArray.toString()
+                )
+
+                db.paymentDataclass().insertConfig(config)
+                config
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+    }
 
 
     suspend fun topUpSaldo(
@@ -305,7 +390,7 @@ object ProfileRepository {
                 val authInfo = db.authTokenDao().getToken()
                 val token = authInfo?.token ?: return@withContext null
 
-                val url = URL("https://tv.japrime.id/payment/coin")
+                val url = URL("https://tv.japrime.id/payment")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
                 connection.setRequestProperty("Authorization", token)
@@ -313,6 +398,7 @@ object ProfileRepository {
                 connection.doOutput = true
 
                 val requestBody = JSONObject().apply {
+                    put("type", "coin")
                     put("method", type)
                     put("coin", amount)
                     put("bank", bank)
@@ -351,7 +437,7 @@ object ProfileRepository {
                 val authInfo = db.authTokenDao().getToken()
                 val token = authInfo?.token ?: return@withContext null
 
-                val url = URL("https://tv.japrime.id/payment/coin")
+                val url = URL("https://tv.japrime.id/payment")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
                 connection.setRequestProperty("Authorization", token)
@@ -359,6 +445,7 @@ object ProfileRepository {
                 connection.doOutput = true
 
                 val requestBody = JSONObject().apply {
+                    put("type", "coin")
                     put("method", type)
                     put("coin", amount)
                 }.toString()
@@ -486,7 +573,7 @@ object ProfileRepository {
             try {
                 val authInfo = db.authTokenDao().getToken()
                 val token = authInfo?.token ?: ""
-                val url = URL("https://tv.japrime.id/payment/video")
+                val url = URL("https://tv.japrime.id/payment?type=video")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 connection.setRequestProperty("Authorization", token)
@@ -513,22 +600,23 @@ object ProfileRepository {
                         id = dataObject.optString("_id", ""),
                         name = name,
                         type = type,
-                        status = dataObject.optString("status", ""),
+                        status = invoiceObject.optString("status", ""),
                         createdAt = dataObject.optString("createdAt", ""),
                         updatedAt = dataObject.optString("updatedAt", ""),
                         userName = userObject.optString("name", ""),
-                        bank = detailObject.optString("bank", ""),
+                        bank = invoiceObject.optString("bankShortCode", ""),
                         amount = detailObject.optInt("amount", 0),
                         unique = if (type == "coin") detailObject.optInt("unique", 0) else 0,
                         serverFee = if (type == "coin") detailObject.optInt("server_fee", 0) else 0,
                         admin = detailObject.optInt("admin", 0),
                         totalAmount = detailObject.optInt("total_amount", 0),
                         invoiceId = invoiceObject.optString("id", ""),
-                        vaNumber = invoiceObject.optString("va_number", ""),
-                        vaName = invoiceObject.optString("va_name", ""),
+                        vaNumber = invoiceObject.optString("referenceId", ""),
+                        vaName = invoiceObject.optString("displayName", ""),
                         level = if (type == "subscription") detailObject.optString("level", "") else null,
                         idVideo = if (type == "video") detailObject.optString("id_video", "") else null,
-                        totalEpisode = if (type== "video") detailObject.optInt("total_episode", 0) else null
+                        totalEpisode = if (type== "video") detailObject.optInt("total_episode", 0) else null,
+                        isCancel = dataObject.optBoolean("isCancel", false)
                     )
                     paymentList.add(paymentData)
                 }
@@ -545,7 +633,7 @@ object ProfileRepository {
             try {
                 val authInfo = db.authTokenDao().getToken()
                 val token = authInfo?.token ?: ""
-                val url = URL("https://tv.japrime.id/payment/subscription")
+                val url = URL("https://tv.japrime.id/payment?type=subscription")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 connection.setRequestProperty("Authorization", token)
@@ -572,22 +660,23 @@ object ProfileRepository {
                         id = dataObject.optString("_id", ""),
                         name = name,
                         type = type,
-                        status = dataObject.optString("status", ""),
+                        status = invoiceObject.optString("status", ""),
                         createdAt = dataObject.optString("createdAt", ""),
                         updatedAt = dataObject.optString("updatedAt", ""),
                         userName = userObject.optString("name", ""),
-                        bank = detailObject.optString("bank", ""),
+                        bank = invoiceObject.optString("bankShortCode", ""),
                         amount = detailObject.optInt("amount", 0),
                         unique = if (type == "coin") detailObject.optInt("unique", 0) else 0,
                         serverFee = if (type == "coin") detailObject.optInt("server_fee", 0) else 0,
                         admin = detailObject.optInt("admin", 0),
                         totalAmount = detailObject.optInt("total_amount", 0),
                         invoiceId = invoiceObject.optString("id", ""),
-                        vaNumber = invoiceObject.optString("va_number", ""),
-                        vaName = invoiceObject.optString("va_name", ""),
+                        vaNumber = invoiceObject.optString("referenceId", ""),
+                        vaName = invoiceObject.optString("displayName", ""),
                         level = if (type == "subscription") detailObject.optString("level", "") else null,
                         idVideo = if (type == "video") detailObject.optString("id_video", "") else null,
-                        totalEpisode = if (type== "video") detailObject.optInt("total_episode", 0) else null
+                        totalEpisode = if (type== "video") detailObject.optInt("total_episode", 0) else null,
+                        isCancel = dataObject.optBoolean("isCancel", false)
                     )
                     paymentList.add(paymentData)
                 }
@@ -604,7 +693,7 @@ object ProfileRepository {
             try {
                 val authInfo = db.authTokenDao().getToken()
                 val token = authInfo?.token ?: ""
-                val url = URL("https://tv.japrime.id/payment/coin")
+                val url = URL("https://tv.japrime.id/payment?type=coin")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 connection.setRequestProperty("Authorization", token)
@@ -631,22 +720,23 @@ object ProfileRepository {
                         id = dataObject.optString("_id", ""),
                         name = name,
                         type = type,
-                        status = dataObject.optString("status", ""),
+                        status = invoiceObject.optString("status", ""),
                         createdAt = dataObject.optString("createdAt", ""),
                         updatedAt = dataObject.optString("updatedAt", ""),
                         userName = userObject.optString("name", ""),
-                        bank = detailObject.optString("bank", ""),
+                        bank = invoiceObject.optString("bankShortCode", ""),
                         amount = detailObject.optInt("amount", 0),
                         unique = if (type == "coin") detailObject.optInt("unique", 0) else 0,
                         serverFee = if (type == "coin") detailObject.optInt("server_fee", 0) else 0,
                         admin = detailObject.optInt("admin", 0),
                         totalAmount = detailObject.optInt("total_amount", 0),
                         invoiceId = invoiceObject.optString("id", ""),
-                        vaNumber = invoiceObject.optString("va_number", ""),
-                        vaName = invoiceObject.optString("va_name", ""),
+                        vaNumber = invoiceObject.optString("referenceId", ""),
+                        vaName = invoiceObject.optString("displayName", ""),
                         level = if (type == "subscription") detailObject.optString("level", "") else null,
                         idVideo = if (type == "video") detailObject.optString("id_video", "") else null,
-                        totalEpisode = if (type== "video") detailObject.optInt("total_episode", 0) else null
+                        totalEpisode = if (type== "video") detailObject.optInt("total_episode", 0) else null,
+                        isCancel = dataObject.optBoolean("is_cancel", false)
                     )
                     paymentList.add(paymentData)
                 }

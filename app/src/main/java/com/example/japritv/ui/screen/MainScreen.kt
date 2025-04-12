@@ -90,6 +90,7 @@ fun MainScreen(
     )
 
     LaunchedEffect(key1 = Unit) {
+        ProfileRepository.fetchAndStorePaymentConfig(db)
         if (notificationPermissionState.status.isGranted ||
             Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
         ) {

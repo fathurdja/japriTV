@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -32,41 +33,73 @@ import androidx.compose.ui.unit.sp
 import com.example.japritv.R
 
 @Composable
-fun PaymentCard(nominal:String,vaName:String,vaNumber: String,bank:String) {
+fun PaymentCard(
+    nominal: String,
+    vaName: String,
+    vaNumber: String,
+    bank: String,
+    status: String,
+    cancel: Boolean,
+) {
     Column(
         modifier = Modifier
-            .border(1.dp,  Color(0xFFE6E6E8), shape = RoundedCornerShape(12.dp))
+            .border(1.dp, Color(0xFFE6E6E8), shape = RoundedCornerShape(12.dp))
             .background(Color.White, shape = RoundedCornerShape(12.dp))
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFD32F2F), shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                .background(
+                    Color(0xFFD32F2F),
+                    shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+                )
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             //contentAlignment = Alignment.ALIGN_CENTER
         ) {
-                Row(
-                    //verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.group),
-                        contentDescription = "Time Icon",
-                        modifier = Modifier.size(20.dp).clickable {  }
+            Row(
+                //verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.check_bullet),
+                    contentDescription = "Status Icon",
+                    modifier = Modifier.size(20.dp),
+                    colorFilter = ColorFilter.tint(
+                        when (status) {
+                            "paid" -> Color.Green
+                            "pending" -> Color.Yellow
+                            else -> Color.Red
+                        }
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Selesaikan pembayaran dalam 59:50",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Status Pembayaran",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = when {
+                        cancel -> "Gagal"
+                        status == "paid" -> "Sukses"
+                        status == "pending" -> "Menunggu Pembayaran"
+                        else -> "Gagal"
+                    },
+
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+
+            }
         }
 
         Column(modifier = Modifier.padding(16.dp)) {
             PaymentInfoRow(label = "Nomor Virtual Account", value = vaNumber)
-            PaymentInfoRow(label = "Nominal pembelian", value ="Rp. $nominal" )
+            PaymentInfoRow(label = "Nominal pembelian", value = "Rp. $nominal")
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "$bank - Virtual Account", fontWeight = FontWeight.Bold, fontSize = 14.sp)
@@ -85,11 +118,16 @@ fun PaymentInfoRow(label: String, value: String) {
             modifier = Modifier.fillMaxWidth(),
             //verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            Text(
+                text = value,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
+            )
             Box(modifier = Modifier
                 .background(Color.Gray, RoundedCornerShape(10.dp))
                 .padding(horizontal = 15.dp, vertical = 5.dp)
-                .clickable { onCopyClick(value, clipboardManager, context)  }) {
+                .clickable { onCopyClick(value, clipboardManager, context) }) {
                 Text(text = "Salin", color = Color.White)
             }
         }
@@ -102,8 +140,15 @@ fun onCopyClick(value: String, clipboardManager: ClipboardManager, context: Cont
 }
 
 
-//@Preview
-//@Composable
-//fun PreviewPaymentCard() {
-//    PaymentCard(nominal = "Rp 100.000")
-//}
+@Preview
+@Composable
+fun PreviewPaymentCard() {
+    PaymentCard(
+        nominal = "Rp 100.000",
+        vaName = "",
+        vaNumber = "",
+        bank = "TODO()",
+        status = "paid",
+        cancel = false
+    )
+}

@@ -73,8 +73,8 @@ fun ExpandableList(category: PaymentCategory, isInitiallyExpanded: Boolean = fal
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {onItemClicked(item) }
-                            .padding(horizontal = 16.dp, vertical = 12.dp)
-                            ,
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+
 
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -85,6 +85,9 @@ fun ExpandableList(category: PaymentCategory, isInitiallyExpanded: Boolean = fal
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(item.name, fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(20.dp))
+                        Text(item.status, fontSize = 14.sp, color = Color.Gray)
+
                     }
 
                     Divider(color = Color.LightGray, thickness = 0.5.dp)

@@ -10,6 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.Room
+import com.example.japritv.Repository.ProfileRepository
 import com.example.japritv.Repository.VideoRepository
 import com.example.japritv.dao.AppDatabase
 import com.example.japritv.dao.FcmToken
@@ -50,6 +51,7 @@ class  MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             val fiveMinutesAgo = System.currentTimeMillis() - (5 * 60 * 1000)
             database.temporaryPayment().clearIfOlderThan(fiveMinutesAgo)
+
             val existingToken = fcmTokenDao.getToken()
             if (existingToken == null) {
                 // Token belum ada, ambil dari Firebase

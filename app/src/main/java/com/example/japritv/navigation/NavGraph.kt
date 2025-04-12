@@ -26,9 +26,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.example.japritv.R
 import com.example.japritv.Repository.AuthRepository
@@ -45,6 +47,7 @@ import com.example.japritv.ui.components.ScaffoldWithButton
 import com.example.japritv.ui.components.ScaffoldWithoutButton
 import com.example.japritv.ui.components.profile.LanguageSelectionScreen
 import com.example.japritv.ui.components.profile.TermsAndConditionsScreen
+import com.example.japritv.ui.screen.HistoryPembayaran
 
 import com.example.japritv.ui.screen.HomeScreen
 import com.example.japritv.ui.screen.InstruksiBayarScreen
@@ -68,6 +71,7 @@ import com.example.japritv.viewmodel.ShowItemViewModel
 import com.example.japritv.viewmodel.UploadEpisodeViewModel
 import com.example.japritv.viewmodel.UserViewModel
 import com.example.japritv.viewmodel.VideoViewModel
+import com.google.gson.Gson
 import kotlinx.coroutines.launch
 
 @Composable
@@ -102,7 +106,12 @@ fun NavGraph(
             }
             HomeScreen(navController = navController, videoViewModel = video)
         }
+        composable("video") { VideoScreen(viewModel = video, onClick = { Id ->
+            navController.navigate("nowPlaying/$Id"
 
+            )
+            println(Id)
+        }, db = db) }
         // Sub-navigation for "home"
         navigation(startDestination = "terlaris", route = "home") {
             composable("terlaris") {
@@ -139,11 +148,6 @@ fun NavGraph(
                 UpComingScreen(shows = data.shows, navController = navController)
             }
         }
-
-        // Video and Upload screens
-        composable("video") { VideoScreen(viewModel = video, navController = navController, db = db) }
-
-
         composable("upload") {
             UploadVideoScreen(
                 userViewModel = userViewModel,
@@ -305,7 +309,8 @@ fun NavGraph(
                             colorButton = Color.White,
                             onClick = { navController.navigate("home") },
                             onClickBack = { navController.popBackStack() },
-                            paymentViewModel = paymentViewModel
+                            paymentViewModel = paymentViewModel,
+                            db = db
                         )
                     },
 
@@ -446,6 +451,7 @@ fun NavGraph(
                             onClick = { navController.navigate("home") },
                             onClickBack = { navController.popBackStack() },
                             paymentViewModel = paymentViewModel,
+                            db = db
 
                             )
                     },
@@ -472,7 +478,7 @@ fun NavGraph(
                     navController = navController,
                     containerColor = Color.Black,
                     navigationRoute = "MetodeBayarSubscriptionOrCoins",
-                    content = { TokoJapriTV(userViewModel = userViewModel) },
+                    content = { TokoJapriTV(userViewModel = userViewModel, db = db) },
                     titleButton = "Lanjut Ke Pembayaran",
                     contentTop = {
                         HeaderRightWithIcon(
@@ -628,6 +634,7 @@ fun NavGraph(
                             },
                             onClickBack = { navController.popBackStack() },
                             paymentViewModel = paymentViewModel,
+                            db = db
                         )
                     },
                 )
@@ -686,5 +693,36 @@ fun NavGraph(
                 )
             }
         }
+        composable(
+            "instruksi_bayar_screen/{paymentData}",
+            arguments = listOf(navArgument("paymentData") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val json = backStackEntry.arguments?.getString("paymentData")
+            val paymentData = Gson().fromJson(json, PaymentData::class.java)
+            ScaffoldWithoutButton(
+                containerColor = Color.White,
+                contentTop = {
+                    HeaderRightWithIcon(
+                        "Instruksi Pembayaran",
+                        Color.White,
+                        Color.Black,
+                        R.drawable.arrowwhite,
+                        onBackClick = { navController.popBackStack() })
+                },
+                content = {
+                    HistoryPembayaran(
+                        paymentData = paymentData,
+                        colortext = Color.White,
+                        colorButton = Color.Black,
+                        onClick = { navController.navigate("home") },
+                        onClickBack = { navController.popBackStack() },
+                        )
+                },
+
+                )
+
+
+        }
+        }
     }
-}
+

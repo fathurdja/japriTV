@@ -108,20 +108,7 @@ fun Keanggotaan(tipe: String, harga: String, hargaLama: String, benefits: String
                 }
             }
         }
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .clip(RoundedCornerShape(topEnd = 8.dp, bottomStart = 8.dp))
-                .background(Color(0xFFD22F26))
-                .padding(horizontal = 12.dp, vertical = 4.dp)
-        ) {
-            Text(
-                text = "Waktu Terbatas 23:59:56",
-                color = Color.White,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
+
     }
 }
 

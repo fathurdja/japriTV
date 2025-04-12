@@ -6,13 +6,20 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.japritv.converters.Converter
+import com.example.japritv.converters.LimitConverter
+import com.example.japritv.converters.PaymentBankConverter
+import com.example.japritv.converters.PaymentMethodConverter
+import com.example.japritv.converters.PaymentTypeConverter
+import com.example.japritv.converters.SubscriptionPriceConverter
+import com.example.japritv.converters.SubscriptionValidityConverter
 
 @Database(
-    entities = [VideoData::class, AuthToken::class, LoginInfo::class, newAuthDao::class,FcmToken::class,PaymentDataEntity::class,historyEntity::class],
-    version = 20,
+    entities = [VideoData::class, AuthToken::class, LoginInfo::class, newAuthDao::class,FcmToken::class,PaymentDataEntity::class,historyEntity::class,PaymentConfigEntity::class],
+    version = 22,
     exportSchema = false
 )
-@TypeConverters(Converter::class)
+@TypeConverters(Converter::class,)
+
 abstract class AppDatabase : RoomDatabase() {
     abstract fun videoDao(): VideoDao
     abstract fun authTokenDao(): AuthTokenDao
@@ -21,6 +28,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun fcmToken(): FcmTokenDao
     abstract fun temporaryPayment(): PaymentDataDao
     abstract fun historyDao(): historyDao
+    abstract fun paymentDataclass():PaymentConfigDao
 
     companion object {
         @Volatile

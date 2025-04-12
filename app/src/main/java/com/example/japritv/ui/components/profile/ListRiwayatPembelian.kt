@@ -2,6 +2,7 @@ package com.example.japritv.ui.components.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,12 +30,13 @@ import com.example.japritv.R
 
 
 @Composable
-fun RiwayatCard(movieName: String, date: String,harga: String, image: Int) {
+fun RiwayatCard(movieName: String, date: String,harga: String, image: Int,status: String,cancel: Boolean,onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(Color(0xFF333333))
+            .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -68,11 +71,37 @@ fun RiwayatCard(movieName: String, date: String,harga: String, image: Int) {
 
         Box (
         ){
-            Text(
-                text = harga,
-                color = Color.White,
-                fontSize = 14.sp
-            )
+            Column {
+               Row {
+                   Icon(
+                       painter = painterResource(id = R.drawable.check_bullet),
+                       contentDescription = null,
+                       tint = when (status){
+                           "pending" -> Color.Yellow
+                           "paid" -> Color.Green
+                           "failed" -> Color.Red
+                           else -> Color.Gray
+                       }
+                   )
+                   Spacer(modifier = Modifier.width(4.dp))
+                   Text(
+                       text =
+                       when {
+                           cancel -> "Gagal"
+                           status == "paid" -> "Sukses"
+                           status == "pending" -> "Menunggu Pembayaran"
+                           else -> "Gagal"
+                       },
+                       color = Color.Gray,
+                       fontSize = 14.sp
+                   )
+               }
+                Text(
+                    text = harga,
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
+            }
         }
     }
 }
@@ -80,5 +109,6 @@ fun RiwayatCard(movieName: String, date: String,harga: String, image: Int) {
 @Preview
 @Composable
 fun PreviewUserInfoCard() {
-    RiwayatCard(movieName = "movie", date = "21 Mei 2025, 12:15 PM ", harga = "Rp.100,000", image = R.drawable.theaters)
+    RiwayatCard(movieName = "movie", date = "21 Mei 2025, 12:15 PM ", harga = "Rp.100,000", image = R.drawable.theaters, status = "pending", onClick = {}, cancel = false
+    )
 }
