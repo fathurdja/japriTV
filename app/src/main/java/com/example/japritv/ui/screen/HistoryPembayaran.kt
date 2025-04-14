@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.japritv.dao.AppDatabase
 import com.example.japritv.model.PaymentData
 import com.example.japritv.ui.components.CustomBoxButton
 import com.example.japritv.ui.components.CustomBoxButtonBorder
@@ -26,11 +27,13 @@ import com.example.japritv.viewmodel.PaymentViewModel
 
 @Composable
 fun HistoryPembayaran(
+    paymentViewModel: PaymentViewModel,
     paymentData: PaymentData,
     onClick: () -> Unit,
     onClickBack: () -> Unit,
     colortext: Color,
     colorButton: Color,
+    db: AppDatabase
 ) {
     val isLoading = false // udah dapet data, jadi ga loading
 
@@ -56,7 +59,6 @@ fun HistoryPembayaran(
                 vaName = paymentData.vaName,
                 vaNumber = paymentData.vaNumber,
                 status = paymentData.status,
-                cancel = paymentData.isCancel ?: false
             )
 
             Spacer(modifier = Modifier.padding(vertical = 15.dp))
@@ -77,7 +79,10 @@ fun HistoryPembayaran(
 
             CustomBoxButton(
                 title = "Kembali Ke JapriTV",
-                onClick = { onClick() },
+                onClick = {
+                    paymentViewModel.clearTransaction()
+                    onClick()
+                          },
                 colorBackground = Color(0XFFD22F26),
                 colorText = Color.White,
                 modifier = Modifier
@@ -85,15 +90,17 @@ fun HistoryPembayaran(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            if (paymentData.status == "pending") {
-                CustomBoxButtonBorder(
-                    title = "Batalkan Pembayaran",
-                    onClick = { onClickBack() },
-                    colorBackground = colorButton,
-                    colorText = colortext,
-                    modifier = Modifier
-                )
-            }
+//            if (paymentData.status == "pending") {
+//                CustomBoxButtonBorder(
+//                    title = "Batalkan Pembayaran",
+//                    onClick = {
+//                        paymentViewModel.cancelTransaction(db = db, idPayment = paymentData.id)
+//                        onClickBack() },
+//                    colorBackground = colorButton,
+//                    colorText = colortext,
+//                    modifier = Modifier
+//                )
+//            }
         }
     }
 }

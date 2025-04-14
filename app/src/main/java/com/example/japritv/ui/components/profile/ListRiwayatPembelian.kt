@@ -30,7 +30,7 @@ import com.example.japritv.R
 
 
 @Composable
-fun RiwayatCard(movieName: String, date: String,harga: String, image: Int,status: String,cancel: Boolean,onClick: () -> Unit) {
+fun RiwayatCard(movieName: String, date: String,harga: String, image: Int,status: String,onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -76,21 +76,22 @@ fun RiwayatCard(movieName: String, date: String,harga: String, image: Int,status
                    Icon(
                        painter = painterResource(id = R.drawable.check_bullet),
                        contentDescription = null,
-                       tint = when (status){
-                           "pending" -> Color.Yellow
-                           "paid" -> Color.Green
-                           "failed" -> Color.Red
-                           else -> Color.Gray
-                       }
+                       tint =  when {
+
+                           status == "paid" -> Color.Green
+                           status == "pending" -> Color.Yellow
+                           status == "expired" -> Color.Red
+                           else -> Color.Yellow
+                       },
                    )
                    Spacer(modifier = Modifier.width(4.dp))
                    Text(
                        text =
                        when {
-                           cancel -> "Gagal"
-                           status == "paid" -> "Sukses"
-                           status == "pending" -> "Menunggu Pembayaran"
-                           else -> "Gagal"
+                           status == "paid" -> "Paid"
+                           status == "pending" -> "Pending"
+                           status == "expired" -> "Expired"
+                           else -> "Pending"
                        },
                        color = Color.Gray,
                        fontSize = 14.sp
@@ -109,6 +110,6 @@ fun RiwayatCard(movieName: String, date: String,harga: String, image: Int,status
 @Preview
 @Composable
 fun PreviewUserInfoCard() {
-    RiwayatCard(movieName = "movie", date = "21 Mei 2025, 12:15 PM ", harga = "Rp.100,000", image = R.drawable.theaters, status = "pending", onClick = {}, cancel = false
+    RiwayatCard(movieName = "movie", date = "21 Mei 2025, 12:15 PM ", harga = "Rp.100,000", image = R.drawable.theaters, status = "pending", onClick = {},
     )
 }

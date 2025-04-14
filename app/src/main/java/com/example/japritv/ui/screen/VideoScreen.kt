@@ -31,7 +31,10 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.exoplayer.SimpleExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import com.example.japritv.R
@@ -39,6 +42,7 @@ import com.example.japritv.dao.AppDatabase
 import com.example.japritv.model.ResponseVideo
 import com.example.japritv.ui.components.video.ContainerEpisode
 import com.example.japritv.ui.components.video.VideoPage
+import com.example.japritv.utils.VideoCache
 import com.example.japritv.viewmodel.VideoViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 
@@ -69,8 +73,23 @@ fun VideoScreen(viewModel: VideoViewModel,onClick: (String) -> Unit,db: AppDatab
                 val videoUrl = "https://tv.japrime.id/video/preview/$videoId"
 
                 val player = remember(page) {
-                    SimpleExoPlayer.Builder(context).build().also { playerMap[page] = it }
+                    val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+                        .setAllowCrossProtocolRedirects(true)
+
+                    val cacheDataSourceFactory = CacheDataSource.Factory()
+                        .setCache(VideoCache.getInstance(context))
+                        .setUpstreamDataSourceFactory(httpDataSourceFactory)
+                        .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+
+                    val mediaSourceFactory = DefaultMediaSourceFactory(cacheDataSourceFactory)
+
+                    SimpleExoPlayer.Builder(context)
+                        .setMediaSourceFactory(mediaSourceFactory)
+                        .build().also {
+                            playerMap[page] = it
+                        }
                 }
+
 
                 LaunchedEffect(isCurrentPage, videoUrl) {
                     val mediaItem = MediaItem.Builder()

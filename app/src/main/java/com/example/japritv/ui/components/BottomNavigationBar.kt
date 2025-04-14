@@ -41,9 +41,6 @@ fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit, navCon
                 selected = selectedItem == index,
                 onClick = {
                     onItemSelected(index)
-                    navController.navigate(item.third){
-                        popUpTo("home") { inclusive = true }
-                    }
                 },
                 icon = {
                     Image(

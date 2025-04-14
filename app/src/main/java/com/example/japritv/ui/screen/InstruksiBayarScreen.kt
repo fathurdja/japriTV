@@ -50,85 +50,100 @@ fun InstruksiBayarScreen(
     paymentViewModel: PaymentViewModel,
 ) {
     val transactionData by paymentViewModel.transactionInfo.collectAsState()
+    val lasttransactionData by paymentViewModel.lasttransactionInfo.collectAsState()
     val isLoading = transactionData == null
 
+    var isWaitingTimeout by remember { mutableStateOf(false) }
+
+    Log.d("data", transactionData.toString())
+
     LaunchedEffect(true) {
-//        paymentViewModel.getDataTransaction()
+        paymentViewModel.getDataTransaction()
     }
 
-    // Box utama harus full size agar bisa center-in loading
+    // Ini akan delay 5 detik dan set isWaitingTimeout ke true
+    LaunchedEffect(isLoading) {
+        if (isLoading) {
+            delay(5000)
+            isWaitingTimeout = true
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        contentAlignment = if (isLoading) Alignment.Center else Alignment.TopStart
+        contentAlignment =  Alignment.Center
     ) {
-        if (isLoading) {
+        if (isLoading && !isWaitingTimeout) {
             CircularProgressIndicator()
-        } else {
-            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp)) {
-                if (transactionData != null) {
-                    val harga = transactionData!!.totalAmount
-                    val biayaTambahan = listOfNotNull(
-                        transactionData?.serverFee,
-                        transactionData?.admin,
-                        transactionData?.unique
-                    ).sum()
+        }
+         else {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 20.dp)
+            ) {
+                val harga = transactionData?.totalAmount ?: 0
+                val biayaTambahan = listOfNotNull(
+                    transactionData?.serverFee,
+                    transactionData?.admin,
+                    transactionData?.unique
+                ).sum()
 
+                PaymentCard(
+                    nominal = harga.toString(),
+                    bank = transactionData?.bank?: "",
+                    vaName = transactionData?.vaName?: "",
+                    vaNumber = transactionData?.vaNumber?: "",
+                    status = transactionData?.status ?: "Menunggu Pembayaran",
 
-                    PaymentCard(
-                        nominal = harga.toString(),
-                        bank = transactionData!!.bank,
-                        vaName = transactionData!!.vaName,
-                        vaNumber = transactionData!!.vaNumber,
-                        status = transactionData!!.status ?: "Menunggu Pembayaran",
-                        cancel = false
-                    )
+                )
 
-                    Spacer(modifier = Modifier.padding(vertical = 15.dp))
+                Spacer(modifier = Modifier.padding(vertical = 15.dp))
 
-                    DetailPembayaranSubsOrCoin(
-                        color = Color.White,
-                        tipeSubs = transactionData!!.level ?:"",
-                        Amount = transactionData!!.amount,
-                        biayaTambahan = biayaTambahan,
-                        jumlahKoin = transactionData!!.amount.toString(),
-                        typePayment = transactionData!!.type,
-                        totalPembayaran = harga,
-                        biayaPerEpisode = transactionData!!.amount ?: 0,
-                        totalEpisode = transactionData!!.totalEpisode ?: 0
-                    )
+                DetailPembayaranSubsOrCoin(
+                    color = Color.White,
+                    tipeSubs = transactionData?.level ?: "",
+                    Amount = transactionData?.amount ?: 0,
+                    biayaTambahan = biayaTambahan,
+                    jumlahKoin = transactionData?.amount.toString() ?: "",
+                    typePayment = transactionData?.type ?:"",
+                    totalPembayaran = harga,
+                    biayaPerEpisode = transactionData?.amount ?: 0,
+                    totalEpisode = transactionData?.totalEpisode ?: 0
+                )
 
-                    Spacer(modifier = Modifier.height(25.dp))
+                Spacer(modifier = Modifier.height(25.dp))
 
-                    CustomBoxButton(
-                        title = "Kembali Ke JapriTV",
-                        onClick = {
-                            onClick() },
-                        colorBackground = Color(0XFFD22F26),
-                        colorText = Color.White,
-                        modifier = modifier
-                    )
+                CustomBoxButton(
+                    title = "Kembali Ke JapriTV",
+                    onClick = {
+                        paymentViewModel.clearTransaction()
+                        onClick()
+                    },
+                    colorBackground = Color(0XFFD22F26),
+                    colorText = Color.White,
+                    modifier = modifier
+                )
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                    CustomBoxButtonBorder(
-                        title = "Batalkan Pembayaran",
-                        onClick = {
-                            paymentViewModel.cancelTransaction(db = db, idPayment = transactionData!!.id)
-                            onClickBack()
-                                  },
-                        colorBackground = colorButton,
-                        colorText = colortext,
-                        modifier = modifier
-                    )
-                } else {
-                    Text("Data tidak ditemukan atau gagal memuat.")
-                }
+//                CustomBoxButtonBorder(
+//                    title = "Batalkan Pembayaran",
+//                    onClick = {
+//                        paymentViewModel.cancelTransaction(db = db, idPayment = transactionData!!.id)
+//                        paymentViewModel.clearTransaction()
+//                        onClickBack()
+//                    },
+//                    colorBackground = colorButton,
+//                    colorText = colortext,
+//                    modifier = modifier
+//                )
             }
         }
     }
 }
+
 
 
 

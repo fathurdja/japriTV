@@ -39,7 +39,6 @@ fun PaymentCard(
     vaNumber: String,
     bank: String,
     status: String,
-    cancel: Boolean,
 ) {
     Column(
         modifier = Modifier
@@ -65,11 +64,12 @@ fun PaymentCard(
                     contentDescription = "Status Icon",
                     modifier = Modifier.size(20.dp),
                     colorFilter = ColorFilter.tint(
-                        when (status) {
-                            "paid" -> Color.Green
-                            "pending" -> Color.Yellow
-                            else -> Color.Red
-                        }
+                        when {
+                            status == "paid" -> Color.Green
+                            status == "pending" -> Color.Yellow
+                            status == "expired" -> Color.Red
+                            else -> Color.Yellow
+                        },
                     )
                 )
 
@@ -83,10 +83,10 @@ fun PaymentCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = when {
-                        cancel -> "Gagal"
-                        status == "paid" -> "Sukses"
-                        status == "pending" -> "Menunggu Pembayaran"
-                        else -> "Gagal"
+                        status == "paid" -> "Paid"
+                        status == "pending" -> "Pending"
+                        status == "expired" -> "Pending"
+                     else -> "Pending"
                     },
 
                     color = Color.White,
@@ -148,7 +148,7 @@ fun PreviewPaymentCard() {
         vaName = "",
         vaNumber = "",
         bank = "TODO()",
-        status = "paid",
-        cancel = false
+        status = "pending",
+
     )
 }

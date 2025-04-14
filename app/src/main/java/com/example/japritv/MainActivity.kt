@@ -46,7 +46,7 @@ class  MainActivity : ComponentActivity() {
 
 
         val fcmTokenDao = database.fcmToken()
-
+        val deepLinkUri = intent?.data?.toString()
         // Jalankan dalam coroutine karena akses Room bersifat suspend
         lifecycleScope.launch {
             val fiveMinutesAgo = System.currentTimeMillis() - (5 * 60 * 1000)
@@ -76,6 +76,7 @@ class  MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
         setContent {
+
             val userViewModel: UserViewModel = viewModel(factory = UserViewModelfactory(database))
             val videoViewModel: VideoViewModel = viewModel(factory = VideoViewModelFactory(videoRepository,database))
             val data: ShowItemViewModel = viewModel()
@@ -86,7 +87,8 @@ class  MainActivity : ComponentActivity() {
                     videoViewModel = videoViewModel,
                     uploadEpisodeViewModel = uploadViewModel,
                     userViewModel = userViewModel,
-                    paymentViewModel = paymentViewModel
+                    paymentViewModel = paymentViewModel,
+                    deepLinkUri = deepLinkUri?: ""
                 )
 
 

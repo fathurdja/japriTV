@@ -34,6 +34,29 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Deeplink Handler -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- Custom URI -->
+                <data
+                    android:scheme="japritv"
+                    android:host="watch" />
+            </intent-filter>
+
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Ganti sesuai domainmu -->
+                <data
+                    android:scheme="https"
+                    android:host="tv.japrime.id"
+                    android:pathPrefix="/reff" />
+            </intent-filter>
         </activity>
         <service
             android:name=".service.MyFirebaseMessagingService"
@@ -51,6 +74,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
 
     </application>
 

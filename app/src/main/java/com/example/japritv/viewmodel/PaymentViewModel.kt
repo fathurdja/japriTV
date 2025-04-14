@@ -25,6 +25,8 @@ class PaymentViewModel(private val db: AppDatabase) : ViewModel() {
     val paymentMethods: LiveData<List<PaymentCategory>> = _paymentMethods
     private val _transactionInfo = MutableStateFlow<PaymentDataEntity?>(null)
     val transactionInfo: StateFlow<PaymentDataEntity?> = _transactionInfo
+    private val _lasttransactionInfo = MutableStateFlow<PaymentDataEntity?>(null)
+    val lasttransactionInfo: StateFlow<PaymentDataEntity?> = _lasttransactionInfo
     private val _historyTransVideo = MutableStateFlow<List<PaymentData>?>(null)
     val historyTransVideo: StateFlow<List<PaymentData>?> = _historyTransVideo
     private val _historyTransSubscription = MutableStateFlow<List<PaymentData>?>(null)
@@ -36,7 +38,7 @@ class PaymentViewModel(private val db: AppDatabase) : ViewModel() {
         fetchPaymentConfig()
     }
 
-    private fun fetchPaymentConfig() {
+     fun fetchPaymentConfig() {
         viewModelScope.launch {
             val config = db.paymentDataclass().getConfig()
             config?.let {
@@ -78,6 +80,17 @@ class PaymentViewModel(private val db: AppDatabase) : ViewModel() {
         }
     }
 
+    fun getLastDataTransaction() {
+        viewModelScope.launch {
+            val transactions = ProfileRepository.getDataTransaction(db)
+            _lasttransactionInfo.value = transactions
+        }
+    }
+    fun clearTransaction() {
+        viewModelScope.launch {
+            db.temporaryPayment().clearAll()
+        }
+    }
     fun getHistoryTransactionSubscription() {
         viewModelScope.launch {
             val transactionSubs = ProfileRepository.getHistoryTransactionSubs(db = db)

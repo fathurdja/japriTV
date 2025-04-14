@@ -2,6 +2,10 @@ package com.example.japritv.ui.components.profile
 
 
 // Necessary imports
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,19 +27,66 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import java.io.File
+import java.net.URLEncoder
 
-
+@SuppressLint("DefaultLocale")
 @Composable
 fun MenuProfile(navController: NavController) {
+    val localContext = LocalContext.current
+    var cacheSize by remember { mutableStateOf("0 B") }
+
+
+    fun openInBrowser(context: Context, url: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        context.startActivity(intent)
+    }
+
+    fun formatSize(bytes: Long): String {
+        val kb = 1024
+        val mb = kb * 1024
+        val gb = mb * 1024
+
+        return when {
+            bytes >= gb -> String.format("%.2f GB", bytes.toDouble() / gb)
+            bytes >= mb -> String.format("%.2f MB", bytes.toDouble() / mb)
+            bytes >= kb -> String.format("%.2f KB", bytes.toDouble() / kb)
+            else -> "$bytes B"
+        }
+    }
+    fun getCacheSizeReadable(context: Context): String {
+        val cacheDir = File(context.cacheDir, "media")
+        var size = 0L
+
+        if (cacheDir.exists()) {
+            cacheDir.walkTopDown().forEach {
+                size += it.length()
+            }
+        }
+
+        return formatSize(size)
+    }
+
+    LaunchedEffect(Unit) {
+        cacheSize = getCacheSizeReadable(localContext)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp)
     ) {
+
         // Row for each item
         RowItem(
             icon = com.example.japritv.R.drawable.theaters,
@@ -47,44 +98,36 @@ fun MenuProfile(navController: NavController) {
             icon = com.example.japritv.R.drawable.support,
             text = "Layanan Pelanggan",
             onClick = {
-
+                val encodedUrl = URLEncoder.encode("https://japrichat.com/tv-terms", "UTF-8")
+                navController.navigate("webview/Layanan Pelanggan/$encodedUrl")
             })
-        RowItem(icon = com.example.japritv.R.drawable.settings, text = "Pengaturan", onClick = {
-
-        })
         RowItem(
             icon = com.example.japritv.R.drawable.info_outline,
             text = "Tentang Kami",
             onClick = {
-
-            })
-        RowItem(
-            icon = com.example.japritv.R.drawable.language,
-            text = "pengaturan bahasa",
-            extraText = "",
-            extraTextColor = Color(0xFFFFA500),
-            onClick = {
-                navController.navigate("pengaturanbahasa")
+                val encodedUrl = URLEncoder.encode("https://japrichat.com/tv-terms", "UTF-8")
+                navController.navigate("webview/Tentang Kami/$encodedUrl")
             })
         RowItem(
             icon = com.example.japritv.R.drawable.vector__10_,
             text = "Kebijakan Privasi",
             onClick = {
-                navController.navigate("kebijakanPrivasi")
+                val encodedUrl = URLEncoder.encode("https://japrichat.com/tv-terms", "UTF-8")
+                navController.navigate("webview/Kebijakan Privasi/$encodedUrl")
             })
-        RowItem(
-            icon = com.example.japritv.R.drawable.lightbulb,
-            text = "Marketing Plan",
-            onClick = {
 
-            })
         RowItemWithButton(
             icon = com.example.japritv.R.drawable.trash_outline,
             text = "Bersihkan cache",
-            extraText = "",
+            extraText = cacheSize,
             extraTextColor = Color(0xFFFFA500),
             onClick = {
-
+                // Kosongin cache
+                val cacheDir = File(localContext.cacheDir, "media")
+                if (cacheDir.exists()) {
+                    cacheDir.deleteRecursively()
+                }
+                cacheSize = getCacheSizeReadable(localContext) // Update tampilan
             })
     }
 }

@@ -31,19 +31,22 @@ suspend fun downloadVideoToCache(context: Context, videoId: String, token: Strin
     }
 }
 
-fun shareVideo(context: Context, file: File) {
-    val uri = FileProvider.getUriForFile(
-        context,
-        "${context.packageName}.fileprovider",
-        file
-    )
-
+fun shareVideoLink(context: Context, videoId: String,episode:Int) {
+    val url = "japritv://watch/$videoId/episode/$episode"
     val intent = Intent(Intent.ACTION_SEND).apply {
-        type = "video/mp4"
-        putExtra(Intent.EXTRA_STREAM, uri)
-        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, url)
     }
-
-    val shareIntent = Intent.createChooser(intent, null)
-    context.startActivity(shareIntent)
+    context.startActivity(Intent.createChooser(intent, "Share Video Link"))
 }
+fun shareLinkReferral(context: Context, url: String) {
+
+    val message = "Yuk Pakai link Referral Saya untuk mendapatkan Bonus Koin: $url"
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, url)
+    }
+    val chooser = Intent.createChooser(intent, "Share Link Referral")
+    context.startActivity(chooser)
+}
+

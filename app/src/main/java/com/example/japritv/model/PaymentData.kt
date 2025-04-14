@@ -22,7 +22,4 @@ data class PaymentData(
     val level:String?,
     val idVideo: String? = null,
     val totalEpisode: Int? = null,
-    val isCancel : Boolean? = false,
-
-
 )

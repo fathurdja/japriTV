@@ -1,5 +1,6 @@
 package com.example.japritv.ui.screen
 
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -61,7 +62,8 @@ fun MainScreen(
     data: ShowItemViewModel,
     uploadEpisodeViewModel: UploadEpisodeViewModel,
     userViewModel: UserViewModel,
-    paymentViewModel: PaymentViewModel
+    paymentViewModel: PaymentViewModel,
+    deepLinkUri: String
 ) {
     val context = LocalContext.current
     val navController = rememberNavController()
@@ -70,16 +72,13 @@ fun MainScreen(
     var selectedItem by remember { mutableStateOf(0) }
     val categoryViewModel: CategoryViewModel = viewModel()
     val showItemViewModel: ShowItemViewModel = viewModel()
-
     val coroutineScope = rememberCoroutineScope()
-
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-
     val userInfo by userViewModel.userInfo.collectAsState()
-
-
     val showNotificationDialog = remember { mutableStateOf(false) }
-
+    val updateSelectedItem: (Int) -> Unit = { index ->
+        selectedItem = index
+    }
     // Android 13 Api 33 - runtime notification permission has been added
     val notificationPermissionState = rememberPermissionState(
         permission = android.Manifest.permission.POST_NOTIFICATIONS
@@ -89,46 +88,79 @@ fun MainScreen(
         notificationPermissionState = notificationPermissionState
     )
 
-    LaunchedEffect(key1 = Unit) {
-        ProfileRepository.fetchAndStorePaymentConfig(db)
-        if (notificationPermissionState.status.isGranted ||
-            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
-        ) {
-            Firebase.messaging.subscribeToTopic("Tutorial")
-        } else showNotificationDialog.value = true
-    }
-
-    LaunchedEffect(currentRoute) {
-        selectedItem = when (currentRoute) {
-            "home" -> 0
-            "video" -> 1
-            "upload" -> 2
-            "history" -> 3
-            "profile" -> 4
-            else -> selectedItem
-        }
-    }
-
-    LaunchedEffect(currentRoute) {
-        if (currentRoute == "home" || currentRoute == "profile") {
-            coroutineScope.launch {
-                AuthRepository.getDataLogin(db)
-                userViewModel.loadUserInfo()
+    LaunchedEffect(deepLinkUri) {
+        deepLinkUri.let { uri ->
+            val parsed = Uri.parse(uri)
+            if (parsed.scheme == "japritv" && parsed.host == "watch") {
+                val segments = parsed.pathSegments
+                if (segments.size >= 3 && segments[1] == "episode") {
+                    val videoId = segments[0]
+                    val episode = segments[2].toIntOrNull() ?: 1
+                    navController.navigate("nowPlayingHistory/$videoId/$episode")
+                } else if (segments.isNotEmpty()) {
+                    val videoId = segments[0]
+                    navController.navigate("video_player/$videoId/1")
+                }
             }
         }
     }
 
 
-    LaunchedEffect(userInfo) {
-        userViewModel.getDataLogin(db)
+
+
+    LaunchedEffect(key1 = Unit) {
+        AuthRepository.getDataLogin(db)
         userViewModel.loadUserInfo()
-        userViewModel.loadSubscriptionInfo(
-            db = db,
-        )
-        paymentViewModel.getDataTransaction()
-        val video = videoViewModel.fetchVideos()
-        println(video)
-    }
+        ProfileRepository.fetchAndStorePaymentConfig(db)
+        videoViewModel.fetchVideos()
+        if (notificationPermissionState.status.isGranted ||
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+        ) {
+            Firebase.messaging.subscribeToTopic("Tutorial")
+        } else showNotificationDialog.value = true
+        }
+
+//    LaunchedEffect(Unit) {
+//        navController.addOnDestinationChangedListener { _, destination, _ ->
+//            selectedItem = when (destination.route) {
+//                "home" -> 0
+//                "video" -> 1
+//                "upload" -> 2
+//                "history" -> 3
+//                "profile" -> 4
+//                else -> selectedItem
+//            }
+//        }
+//    }
+//    LaunchedEffect(currentRoute) {
+//        if (currentRoute == "home") {
+//            selectedItem = 0
+//        }
+//    }
+//    LaunchedEffect(Unit) {
+//        selectedItem = 0 // Set initial tab to 0 (home)
+//    }
+//
+//    LaunchedEffect(currentRoute) {
+//        if (currentRoute == "home" || currentRoute == "profile") {
+//            coroutineScope.launch {
+//                AuthRepository.getDataLogin(db)
+//                userViewModel.loadUserInfo()
+//            }
+//        }
+//    }
+//
+//
+//    LaunchedEffect(userInfo) {
+//        userViewModel.getDataLogin(db)
+//        userViewModel.loadUserInfo()
+//        userViewModel.loadSubscriptionInfo(
+//            db = db,
+//        )
+//        paymentViewModel.getDataTransaction()
+//       videoViewModel.fetchVideos()
+//
+//    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -153,14 +185,22 @@ fun MainScreen(
                 ) {
                     BottomNavigationBar(
                         selectedItem = selectedItem,
+
                         onItemSelected = { index ->
                             selectedItem = index
-                            when (index) {
-                                0 -> navController.navigate("home")
-                                1 -> navController.navigate("video")
-                                2 -> navController.navigate("upload")
-                                3 -> navController.navigate("history")
-                                4 -> navController.navigate("profile")
+                            val route = when (index) {
+                                0 -> "home"
+                                1 -> "video"
+                                2 -> "upload"
+                                3 -> "history"
+                                4 -> "profile"
+                                else -> "home"
+                            }
+
+                            if (navController.currentDestination?.route != route) {
+                                navController.navigate(route) {
+                                    launchSingleTop = true
+                                }
                             }
                         },
                         navController = navController
@@ -176,7 +216,8 @@ fun MainScreen(
                 db = db,
                 uploadEpisodeViewModel = uploadEpisodeViewModel,
                 userViewModel = userViewModel,
-                paymentViewModel = paymentViewModel
+                paymentViewModel = paymentViewModel,
+                setSelectedItem =  updateSelectedItem
             )
         }
     }

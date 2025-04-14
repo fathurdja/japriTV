@@ -104,19 +104,44 @@ object ProfileRepository {
                 Log.d("ProfileRepository", "Response Code: $responseCode")
                 Log.d("ProfileRepository", "Response Body: $responseMessage")
 
+
+
                 val jsonResponse = JSONObject(responseMessage)
-                val success = jsonResponse.optBoolean("success", false)
+                val dataObject = jsonResponse.optJSONObject("data") ?: return@withContext null
+                val userObject = dataObject.optJSONObject("id_user") ?: JSONObject()
+                val invoiceObject = dataObject.optJSONObject("invoice") ?: JSONObject()
+                val detailObject = dataObject.optJSONObject("detail") ?: JSONObject()
+
+                val name = dataObject.optString("name", "")
+                val type = dataObject.optString("type", "")
+                val paymentData = PaymentDataEntity(
+                    id = dataObject.optString("_id", ""),
+                    name = name,
+                    type = type,
+                    status = invoiceObject.optString("status", ""),
+                    createdAt = dataObject.optString("createdAt", ""),
+                    updatedAt = dataObject.optString("updatedAt", ""),
+                    userName = userObject.optString("name", ""),
+                    bank = invoiceObject.optString("bankShortCode", ""),
+                    amount = detailObject.optInt("amount", 0),
+                    unique =  detailObject.optInt("unique", 0),
+                    serverFee =  detailObject.optInt("server_fee", 0),
+                    admin = detailObject.optInt("admin", 0),
+                    totalAmount = detailObject.optInt("total_amount", 0),
+                    invoiceId = invoiceObject.optString("id", ""),
+                    vaNumber = invoiceObject.optString("accountNo", ""),
+                    vaName = invoiceObject.optString("displayName", ""),
+                    level = if (type == "subscription") detailObject.optString("level", "") else null,
+                    idVideo = if (type == "video") detailObject.optString("id_video", "") else null,
+                    totalEpisode = if (type == "video") detailObject.optInt("total_episode", 0) else null,
+                )
+
+                // ✅ Simpan ke Room
+                db.temporaryPayment().insert(paymentData)
+
+                return@withContext paymentData
 
 
-                return@withContext if (success) {
-                    getDataTransaction(db)
-                } else {
-                    Log.e(
-                        "ProfileRepository",
-                        "Top-up failed: ${jsonResponse.optString("message")}"
-                    )
-                    null
-                }
             } catch (e: Exception) {
                 Log.e("ProfileRepository", "Gagal membuat subscription", e)
 
@@ -154,23 +179,41 @@ object ProfileRepository {
 
                 val responseCode = connection.responseCode
                 val responseMessage = connection.inputStream.bufferedReader().use { it.readText() }
-                Log.d("ProfileRepository", "Response Code: $responseCode")
-                Log.d("ProfileRepository", "Response Body: $responseMessage")
 
-                if (responseCode == 200) {
-                    Log.d("ProfileRepository", "Response Body: $responseMessage")
-                    return@withContext getDataTransaction(
-                        db = db
-                    )
-                } else if (responseCode == 400) {
-                    Log.d("ProfileRepository", "Response Body: $responseMessage")
-                    Log.e("AuthRepo", "Token Expired")
+                val jsonResponse = JSONObject(responseMessage)
+                val dataObject = jsonResponse.optJSONObject("data") ?: return@withContext null
+                val userObject = dataObject.optJSONObject("id_user") ?: JSONObject()
+                val invoiceObject = dataObject.optJSONObject("invoice") ?: JSONObject()
+                val detailObject = dataObject.optJSONObject("detail") ?: JSONObject()
 
-                } else {
-                    Log.e("ProfileRepository", "Request failed with error: $responseMessage")
+                val name = dataObject.optString("name", "")
+                val type = dataObject.optString("type", "")
+                val paymentData = PaymentDataEntity(
+                    id = dataObject.optString("_id", ""),
+                    name = name,
+                    type = type,
+                    status = invoiceObject.optString("status", ""),
+                    createdAt = dataObject.optString("createdAt", ""),
+                    updatedAt = dataObject.optString("updatedAt", ""),
+                    userName = userObject.optString("name", ""),
+                    bank = invoiceObject.optString("bankShortCode", ""),
+                    amount = detailObject.optInt("amount", 0),
+                    unique =  detailObject.optInt("unique", 0),
+                    serverFee =  detailObject.optInt("server_fee", 0),
+                    admin = detailObject.optInt("admin", 0),
+                    totalAmount = detailObject.optInt("total_amount", 0),
+                    invoiceId = invoiceObject.optString("id", ""),
+                    vaNumber = invoiceObject.optString("accountNo", ""),
+                    vaName = invoiceObject.optString("displayName", ""),
+                    level = if (type == "subscription") detailObject.optString("level", "") else null,
+                    idVideo = if (type == "video") detailObject.optString("id_video", "") else null,
+                    totalEpisode = if (type == "video") detailObject.optInt("total_episode", 0) else null,
+                )
 
-                }
-                return@withContext null
+                // ✅ Simpan ke Room
+                db.temporaryPayment().insert(paymentData)
+
+                return@withContext paymentData
             } catch (e: Exception) {
                 Log.e("ProfileRepository", "Gagal membuat transaksi ", e)
 
@@ -206,7 +249,7 @@ object ProfileRepository {
                     id = dataObject.optString("_id", ""),
                     name = name,
                     type = type,
-                    status = dataObject.optString("status", ""),
+                    status = invoiceObject.optString("status", ""),
                     createdAt = dataObject.optString("createdAt", ""),
                     updatedAt = dataObject.optString("updatedAt", ""),
                     userName = userObject.optString("name", ""),
@@ -221,7 +264,7 @@ object ProfileRepository {
                     vaName = invoiceObject.optString("displayName", ""),
                     level = if (type == "subscription") detailObject.optString("level", "") else null,
                     idVideo = if (type == "video") detailObject.optString("id_video", "") else null,
-                    totalEpisode = if (type == "video") detailObject.optInt("total_episode", 0) else null
+                    totalEpisode = if (type == "video") detailObject.optInt("total_episode", 0) else null,
                 )
 
                 // ✅ Simpan ke Room
@@ -234,7 +277,6 @@ object ProfileRepository {
             }
         }
     }
-
     suspend fun deleteSubscription(id: String, db: AppDatabase): Boolean {
         return withContext(Dispatchers.IO) {
             try {
@@ -311,7 +353,7 @@ object ProfileRepository {
                 connection.doOutput = false
                 val requestBody = JSONObject().apply {
                     put("action", "CANCELED")
-                    put("method", idpayment)
+                    put("id_payment", idpayment)
                 }.toString()
                 connection.outputStream.use { outputStream ->
                     outputStream.write(requestBody.toByteArray())
@@ -331,7 +373,6 @@ object ProfileRepository {
             }
         }
     }
-
     suspend fun fetchAndStorePaymentConfig(db: AppDatabase): PaymentConfigEntity? {
         return withContext(Dispatchers.IO) {
             try {
@@ -377,8 +418,6 @@ object ProfileRepository {
             }
         }
     }
-
-
     suspend fun topUpSaldo(
         type: String,
         amount: Int,
@@ -417,9 +456,40 @@ object ProfileRepository {
                 Log.d("ProfileRepository", "Response Code: $responseCode")
                 Log.d("ProfileRepository", "ini respons dari API Response Body: $responseMessage")
 
+                val jsonResponse = JSONObject(responseMessage)
 
-                return@withContext getDataTransaction(db = db)
+                val dataObject = jsonResponse.optJSONObject("data") ?: return@withContext null
+                val userObject = dataObject.optJSONObject("id_user") ?: JSONObject()
+                val invoiceObject = dataObject.optJSONObject("invoice") ?: JSONObject()
+                val detailObject = dataObject.optJSONObject("detail") ?: JSONObject()
+                val name = dataObject.optString("name", "")
+                val type = dataObject.optString("type", "")
 
+
+                val paymentData = PaymentDataEntity(
+                    id = dataObject.optString("_id", ""),
+                    name = name,
+                    type = type,
+                    status = invoiceObject.optString("status", ""),
+                    createdAt = dataObject.optString("createdAt", ""),
+                    updatedAt = dataObject.optString("updatedAt", ""),
+                    userName = userObject.optString("name", ""),
+                    bank = invoiceObject.optString("bankShortCode", ""),
+                    amount = detailObject.optInt("amount", 0),
+                    unique = if (type == "coin") detailObject.optInt("unique", 0) else 0,
+                    serverFee = if (type == "coin") detailObject.optInt("server_fee", 0) else 0,
+                    admin = detailObject.optInt("admin", 0),
+                    totalAmount = detailObject.optInt("total_amount", 0),
+                    invoiceId = invoiceObject.optString("id", ""),
+                    vaNumber = invoiceObject.optString("accountNo", ""),
+                    vaName = invoiceObject.optString("displayName", ""),
+                    level = if (type == "subscription") detailObject.optString("level", "") else null,
+                    idVideo = if (type == "video") detailObject.optString("id_video", "") else null,
+                    totalEpisode = if (type== "video") detailObject.optInt("total_episode", 0) else null,
+                )
+
+                db.temporaryPayment().insert(paymentData)
+                return@withContext paymentData
 
             } catch (e: Exception) {
                 Log.e("ProfileRepository", "Exception during topUpSaldo", e)
@@ -611,12 +681,11 @@ object ProfileRepository {
                         admin = detailObject.optInt("admin", 0),
                         totalAmount = detailObject.optInt("total_amount", 0),
                         invoiceId = invoiceObject.optString("id", ""),
-                        vaNumber = invoiceObject.optString("referenceId", ""),
+                        vaNumber = invoiceObject.optString("accountNo", ""),
                         vaName = invoiceObject.optString("displayName", ""),
                         level = if (type == "subscription") detailObject.optString("level", "") else null,
                         idVideo = if (type == "video") detailObject.optString("id_video", "") else null,
                         totalEpisode = if (type== "video") detailObject.optInt("total_episode", 0) else null,
-                        isCancel = dataObject.optBoolean("isCancel", false)
                     )
                     paymentList.add(paymentData)
                 }
@@ -671,12 +740,12 @@ object ProfileRepository {
                         admin = detailObject.optInt("admin", 0),
                         totalAmount = detailObject.optInt("total_amount", 0),
                         invoiceId = invoiceObject.optString("id", ""),
-                        vaNumber = invoiceObject.optString("referenceId", ""),
+                        vaNumber = invoiceObject.optString("accountNo", ""),
                         vaName = invoiceObject.optString("displayName", ""),
                         level = if (type == "subscription") detailObject.optString("level", "") else null,
                         idVideo = if (type == "video") detailObject.optString("id_video", "") else null,
                         totalEpisode = if (type== "video") detailObject.optInt("total_episode", 0) else null,
-                        isCancel = dataObject.optBoolean("isCancel", false)
+
                     )
                     paymentList.add(paymentData)
                 }
@@ -731,12 +800,11 @@ object ProfileRepository {
                         admin = detailObject.optInt("admin", 0),
                         totalAmount = detailObject.optInt("total_amount", 0),
                         invoiceId = invoiceObject.optString("id", ""),
-                        vaNumber = invoiceObject.optString("referenceId", ""),
+                        vaNumber = invoiceObject.optString("accountNo", ""),
                         vaName = invoiceObject.optString("displayName", ""),
                         level = if (type == "subscription") detailObject.optString("level", "") else null,
                         idVideo = if (type == "video") detailObject.optString("id_video", "") else null,
                         totalEpisode = if (type== "video") detailObject.optInt("total_episode", 0) else null,
-                        isCancel = dataObject.optBoolean("is_cancel", false)
                     )
                     paymentList.add(paymentData)
                 }

@@ -23,6 +23,6 @@ data class PaymentDataEntity(
     val vaName: String,
     val level: String?,           // nullable karena cuma ada untuk "subscription"
     val idVideo: String?,         // nullable karena cuma ada untuk "video"
-    val totalEpisode: Int? ,       // nullable karena cuma ada untuk "video"
+    val totalEpisode: Int? ,       // nullable karena cuma ada untuk "video",
     val timestamp: Long = System.currentTimeMillis()
 )

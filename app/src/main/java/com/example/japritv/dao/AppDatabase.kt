@@ -15,7 +15,7 @@ import com.example.japritv.converters.SubscriptionValidityConverter
 
 @Database(
     entities = [VideoData::class, AuthToken::class, LoginInfo::class, newAuthDao::class,FcmToken::class,PaymentDataEntity::class,historyEntity::class,PaymentConfigEntity::class],
-    version = 22,
+    version = 24,
     exportSchema = false
 )
 @TypeConverters(Converter::class,)

@@ -117,7 +117,16 @@ fun RiwayatPembelian(
                 "Pembelian Keanggotaan" -> historySubscription.orEmpty()
                 "Pembelian Koin" -> historyCoin.orEmpty()
                 else -> emptyList()
+            }.sortedByDescending {
+                try {
+                    val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+                    format.timeZone = TimeZone.getTimeZone("UTC")
+                    format.parse(it.createdAt)?.time ?: 0L
+                } catch (e: Exception) {
+                    0L
+                }
             }
+
 
             if (dataToShow.isEmpty()) {
                 Box(
@@ -161,7 +170,6 @@ fun RiwayatPembelian(
                             onClick = {
                                 val json = Uri.encode(Gson().toJson(item))
                                 navController.navigate("instruksi_bayar_screen/$json")},
-                            cancel = item.isCancel ?: false
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }

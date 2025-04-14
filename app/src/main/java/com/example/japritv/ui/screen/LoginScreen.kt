@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.PendingIntentCompat.getActivity
 
 import androidx.credentials.CredentialManager
+import androidx.navigation.NavController
 import com.example.japritv.R
 import com.example.japritv.Repository.AuthRepository
 import com.example.japritv.dao.AppDatabase
@@ -56,7 +57,11 @@ import kotlinx.coroutines.withContext
     "RememberReturnType"
 )
 @Composable
-fun LoginScreen(onClick: () -> Unit, userViewModel: UserViewModel) {
+fun LoginScreen(
+    userViewModel: UserViewModel,
+    navController: NavController,
+    onSuccess: () -> Unit
+) {
 
 
     val context = LocalContext.current
@@ -83,7 +88,12 @@ fun LoginScreen(onClick: () -> Unit, userViewModel: UserViewModel) {
                     )
                     Log.d("Auth", signInResult.toString())
                     userViewModel.onSignInResult(signInResult, db)
-                    onClick()
+                    onSuccess()
+                    navController.navigate("home") {
+                        popUpTo(0) // clear all backstack
+                        launchSingleTop = true
+                    }
+
                 }
             }
         }
@@ -97,8 +107,7 @@ fun LoginScreen(onClick: () -> Unit, userViewModel: UserViewModel) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black)
-                .padding(vertical = 190.dp),
+                .background(Color.Black), contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(
@@ -181,6 +190,7 @@ fun LoginScreen(onClick: () -> Unit, userViewModel: UserViewModel) {
 //                                        Log.e("LoginScreen", "Google Sign-In failed")
 //                                    }
                                 }
+
                             },
                             text = "Login dengan Google",
                             icon = R.drawable.logo_googleg_48dp,

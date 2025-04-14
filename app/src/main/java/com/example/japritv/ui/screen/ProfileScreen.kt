@@ -110,7 +110,8 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
                         email = userInfo?.email ?: "Email tidak tersedia",
                         picture = userInfo?.urlPicture ?: "",
                         userId = userInfo?.userId ?: "ID tidak tersedia",
-                        onClick = { navController.navigate("login") }
+                        onClick = { navController.navigate("login") },
+                        urlRef = "https://tv.japrime.id/reff/${userInfo?.referral}"
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     if (userInfo?.subscriptionExpired == false) {

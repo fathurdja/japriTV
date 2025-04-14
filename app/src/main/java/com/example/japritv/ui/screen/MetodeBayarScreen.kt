@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
@@ -21,6 +22,11 @@ import com.example.japritv.viewmodel.PaymentViewModel
 @Composable
 fun MetodeBayarScreen(viewModel: PaymentViewModel, navigateTo: (String,String)->Unit) {
     val paymentMethods by viewModel.paymentMethods.observeAsState(emptyList())
+    LaunchedEffect(Unit) {
+        viewModel.fetchPaymentConfig()
+        viewModel.clearTransaction()
+
+    }
         LazyColumn(modifier = Modifier.padding(vertical = 20.dp)) {
             itemsIndexed(paymentMethods) { index, category ->
                 ExpandableList(category = category, isInitiallyExpanded = index == 0, onItemClicked = { item -> navigateTo(category.type,item.value) })

@@ -28,6 +28,7 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
@@ -40,11 +41,12 @@ import com.example.japritv.ui.components.HeaderRightWithIcon
 import com.example.japritv.ui.components.video.ActionButtons
 import com.example.japritv.ui.components.video.ContainerEpisode
 import com.example.japritv.ui.components.video.ModalityContainer
+import com.example.japritv.utils.VideoCache
 import com.example.japritv.viewmodel.VideoViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.example.japritv.utils.downloadVideoToCache
-import com.example.japritv.utils.shareVideo
+import com.example.japritv.utils.shareVideoLink
 import com.example.japritv.viewmodel.UserViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -231,7 +233,7 @@ fun VideoPlayer(
     var progress by remember { mutableFloatStateOf(0f) }
     var showControls by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
-
+    val cache = VideoCache.getInstance(context)
     var exoPlayer by remember { mutableStateOf<ExoPlayer?>(null) }
 
     // Init player
@@ -247,8 +249,13 @@ fun VideoPlayer(
             .setAllowCrossProtocolRedirects(true)
             .setDefaultRequestProperties(mapOf("Authorization" to token))
 
+        val cacheDataSourceFactory = CacheDataSource.Factory()
+            .setCache(cache)
+            .setUpstreamDataSourceFactory(httpDataSourceFactory)
+            .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+
         val player = ExoPlayer.Builder(context)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(httpDataSourceFactory))
+            .setMediaSourceFactory(DefaultMediaSourceFactory(cacheDataSourceFactory))
             .build().apply {
                 val mediaItem = MediaItem.Builder()
                     .setUri(videoUrl)
@@ -393,18 +400,10 @@ fun VideoPlayer(
                 onShareClick = {
                     coroutineScope.launch {
                         onStartShare()
-                        Toast.makeText(context, "Video sedang diunduh...", Toast.LENGTH_SHORT).show()
-
                         val token = db.authTokenDao().getToken()?.token ?: return@launch
-                        val videoId = videoUrl.substringAfterLast("/")
-                        val file = downloadVideoToCache(context, videoId, token)
 
-                        if (file != null) {
-                            shareVideo(context, file)
-                            Toast.makeText(context, "Video berhasil dibagikan", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, "Gagal mengunduh video", Toast.LENGTH_SHORT).show()
-                        }
+                        shareVideoLink(context,groupId,episode)
+                        Toast.makeText(context, "Video berhasil dibagikan", Toast.LENGTH_SHORT).show()
 
                         onFinishShare()
                     }
