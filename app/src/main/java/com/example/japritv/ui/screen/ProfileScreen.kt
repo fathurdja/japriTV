@@ -68,6 +68,7 @@ fun ProfileScreen(navController: NavController, db: AppDatabase) {
         return humanReadableByteCount(sizeInBytes)
     }
     LaunchedEffect(Unit) {
+        viewModel.getDataLogin(db = db)
         viewModel.loadUserInfo()
         Log.d("CACHE", "Ukuran cache saat ini: ${getCacheSize()}")
     }

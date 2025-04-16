@@ -88,29 +88,71 @@ fun MainScreen(
         notificationPermissionState = notificationPermissionState
     )
 
+    val handledDeeplink = remember { mutableStateOf(false) }
+
     LaunchedEffect(deepLinkUri) {
-        deepLinkUri.let { uri ->
-            val parsed = Uri.parse(uri)
-            if (parsed.scheme == "japritv" && parsed.host == "watch") {
+        if (deepLinkUri.isNotBlank() && !handledDeeplink.value) {
+            val parsed = Uri.parse(deepLinkUri)
+            Log.d("Deeplink", "Parsed URI: $parsed")
+
+            if (parsed.scheme == "https" && parsed.host == "tv.japrime.id") {
                 val segments = parsed.pathSegments
-                if (segments.size >= 3 && segments[1] == "episode") {
-                    val videoId = segments[0]
-                    val episode = segments[2].toIntOrNull() ?: 1
-                    navController.navigate("nowPlayingHistory/$videoId/$episode")
-                } else if (segments.isNotEmpty()) {
-                    val videoId = segments[0]
-                    navController.navigate("video_player/$videoId/1")
+                Log.d("Deeplink", "Path Segments: $segments")
+
+                when {
+                    segments.size >= 2 && segments[0] == "reff" -> {
+                        val referralCode = segments[1]
+                        selectedItem = 4
+                        navController.navigate("registerForm/$referralCode") {
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+
+                    segments.size >= 3 && segments[0] == "video" -> {
+                        val videoId = segments[1]
+                        val episode = segments[2]
+                        selectedItem = 4
+                        navController.navigate("nowPlayingHistory/$videoId/$episode"){
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+
+                    else -> {
+                        selectedItem = 4
+                        navController.navigate("home") {
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
                 }
+
+                handledDeeplink.value = true // ✅ hanya dijalankan sekali
             }
         }
+    }
+
+
+    LaunchedEffect(Unit) {
+        userViewModel.getDataLogin(db = db)
+        userViewModel.loadUserInfo()
     }
 
 
 
 
     LaunchedEffect(key1 = Unit) {
-        AuthRepository.getDataLogin(db)
-        userViewModel.loadUserInfo()
+
         ProfileRepository.fetchAndStorePaymentConfig(db)
         videoViewModel.fetchVideos()
         if (notificationPermissionState.status.isGranted ||

@@ -98,6 +98,7 @@ fun LoginScreen(
             }
         }
     )
+
     Scaffold(
         containerColor = Color.Black,
         bottomBar = {
@@ -153,8 +154,8 @@ fun LoginScreen(
                                     Toast.LENGTH_SHORT
                                 ).show()
                             },
-                            text = "Login dengan Facebook",
-                            icon = R.drawable.path14,
+                            text = "Login dengan Facebook ",
+                            icon = R.drawable.email,
                             color = Color(0xFF3E67B5)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -197,6 +198,16 @@ fun LoginScreen(
                             color = Color(0xFF313131)
                         )
 
+                        Spacer(modifier = Modifier.height(16.dp))
+                        ButtonLogin(
+                            onClick = {
+                                val referralCode = "0"
+                                navController.navigate("registerForm/$referralCode")
+                            },
+                            text = "Register By Email",
+                            icon = R.drawable.email,
+                            color = Color(0xFFFFA500)
+                        )
                     }
                 }
             }

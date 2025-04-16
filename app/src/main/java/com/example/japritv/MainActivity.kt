@@ -10,6 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.Room
+import com.example.japritv.Repository.AuthRepository
 import com.example.japritv.Repository.ProfileRepository
 import com.example.japritv.Repository.VideoRepository
 import com.example.japritv.dao.AppDatabase
@@ -27,6 +28,8 @@ import com.example.japritv.viewmodel.VideoViewModel
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
+import android.content.Intent
+import android.net.Uri
 
 class  MainActivity : ComponentActivity() {
 
@@ -45,8 +48,10 @@ class  MainActivity : ComponentActivity() {
         videoRepository = VideoRepository(videoDao)
 
 
+
         val fcmTokenDao = database.fcmToken()
-        val deepLinkUri = intent?.data?.toString()
+
+
         // Jalankan dalam coroutine karena akses Room bersifat suspend
         lifecycleScope.launch {
             val fiveMinutesAgo = System.currentTimeMillis() - (5 * 60 * 1000)
@@ -76,23 +81,29 @@ class  MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
         setContent {
-
+            val appLinkIntent: Intent = intent
+            val appLinkAction: String? = appLinkIntent.action
+            val appLinkData: Uri? = appLinkIntent.data
             val userViewModel: UserViewModel = viewModel(factory = UserViewModelfactory(database))
             val videoViewModel: VideoViewModel = viewModel(factory = VideoViewModelFactory(videoRepository,database))
             val data: ShowItemViewModel = viewModel()
             val paymentViewModel :PaymentViewModel = viewModel(factory = PaymentViewModelFactory(database))
             val uploadViewModel: UploadEpisodeViewModel = viewModel(factory = UploadEpisodeViewModelFactory(database))
-                MainScreen(
-                    data = data,
-                    videoViewModel = videoViewModel,
-                    uploadEpisodeViewModel = uploadViewModel,
-                    userViewModel = userViewModel,
-                    paymentViewModel = paymentViewModel,
-                    deepLinkUri = deepLinkUri?: ""
-                )
+            MainScreen(
+                data = data,
+                videoViewModel = videoViewModel,
+                uploadEpisodeViewModel = uploadViewModel,
+                userViewModel = userViewModel,
+                paymentViewModel = paymentViewModel,
+                deepLinkUri = appLinkData.toString()
+            )
 
 
         }
+        // ATTENTION: This was auto-generated to handle app links.
+        val appLinkIntent: Intent = intent
+        val appLinkAction: String? = appLinkIntent.action
+        val appLinkData: Uri? = appLinkIntent.data
     }
 
     // ✅ Fungsi reset database harus berada di dalam class tetapi di luar `setContent`

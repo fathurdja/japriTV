@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Tambahkan izin internet di sini -->
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/> <!-- Opsional, mencegah video berhenti saat layar mati -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" /> <!-- Opsional, mencegah video berhenti saat layar mati -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
 
@@ -23,7 +23,7 @@
 
         <meta-data
             android:name="com.google.android.gms.auth.api.signin"
-            android:resource="@string/web_client_id"/>
+            android:resource="@string/web_client_id" />
 
         <activity
             android:name=".MainActivity"
@@ -35,28 +35,38 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <!-- Deeplink Handler -->
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <!-- Custom URI -->
-                <data
-                    android:scheme="japritv"
-                    android:host="watch" />
+                <data android:scheme="https" />
+                <data android:host="tv.japrime.id" />
             </intent-filter>
-
 
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Ganti sesuai domainmu -->
-                <data
-                    android:scheme="https"
-                    android:host="tv.japrime.id"
-                    android:pathPrefix="/reff" />
+
+                <data android:scheme="https" />
+                <data android:host="tv.japrime.id"/>
+                <data android:pathPrefix="/reff" />
             </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="https" />
+                <data android:host="tv.japrime.id"/>
+                <data android:pathPrefix="/video" />
+            </intent-filter>
+
+
         </activity>
         <service
             android:name=".service.MyFirebaseMessagingService"

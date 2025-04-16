@@ -56,6 +56,7 @@ import com.example.japritv.ui.screen.MetodeBayarScreen
 import com.example.japritv.ui.screen.PaymentScreen
 import com.example.japritv.ui.screen.ProfileScreen
 import com.example.japritv.ui.screen.RatingScreen
+import com.example.japritv.ui.screen.RegistrationForm
 import com.example.japritv.ui.screen.RiwayatPembelian
 import com.example.japritv.ui.screen.RiwayatScreen
 import com.example.japritv.ui.screen.SplashScreen
@@ -104,10 +105,23 @@ fun NavGraph(
             SplashScreen(navController = navController)
         }
 
+        composable("nowPlayingHistory/{Id}/{index}") { backStackEntry ->
+            val Id = backStackEntry.arguments?.getString("Id") ?: return@composable
+            val index = backStackEntry.arguments?.getInt("index") ?: return@composable
+            VideoVerticalPagerScreen(
+                viewModel = video,
+                Id = Id,
+                db = db,
+                index = index,
+                onClickBack = { navController.navigate("home")
+                              setSelectedItem(0)
+                              },
+                userViewModel = userViewModel,
+                login = { navController.navigate("login") },
+                topUpsaldo = { navController.navigate("TokoJapri") })
+        }
+
         composable("home") {
-            LaunchedEffect(Unit) {
-                setSelectedItem(0)
-            }
             HomeScreen(navController = navController, videoViewModel = video)
             setSelectedItem(0)
         }
@@ -752,6 +766,26 @@ fun NavGraph(
             val url = backStackEntry.arguments?.getString("url") ?: ""
             val title = backStackEntry.arguments?.getString("title") ?: ""
             WebViewScreen(url = URLDecoder.decode(url, "UTF-8"), title = title)
+        }
+        composable("registerForm/{referralCode}") { backStackEntry ->
+
+            val referralCode = backStackEntry.arguments?.getString("referralCode") ?: "0"
+            RegistrationForm(referralCode = referralCode, onSuccess = {token ->
+             coroutineScope.launch {
+                val result =  AuthRepository.sendTokenToServer(token,db)
+                 if (result){
+                     AuthRepository.getDataLogin(db)
+                     Toast.makeText(context, "Berhasil Login", Toast.LENGTH_SHORT).show()
+                     userViewModel.loadUserInfo()
+                     setSelectedItem(0)
+                     navController.navigate("home")
+                 }else{
+                     Toast.makeText(context, "Gagal Login", Toast.LENGTH_SHORT).show()
+                 }
+
+             }
+
+            })
         }
     }
 }

@@ -46,6 +46,7 @@ import com.example.japritv.viewmodel.VideoViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.example.japritv.utils.downloadVideoToCache
+import com.example.japritv.utils.hitWatchUrl
 import com.example.japritv.utils.shareVideoLink
 import com.example.japritv.viewmodel.UserViewModel
 import com.google.gson.Gson
@@ -282,6 +283,7 @@ fun VideoPlayer(
             groupId,                          // idGroup
             posterId                          // posterId
         )
+//        hitWatchUrl(videoUrl.substringAfterLast("/"), token)
     }
 
     // Release on dispose

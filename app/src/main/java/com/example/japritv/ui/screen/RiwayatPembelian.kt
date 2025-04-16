@@ -85,7 +85,7 @@ fun RiwayatPembelian(
     }
 
 
-    val menu = listOf("Pembelian Video", "Pembelian Keanggotaan", "Pembelian Koin")
+    val menu = listOf("Upload Video", "Pembelian Keanggotaan", "Pembelian Koin")
 
     Column(modifier = Modifier.padding(16.dp)) {
         LazyRow(
@@ -113,7 +113,7 @@ fun RiwayatPembelian(
             }
         } else {
             val dataToShow: List<PaymentData> = when (selectedMenu) {
-                "Pembelian Video" -> historyVideo.orEmpty()
+                "Upload Video" -> historyVideo.orEmpty()
                 "Pembelian Keanggotaan" -> historySubscription.orEmpty()
                 "Pembelian Koin" -> historyCoin.orEmpty()
                 else -> emptyList()
@@ -154,7 +154,7 @@ fun RiwayatPembelian(
                     items(dataToShow) { item ->
                         RiwayatCard(
                             movieName = when(selectedMenu){
-                                "Pembelian Video" -> item.name ?: "Unknown Video"
+                                "Upload Video" -> item.name ?: "Unknown Video"
                                 "Pembelian Keanggotaan" -> "Anggota ${item.level}" ?: "Unknown Subscription"
                                 "Pembelian Koin" -> "Top Up Koin ${item.amount}" ?: "Unknown Coin Purchase"
                                 else -> "Unknown"

@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.japritv.Repository.AuthRepository
 import com.example.japritv.Repository.ProfileRepository
 import com.example.japritv.dao.AppDatabase
@@ -58,6 +59,14 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
     }
     fun getVideoUploaded(db: AppDatabase) {
         viewModelScope.launch {
+        }
+    }
+    fun refreshDataLogin(db: AppDatabase){
+        viewModelScope.launch {
+         val success = AuthRepository.getDataLogin(db = db)
+            if (success){
+                loadUserInfo()
+            }
         }
     }
     fun loadUserInfo() {
@@ -123,6 +132,11 @@ class UserViewModel(db: AppDatabase) : ViewModel() {
         }
 
 
+    }
+    fun register(token: String, db: AppDatabase){
+        viewModelScope.launch {
+            AuthRepository.sendTokenToServer(token,db)
+        }
     }
     suspend fun onSignInResult(result: SignInResult, db: AppDatabase) {
         val data = result.data

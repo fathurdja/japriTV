@@ -25,11 +25,12 @@ fun WebViewScreen(url: String, title: String = "Detail") {
     val context = LocalContext.current
 
     Scaffold(
+        containerColor = Color.Black,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(text = title, color = Color.Black) },
+                title = { Text(text = title, color = Color.White) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White
+                    containerColor = Color.Black
                 )
             )
         }
