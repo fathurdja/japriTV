@@ -42,15 +42,9 @@ object AuthRepository {
                         token = tokenAcces
                     )
                 )
+                return@withContext true
 
-                if (responseCode == 200) {
-                    val success = getDataLogin(db)
-                    // Menunggu hasil sebelum menyimpan
-                    if (success) {
-                        return@withContext true
-                    }
-                }
-                return@withContext false
+
             } catch (e: Exception) {
                 Log.e("AuthRepository", "Gagal mengirim token ke server", e)
                 return@withContext false
